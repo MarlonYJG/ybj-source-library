@@ -1,0 +1,24 @@
+{
+  "include": [
+    "src/**/*/*.ts",
+    "src/**/*.ts",
+    "src/*.ts",
+    "types/index.d.ts",
+    "src/index.js"
+  ],
+  "exclude": [],
+  "output": "./dist/",
+  "paths": {
+    "src/*": [
+      "src/*",
+      "src/*/*"
+    ]
+  },
+  "compilerOptions": {
+    "target": "es5",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "useUnknownInCatchVariables": false
+  }
+}
