@@ -28,17 +28,17 @@ import {
   Sort, DeleteProduct, HeadDelete, spreadPrint,
   spreadExportExcel as headSpreadExportExcel,
   spreadExportPDF as headSpreadExportPDF,
-  zoom, FormComputedRowField, Repaint, FrozenHead
+  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice
 } from './build-library/head';
 // import { GetAllTableRange } from './common/public';
 
+export let store = null;
+export let vue = null;
 
 const YBJSourceLibrary = {
   install(Vue, options) {
-    console.log('---------------------------');
-    console.log(Vue, options);
-    console.log('----------------------------');
-    // options.store.commit(`quotationModule/${options.modules.quotationModule.mutationType.TEST}`, 1231231);
+    vue = Vue;
+    store = options.store;
   }
 }
 
@@ -47,6 +47,7 @@ export {
   MENU_DELETE,
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
+  ShowCostPrice,
   singleTableSyncStore,
   resourceSort,
   PubGetRandomNumber,

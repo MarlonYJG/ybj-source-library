@@ -1,0 +1,62 @@
+/*
+ * @Author: Marlon
+ * @Date: 2024-07-25 17:34:49
+ * @Description: check cost price
+ */
+
+
+export class CheckCostPrice {
+  constructor(spread, template) {
+    this.spread = spread;
+    this.colCount = 4;
+    this.template = template;
+    this.init();
+  }
+  init() {
+    const sheet = this.spread.getActiveSheet();
+    this.sheet = sheet;
+
+
+
+    // this.sourceSheetColCount = template.cloudSheet.colCount;
+
+
+  }
+
+  // 删除列
+  deleteCol() {
+    const colCount = this.sheet.getColumnCount();
+    if (colCount - this.colCount > 0) {
+      console.log(colCount - this.colCount);
+      // TODO
+      // this.sheet.deleteColumns(colCount - this.colCount, this.colCount);
+    }
+  }
+
+  render() {
+    const startColIndex = this.sheet.getColumnCount();
+    this.sheet.addColumns(startColIndex, this.colCount);
+  }
+  // 绘制表头
+  drawHeads(sheet) {
+
+
+  }
+  // 绘制表体
+  drawTables(sheet) {
+
+
+  }
+  // 绘制小计
+  drawSubTotal(sheet) {
+
+
+  }
+  // 绘制总计
+  drawTotal(sheet) {
+
+
+  }
+}
+
+export default CheckCostPrice;

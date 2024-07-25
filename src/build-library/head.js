@@ -19,6 +19,8 @@ import { Render, insertField, removeAllTable, UpdateTotalBlock } from './single-
 
 import { getTemplateTopRowCol } from '../common/parsing-template';
 
+import { CheckCostPrice } from '../common/cost-price';
+
 /**
  * Download feature
  * @param {*} fileType
@@ -322,9 +324,25 @@ export const FrozenHead = (spread) => {
   spreadFrozenHead(spread, !frozen)
 }
 
-// 显示成本价
-export const ShowCostPrice = () => {
+/**
+ * Show the cost price
+ */
+export const ShowCostPrice = (spread) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const showCost = store.getters['quotationModule/GetterShowCostPrice'];
+  console.log(showCost, '是否显示成本价');
+  console.log(template, 'template');
+  if (spread && template) {
+    const costPrice = new CheckCostPrice(spread, template);
+    if (showCost) {
+      costPrice.render()
+    } else {
+      costPrice.deleteCol()
+    }
+  }
+
+
+
   // const costPrice = template.cloudSheet.costPrice;
   // let show = true;
   // if (costPrice) {
