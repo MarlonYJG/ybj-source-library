@@ -15,21 +15,14 @@ export class CheckCostPrice {
   init() {
     const sheet = this.spread.getActiveSheet();
     this.sheet = sheet;
-
-
-
-    // this.sourceSheetColCount = template.cloudSheet.colCount;
-
-
+    this.sourceSheetColCount = this.template.sheets[sheet.name()].columnCount;
   }
 
   // 删除列
   deleteCol() {
     const colCount = this.sheet.getColumnCount();
-    if (colCount - this.colCount > 0) {
-      console.log(colCount - this.colCount);
-      // TODO
-      // this.sheet.deleteColumns(colCount - this.colCount, this.colCount);
+    if (this.sourceSheetColCount < colCount) {
+      this.sheet.deleteColumns(colCount - this.colCount, this.colCount);
     }
   }
 
