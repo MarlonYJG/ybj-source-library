@@ -1286,7 +1286,7 @@ export const Render = (spread, isInit) => {
 
   if (!noClass) {
     if (type) {
-      delTableHeaderRowCount(sheet, type.dataTable, top);
+      // delTableHeaderRowCount(sheet, type.dataTable, top);
     }
   }
 
@@ -1294,6 +1294,7 @@ export const Render = (spread, isInit) => {
   const tableStartRowIndex = PubGetTableStartRowIndex();
   const tableStartColumnIndex = PubGetTableStartColumnIndex();
   const tableColumnCount = PubGetTableColumnCount();
+
 
   sheet.suspendPaint();
 
@@ -1304,10 +1305,10 @@ export const Render = (spread, isInit) => {
   // table header
   if (!noClass) {
     if (type) {
-      const headerTable = getTableHeaderDataTable(type, true);
-      if (headerTable.length) {
-        header = headerTable;
-      }
+      // const headerTable = getTableHeaderDataTable(type, true);
+      // if (headerTable.length) {
+      //   header = headerTable;
+      // }
     }
   }
 
@@ -1316,9 +1317,11 @@ export const Render = (spread, isInit) => {
   console.log(' classRow, subTotal, classRow1, tableHeaderRow ');
   console.log(classRow, subTotal, classRow1, tableHeaderRow);
 
+  let tableStartIndex = tableStartRowIndex + classRow;
+
   // 判断当前模板是否需要在分类下渲染表头
   const identifier = new IdentifierTemplate()
-  console.log(identifier.builtInIdsIdentifier());
+  // console.log(identifier.builtInIdsIdentifier());
   if (identifier.builtInIdsIdentifier() === 'BH') {
     // 在分类下添加表头
     // if (type && type.dataTable) {
@@ -1333,9 +1336,9 @@ export const Render = (spread, isInit) => {
   // Render classification
   for (let i = 0; i < resourceViews.length; i++) {
     const headerRow = 1;
+    headerIndexs.push(tableStartIndex);
 
-    headerIndexs.push(rowClassIndex + classRow + tableHeaderRow);
-    const rowCount = classRow + tableHeaderRow + resourceViews[i].resources.length + headerRow + subTotal;
+
 
     // Classifications are displayed in rows
     if (!noClass) {
@@ -1373,7 +1376,7 @@ export const Render = (spread, isInit) => {
             sheet.setValue(rowClassIndex + classRow1, 0, `${numberToColumn(i + 1)} ${resourceViews[i].name}`);
           }
         }
-        sheet.setValue(rowClassIndex + classRow1, 0, resourceViews[i].name);
+        sheet.setValue(rowClassIndex, 0, resourceViews[i].name);
       }
 
       // Merge categorical cells
@@ -1386,109 +1389,123 @@ export const Render = (spread, isInit) => {
     }
 
     // Add a list of products
-    sheet.addRows(rowClassIndex + classRow + tableHeaderRow, PubGetTableRowCount(i), GC.Spread.Sheets.SheetArea.viewport);
+    sheet.addRows(tableStartIndex, PubGetTableRowCount(i), GC.Spread.Sheets.SheetArea.viewport);
     // Create a table
     const tableId = resourceViews[i].resourceLibraryId;
     const table = sheet.tables.findByName('table' + tableId);
     if (!table) {
       const { bindPath } = equipment;
-      CreateTable(sheet, tableId, rowClassIndex + classRow + tableHeaderRow, tableStartColumnIndex, PubGetTableRowCount(i), tableColumnCount, bindPath, `conferenceHall.resourceViewsMap.${tableId}.resources`);
+
+      // console.log(rowClassIndex + classRow + tableHeaderRow, '开始行');
+      // console.log(PubGetTableRowCount(i), '行总数');
+
+      // console.log(rowClassIndex, classRow, tableHeaderRow);
+
+      console.log(tableStartIndex, tableStartColumnIndex, PubGetTableRowCount(i), tableColumnCount);
+
+      // CreateTable(sheet, tableId, tableStartIndex, tableStartColumnIndex, PubGetTableRowCount(i), tableColumnCount, bindPath, `conferenceHall.resourceViewsMap.${tableId}.resources`);
     }
 
     // Initialize the product cell style
-    const computedColumnFormula = getComputedColumnFormula(equipment.bindPath);
-    const resources = resourceViews[i].resources;
-    for (let index = 0; index < resources.length; index++) {
+    // const computedColumnFormula = getComputedColumnFormula(equipment.bindPath);
+    // const resources = resourceViews[i].resources;
+    // for (let index = 0; index < resources.length; index++) {
 
-      console.log(rowClassIndex, classRow, tableHeaderRow, headerRow, index);
+    //   console.log(rowClassIndex, classRow, tableHeaderRow, headerRow, index);
 
-      const startRow = rowClassIndex + classRow + tableHeaderRow + headerRow + index;
+    //   const startRow = rowClassIndex + classRow + tableHeaderRow + headerRow + index;
 
-      const { image = null } = template.cloudSheet;
+    //   const { image = null } = template.cloudSheet;
 
-      mergeSpan(sheet, equipment.spans, startRow);
-      setRowStyle(sheet, equipment, startRow, image);
-      columnComputedValue(sheet, equipment, startRow, computedColumnFormula);
-      sheet.getCell(startRow, 0).locked(true);
-    }
+    //   mergeSpan(sheet, equipment.spans, startRow);
+    //   setRowStyle(sheet, equipment, startRow, image);
+    //   columnComputedValue(sheet, equipment, startRow, computedColumnFormula);
+    //   sheet.getCell(startRow, 0).locked(true);
+    // }
 
     // Classifications are displayed by columns
-    if (classType === 'mergeClass') {
-      // Merge column categorical cells
-      mergeColumn(sheet, equipment.bindPath, rowClassIndex + classRow + tableHeaderRow + headerRow + subTotal, resourceViews[i].resources.length, 1, 'classname');
-    } else if (isHaveChild) {
-      mergeColumn(sheet, equipment.bindPath, rowClassIndex + classRow + tableHeaderRow + headerRow, resourceViews[i].resources.length, 1, 'pname');
-    }
+    // if (classType === 'mergeClass') {
+    //   // Merge column categorical cells
+    //   mergeColumn(sheet, equipment.bindPath, rowClassIndex + classRow + tableHeaderRow + headerRow + subTotal, resourceViews[i].resources.length, 1, 'classname');
+    // } else if (isHaveChild) {
+    //   mergeColumn(sheet, equipment.bindPath, rowClassIndex + classRow + tableHeaderRow + headerRow, resourceViews[i].resources.length, 1, 'pname');
+    // }
 
     // Add subtotal rows
     if (!noClass) {
       if (showSubTotal()) {
-        const rowClassTotal = rowClassIndex + classRow + tableHeaderRow + PubGetTableRowCount(i) + headerRow;
+        const rowClassTotal = rowClassIndex + classRow + PubGetTableRowCount(i) + headerRow;
 
-        console.log(rowClassIndex, classRow, tableHeaderRow, PubGetTableRowCount(i), headerRow);
-        console.log(rowClassTotal, subTotal);
+        // console.log(rowClassIndex, classRow, tableHeaderRow, PubGetTableRowCount(i), headerRow);
+        // console.log(rowClassTotal, subTotal);
 
         sheet.addRows(rowClassTotal, subTotal, GC.Spread.Sheets.SheetArea.viewport);
-        if (total) {
-          mergeSpan(sheet, total.spans, rowClassTotal);
-          setCellStyle(spread, total, rowClassTotal, true);
-          PubSetCellHeight(sheet, total, rowClassTotal);
-          for (const key in total.bindPath) {
-            if (Object.hasOwnProperty.call(total.bindPath, key)) {
-              const field = total.bindPath[key];
-              if (field.bindPath) {
-                // setCellFormatter(sheet, rowClassTotal + field.row, field.column);
-                sheet.setBindingPath(rowClassTotal + field.row, field.column, field.bindPath);
-                // sheet.autoFitColumn(field.column);
-              }
-            }
-          }
-        }
+        // if (total) {
+        //   mergeSpan(sheet, total.spans, rowClassTotal);
+        //   setCellStyle(spread, total, rowClassTotal, true);
+        //   PubSetCellHeight(sheet, total, rowClassTotal);
+        //   for (const key in total.bindPath) {
+        //     if (Object.hasOwnProperty.call(total.bindPath, key)) {
+        //       const field = total.bindPath[key];
+        //       if (field.bindPath) {
+        //         // setCellFormatter(sheet, rowClassTotal + field.row, field.column);
+        //         sheet.setBindingPath(rowClassTotal + field.row, field.column, field.bindPath);
+        //         // sheet.autoFitColumn(field.column);
+        //       }
+        //     }
+        //   }
+        // }
       }
     }
 
-    rowClassIndex = rowClassIndex + rowCount;
+    console.log('rowClassIndex', rowClassIndex);
+
+
+
+    tableStartIndex = tableStartIndex + resourceViews[i].resources.length + subTotal + classRow;
+    rowClassIndex = rowClassIndex + classRow + headerRow + resourceViews[i].resources.length + subTotal;
+
   }
 
   // Delete headers in batches
   for (let i = 0; i < headerIndexs.length; i++) {
-    sheet.deleteRows(headerIndexs[i] - i, 1);
+    // sheet.deleteRows(headerIndexs[i] - i, 1);
   }
 
   // Add product images
   if (image) {
-    renderSheetImage(spread, tableStartRowIndex, true, false, false);
+    // renderSheetImage(spread, tableStartRowIndex, true, false, false);
   }
 
   // Subtotal assignment
-  const columnTotal = [];
-  const columnComputed = [];
-  let insertTableIndex = tableStartRowIndex;
-  const subTotalBindPath = total ? total.bindPath : null;
-  for (let index = 0; index < resourceViews.length; index++) {
-    if (index === 0) {
-      const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, columnComputed, subTotalBindPath);
-      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
-      columnTotal.push(columnTotalMap);
-      insertTableIndex = insertTableIndex + classRow + tableHeaderRow + resourceViews[index].resources.length;
-    } else {
-      const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null, subTotalBindPath);
-      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
-      columnTotal.push(columnTotalMap);
+  // const columnTotal = [];
+  // const columnComputed = [];
+  // let insertTableIndex = tableStartRowIndex;
+  // const subTotalBindPath = total ? total.bindPath : null;
+  // for (let index = 0; index < resourceViews.length; index++) {
+  //   if (index === 0) {
+  //     const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, columnComputed, subTotalBindPath);
+  //     !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+  //     columnTotal.push(columnTotalMap);
+  //     insertTableIndex = insertTableIndex + classRow + tableHeaderRow + resourceViews[index].resources.length;
+  //   } else {
+  //     const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null, subTotalBindPath);
+  //     !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+  //     columnTotal.push(columnTotalMap);
 
-      insertTableIndex = insertTableIndex + subTotal + classRow + tableHeaderRow + resourceViews[index].resources.length;
-    }
-  }
+  //     insertTableIndex = insertTableIndex + subTotal + classRow + tableHeaderRow + resourceViews[index].resources.length;
+  //   }
+  // }
 
   sheet.resumePaint();
 
   if (mixTopTotal) {
     // TODO
   } else {
-    RenderTotal(spread, !!isInit);
+    // RenderTotal(spread, !!isInit);
   }
 
-  positionBlock(sheet);
+  // positionBlock(sheet);
 };
 
 /**
@@ -1569,16 +1586,4 @@ export const positionBlock = (sheet) => {
       sheetTotal_position: []
     });
   }
-};
-
-/**
- * Set the project name in the spread
- * @param {*} spread
- * @param {*} projectName
- */
-export const setProjectName = (spread, projectName, projectNameField) => {
-  const sheet = spread.getActiveSheet();
-  sheet.suspendPaint();
-  sheet.setValue(projectNameField.row, projectNameField.column, projectName);
-  sheet.resumePaint()
 };
