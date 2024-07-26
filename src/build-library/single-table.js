@@ -1570,3 +1570,15 @@ export const positionBlock = (sheet) => {
     });
   }
 };
+
+/**
+ * Set the project name in the spread
+ * @param {*} spread
+ * @param {*} projectName
+ */
+export const setProjectName = (spread, projectName, projectNameField) => {
+  const sheet = spread.getActiveSheet();
+  sheet.suspendPaint();
+  sheet.setValue(projectNameField.row, projectNameField.column, projectName);
+  sheet.resumePaint()
+};

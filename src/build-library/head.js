@@ -330,26 +330,16 @@ export const FrozenHead = (spread) => {
 export const ShowCostPrice = (spread) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
   const showCost = store.getters['quotationModule/GetterShowCostPrice'];
+  const quotation = store.getters['quotationModule/GetterQuotationInit'];
   console.log(showCost, '是否显示成本价');
   console.log(template, 'template');
   if (spread && template) {
-    const costPrice = new CheckCostPrice(spread, template);
+    const costPrice = new CheckCostPrice(spread, template, quotation);
     if (showCost) {
       costPrice.render()
+      costPrice.drawTitles();
     } else {
       costPrice.deleteCol()
     }
   }
-
-
-
-  // const costPrice = template.cloudSheet.costPrice;
-  // let show = true;
-  // if (costPrice) {
-  //   if (!costPrice.showHide) {
-  //     if (_.has(costPrice, ['show'])) {
-  //       show = costPrice.show;// new flag for showHide
-  //     }
-  //   }
-  // }
 }
