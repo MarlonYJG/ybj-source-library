@@ -4,41 +4,36 @@
  * @Description: 
  */
 
-import { PROJECT_INIT_DATA } from './common/constant';
-import { singleTableSyncStore, resourceSort } from './common/single-table';
-import { MENU_DELETE } from './build-library/config';
-import { QUOTATION_INIT_DATA } from './common/constant';
-import { PubGetRandomNumber } from './common/public';
-import { LogicalProcessing, LogicalAmount } from './common/single-table';
-import { menuTotal } from './build-library/menu';
+import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
+import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, getProjectCfg, getProjectNumberRuler, translateSheet } from './common/single-table';
+import { PubGetRandomNumber, GetAllTableRange } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
 import { formatterPrice } from './common/parsing-quotation';
-import { getTemplateClassType } from './common/parsing-template';
-import { getProjectCfg, getProjectNumberRuler } from './common/single-table';
-import { SetDataSource } from './common/sheetWorkBook';
-import { Reset } from './build-library/public';
-import { InsertTotal, RenderTotal, Render as BuildRender, InitSheet, updateCellValue } from './build-library/single-table';
-import { SpreadLocked } from './common/sheetWorkBook';
+import { getTemplateClassType, getProjectNameField } from './common/parsing-template';
+import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
+import { SetDataSource,SpreadLocked } from './common/sheetWorkBook';
+
 import { spreadExportExcel, spreadExportPDF, spreadStyleLocked } from './parsing-library/public';
 import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal } from './parsing-library/single-table';
-import { translateSheet } from './common/single-table';
-import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
 
+import { MENU_DELETE } from './build-library/config';
+import { menuTotal } from './build-library/menu';
+import { Reset } from './build-library/public';
+import { InsertTotal, RenderTotal, Render as BuildRender, InitSheet, updateCellValue, setProjectName } from './build-library/single-table';
 import {
   Sort, DeleteProduct, HeadDelete, spreadPrint,
   spreadExportExcel as headSpreadExportExcel,
   spreadExportPDF as headSpreadExportPDF,
-  zoom, FormComputedRowField, Repaint, FrozenHead
+  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice
 } from './build-library/head';
-// import { GetAllTableRange } from './common/public';
 
+export let store = null;
+export let vue = null;
 
 const YBJSourceLibrary = {
   install(Vue, options) {
-    console.log('---------------------------');
-    console.log(Vue, options);
-    console.log('----------------------------');
-    // options.store.commit(`quotationModule/${options.modules.quotationModule.mutationType.TEST}`, 1231231);
+    vue = Vue;
+    store = options.store;
   }
 }
 
@@ -47,6 +42,10 @@ export {
   MENU_DELETE,
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
+  GetAllTableRange,
+  ShowCostPrice,
+  setProjectName,
+  getProjectNameField,
   singleTableSyncStore,
   resourceSort,
   PubGetRandomNumber,
