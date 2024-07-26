@@ -370,3 +370,26 @@ export const getTemplateClassType = () => {
   }
 
 }
+
+/**
+ * Determines whether the template has multiple headers or a single header
+ * @returns 
+ */
+export const isMultiHead = () => {
+  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const regex = /title@/;
+  if (template.templateClassIdentifier && regex.test(template.templateClassIdentifier)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Obtain the project name field in the template
+ * @returns 
+ */
+export const getProjectNameField = () => {
+  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const projectNameField = template.cloudSheet.top.bindPath.quotation.name;
+  return projectNameField;
+}
