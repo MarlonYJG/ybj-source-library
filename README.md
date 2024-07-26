@@ -41,4 +41,4 @@ For the latest releases and announcements, follow on Github: [@ybj-source-librar
 
 [MIT](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2013-present, Marlon
+Copyright (c) 2024-present, Marlon
