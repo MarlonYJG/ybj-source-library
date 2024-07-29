@@ -152,16 +152,17 @@ export class CheckCostPrice {
     }
 
     this.enableCellEditable(tables);
-
     this.setFormula(tables);
+    this.drawSubTotal(tables, subTotals)
 
     this.sheet.resumePaint();
-
-    this.drawSubTotal(tables, subTotals)
   }
 
 
-  // 设置计算公式
+  /**
+   * Set the calculation formula
+   * @param {*} tables 
+   */
   setFormula(tables) {
     const title = this.template.cloudSheet.center.equipment.bindPath;
     const colMap = {};
@@ -200,7 +201,11 @@ export class CheckCostPrice {
     }
   }
 
-  // 绘制小计
+  /**
+   * Draw subtotals
+   * @param {*} tables 
+   * @param {*} subTotals 
+   */
   drawSubTotal(tables, subTotals) {
     const tableSubMap = {};
     for (let i = 0; i < tables.length; i++) {
@@ -230,15 +235,13 @@ export class CheckCostPrice {
       for (const key in subTotals[j]) {
         if (Object.hasOwnProperty.call(subTotals[j], key)) {
           for (let c = 0; c < this.columnIndex.length; c++) {
-
-            this.sheet.getRange(subTotals[j][key].row, this.columnIndex[c], 1, 1).locked(false);
-
             this.sheet.setFormula(subTotals[j][key].row, this.columnIndex[c], `IFERROR(${tableSubMap[key][c]},"")`);
           }
         }
       }
     }
   }
+
   // 绘制总计
   drawTotal() {
 
