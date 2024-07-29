@@ -17,6 +17,8 @@ import { CreateTable } from '../common/sheetWorkBook';
 import { GeneratorStyle, GeneratorLineBorder } from '../common/generator';
 import { TOTAL_COMBINED_MAP, ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
 
+import { numberToColumn } from '../common/public'
+
 import IdentifierTemplate from '../common/identifier-template'
 
 import {
@@ -40,7 +42,6 @@ import {
   rowComputedFieldSort,
   plusColumnTotalSum,
   columnsTotal,
-  numberToColumn,
   mixedDescriptionFields,
   tableHeader,
   columnComputedValue,

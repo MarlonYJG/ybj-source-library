@@ -5,7 +5,7 @@
  */
 
 export const REGULAR = {
-  // eslint-disable-next-line prefer-regex-literals
+   
   chineseCharacters: new RegExp('[\\u4E00-\\u9FFF]+', 'g')
 };
 

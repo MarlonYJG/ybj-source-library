@@ -22,6 +22,7 @@ import IdentifierTemplate from '../common/identifier-template';
 import { CombinationTypeBuild } from '../common/combination-type';
 import { ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, TOTAL_COMBINED_MAP } from '../common/constant';
 import { GeneratorStyle, GeneratorLineBorder } from '../common/generator';
+import { numberToColumn } from '../common/public'
 
 import { getPositionBlock } from '../common/parsing-quotation';
 import {
@@ -46,7 +47,6 @@ import {
   GenerateFieldsRow,
   classificationAlgorithms,
   columnsTotal,
-  numberToColumn,
   columnTotalSumFormula,
   mixedDescriptionFields,
   PubGetTableRowCount,

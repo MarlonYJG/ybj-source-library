@@ -1,7 +1,7 @@
 /*
  * @Author: Marlon
  * @Date: 2024-03-27 22:35:21
- * @Description:单表 public
+ * @Description:single - public
  */
 import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
@@ -12,8 +12,9 @@ import { GetUserCompany, imgUrlToBase64 } from 'utils';
 import store from 'store';
 
 import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR } from './constant';
-
 import { columnToNumber, PubGetRandomNumber, replacePlaceholders } from './public';
+
+import { ShowCostPrice } from '../build-library/head'
 
 import {
   templateRenderFlag,
@@ -21,7 +22,10 @@ import {
   AddEquipmentImage,
   showSubTotal,
 } from './parsing-template';
-import { formatterPrice } from './parsing-quotation';
+import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
+import { formatterPrice, getShowCostPrice } from './parsing-quotation';
+
+import { SHOW_COST_PRICE_HEAD } from "store/quotation/mutation-types";
 
 const NzhCN = require('nzh/cn');
 
@@ -564,21 +568,6 @@ export const columnsTotal = (sheet, tableStartRowIndex, tableIndex, showRowTotal
   return columnTotalMap;
 };
 
-/**
- *Index letter algorithm
- * @param {*} number
- * @returns
- */
-export const numberToColumn = (number) => {
-  let result = '';
-  while (number > 0) {
-    const remainder = (number - 1) % 26;
-    result = String.fromCharCode(65 + remainder) + result;
-    number = Math.floor((number - 1) / 26);
-  }
-  return result;
-};
-
 export const PubGetFormulaValue = (formulas) => {
   const formulaArr = formulas.split('+');
   const rowColumn = [];
@@ -931,3 +920,43 @@ export const translateTable = (spread, tableMap) => {
     console.log(sheet.tables.all());
   }
 };
+
+/**
+ * The status of the initialization cost price is displayed
+ * @returns 
+ */
+export const initShowCostPrice = (spread) => {
+  const isShow = getShowCostPrice();
+  store.commit(`quotationModule/${SHOW_COST_PRICE_HEAD}`, isShow);
+  ShowCostPrice(spread)
+}
+
+/**
+ * Obtain the classification type of the template
+ * @returns 
+ */
+export const getTemplateClassType = () => {
+  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const resourceViews = quotation.conferenceHall.resourceViews;
+
+  if (template.templateClassIdentifier) {
+    if (Object.keys(DEFINE_IDENTIFIER_MAP).includes(template.templateClassIdentifier)) {
+      return template.templateClassIdentifier
+    } else {
+      console.error('模板分类标识符不存在,无法确定模板分类类型【模板错误】');
+    }
+  } else {
+    if (resourceViews.length) {
+      if (resourceViews.length === 1 && resourceViews[0].name === '无分类') {
+        return 'noLevel'
+      } else {
+        return 'Level_1_row'// default
+      }
+    } else {
+      console.error('模板分类标识符不存在,无法确定模板分类类型【模板错误】');
+    }
+  }
+
+  return null
+}

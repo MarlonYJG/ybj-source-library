@@ -10,6 +10,14 @@ import store from 'store';
 import { flattenArray } from '../utils/index'
 
 /**
+ * Get quotation data
+ * @returns 
+ */
+const getQuotation = () => {
+  return store.getters['quotationModule/GetterQuotationInit'];
+}
+
+/**
  * Price format
  * @returns
  */
@@ -135,7 +143,7 @@ export const getQuotationAllClassification = () => {
   const resourceViews = conferenceHall.resourceViews;
   const classification = [];
   resourceViews.forEach(item => {
-    const classp = {};
+    let classp = {};
     if (item.resourceLibraryId) {
       classp = {
         classificationId: item.resourceLibraryId,
@@ -155,4 +163,12 @@ export const getQuotationAllClassification = () => {
       classification.push(classp);
     }
   })
+}
+
+/**
+ * Get the cost price display status
+ * @returns 
+ */
+export const getShowCostPrice = () => {
+  return getQuotation().showCost;
 }

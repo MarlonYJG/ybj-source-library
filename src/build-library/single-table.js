@@ -1,7 +1,7 @@
 /*
  * @Author: Marlon
  * @Date: 2024-05-16 14:20:35
- * @Description:单表-build
+ * @Description:single-build
  */
 import _ from 'lodash';
 import * as GC from '@grapecity/spread-sheets';
@@ -10,7 +10,10 @@ import { isNumber } from 'utils/index';
 import { FormatDate } from 'utils/date';
 import { regChineseCharacter } from 'utils/regular-expression';
 
-import { UPDATE_QUOTATION_PATH, DELETE_QUOTATION_PATH, UPDATE_HEAD_TOTAL, SET_WORK_SHEET_QUOTATION, SET_SHEET_LEAVEL_POSITION, IGNORE_EVENT } from 'store/quotation/mutation-types';
+import {
+  UPDATE_QUOTATION_PATH, DELETE_QUOTATION_PATH, UPDATE_HEAD_TOTAL,
+  SET_WORK_SHEET_QUOTATION, SET_SHEET_LEAVEL_POSITION, IGNORE_EVENT
+} from 'store/quotation/mutation-types';
 
 import { NEW_OLD_FIELD_MAP } from './config';
 
@@ -22,6 +25,7 @@ import IdentifierTemplate from '../common/identifier-template';
 import { CombinationTypeBuild } from '../common/combination-type';
 import { ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, TOTAL_COMBINED_MAP } from '../common/constant';
 import { GeneratorStyle, GeneratorLineBorder } from '../common/generator';
+import { numberToColumn } from '../common/public'
 
 import { getPositionBlock } from '../common/parsing-quotation';
 import {
@@ -46,7 +50,6 @@ import {
   GenerateFieldsRow,
   classificationAlgorithms,
   columnsTotal,
-  numberToColumn,
   columnTotalSumFormula,
   mixedDescriptionFields,
   PubGetTableRowCount,
@@ -54,7 +57,8 @@ import {
   columnComputedValue,
   // setCellFormatter,
   SetComputedSubTotal,
-  renderSheetImage
+  renderSheetImage,
+  initShowCostPrice
 } from '../common/single-table';
 
 import { UpdateSort } from './public';
@@ -1489,6 +1493,8 @@ export const Render = (spread, isInit) => {
   }
 
   positionBlock(sheet);
+
+  initShowCostPrice(spread);
 };
 
 /**

@@ -11,6 +11,15 @@ import { updateFormula } from './public'
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
 
 /**
+ * Get the template
+ * @returns 
+ */
+const getTemplate = () => {
+  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  return template;
+}
+
+/**
  * Insert the start of the column of the table
  */
 export const PubGetTableStartColumnIndex = () => {
