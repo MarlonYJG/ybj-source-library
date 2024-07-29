@@ -4,7 +4,7 @@
  * @Description: check cost price
  */
 import * as GC from '@grapecity/spread-sheets';
-import { GeneratorTableStyle } from './generator';
+// import { GeneratorTableStyle } from './generator';
 
 import { isMultiHead } from './parsing-template'
 
