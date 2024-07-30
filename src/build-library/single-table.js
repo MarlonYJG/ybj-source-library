@@ -18,13 +18,14 @@ import {
 import { NEW_OLD_FIELD_MAP } from './config';
 
 import { commandRegister, onOpenMenu } from './contextMenu';
+import { ShowCostPrice } from './head';
 
 import { CreateTable } from '../common/sheetWorkBook';
 import IdentifierTemplate from '../common/identifier-template';
 
 import { CombinationTypeBuild } from '../common/combination-type';
 import { ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, TOTAL_COMBINED_MAP } from '../common/constant';
-import { GeneratorStyle, GeneratorLineBorder } from '../common/generator';
+import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { numberToColumn } from '../common/public'
 
 import { getPositionBlock } from '../common/parsing-quotation';
@@ -1356,7 +1357,7 @@ export const Render = (spread, isInit) => {
               rows.push(rowClassIndex + classRow1);
             }
 
-            const { style } = GeneratorStyle('className', { textIndent: 1 });
+            const { style } = GeneratorCellStyle('className', { textIndent: 1 });
             mergeRow(sheet, rows, 0, 1, columnCount);
 
             for (let index = 0; index < rows.length; index++) {
@@ -1494,7 +1495,11 @@ export const Render = (spread, isInit) => {
 
   positionBlock(sheet);
 
-  initShowCostPrice(spread);
+  if (isInit) {
+    initShowCostPrice(spread);
+  } else {
+    ShowCostPrice(spread);
+  }
 };
 
 /**

@@ -336,6 +336,7 @@ export const ShowCostPrice = (spread) => {
   if (spread && template) {
     const costPrice = new CheckCostPrice(spread, template, quotation);
     if (showCost) {
+      costPrice.deleteCol()
       costPrice.render()
       costPrice.drawTitles();
       costPrice.drawTables();

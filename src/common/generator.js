@@ -6,12 +6,12 @@
 import * as GC from '@grapecity/spread-sheets';
 
 /**
- * Style Generator
+ * Style Generator of cell style
  * @param {*} name
  * @param {*} cfg
  * @returns
  */
-export const GeneratorStyle = (name = 'style', cfg = {}) => {
+export const GeneratorCellStyle = (name = 'style', cfg = {}) => {
   const style = new GC.Spread.Sheets.Style();
   const defaultCfg = {
     hAlign: 'left',
@@ -66,5 +66,21 @@ export const GeneratorTableStyle = () => {
   tStyleInfo.backColor = 'white';
   const tableStyle = new GC.Spread.Sheets.Tables.TableTheme();
   tableStyle.headerRowStyle(tStyleInfo);
+  return tableStyle;
+};
+
+export const GeneratorCostTableStyle = () => {
+  const tableStyle = new GC.Spread.Sheets.Tables.TableTheme();
+  const tStyleInfo = new GC.Spread.Sheets.Tables.TableStyle();
+  const lineBorder = GeneratorLineBorder();
+  tStyleInfo.backColor = 'white';
+  tStyleInfo.borderLeft = lineBorder;
+  tStyleInfo.borderTop = lineBorder;
+  tStyleInfo.borderRight = lineBorder;
+  tStyleInfo.borderBottom = lineBorder;
+  tStyleInfo.borderHorizontal = lineBorder;
+  tStyleInfo.borderVertical = lineBorder;
+
+  tableStyle.wholeTableStyle(tStyleInfo)
   return tableStyle;
 };

@@ -4,11 +4,12 @@
  * @Description: check cost price
  */
 import * as GC from '@grapecity/spread-sheets';
-import { GeneratorTableStyle } from './generator';
+import { GeneratorCostTableStyle, GeneratorCellStyle, GeneratorLineBorder } from './generator';
 
 import { isMultiHead } from './parsing-template'
 import { LayoutRowColBlock } from './core';
 import { numberToColumn } from './public'
+import { SetDataSource } from './sheetWorkBook'
 
 const TITLE = [
   { name: '成本单价', bindPath: 'costPrice' },
@@ -20,6 +21,7 @@ const TITLE = [
 const KEYS = ['numberOfDays', 'quantity', 'total']
 
 export class CheckCostPrice {
+  static CellEdit = [];
   constructor(spread, template, quotation) {
     this.spread = spread;
     this.sheet = null;
@@ -29,7 +31,8 @@ export class CheckCostPrice {
     this.HeadStyle = null;
     this.sourceSheetColCount = 0;
     this.headStartIndex = [];
-    this.columnIndex = [];
+    this.ColumnIndex = [];
+    this.TableSubMap = null;
     this.init();
   }
   init() {
@@ -70,7 +73,7 @@ export class CheckCostPrice {
    */
   getColIndex() {
     for (let c = this.sourceSheetColCount; c < this.colCount + this.sourceSheetColCount; c++) {
-      this.columnIndex.push(c);
+      this.ColumnIndex.push(c);
     }
   }
 
@@ -101,8 +104,8 @@ export class CheckCostPrice {
     this.setHeaderStyle();
     if (this.headStartIndex.length) {
       for (let r = 0; r < this.headStartIndex.length; r++) {
-        for (let c = 0; c < this.columnIndex.length; c++) {
-          this.sheet.setValue(this.headStartIndex[r], this.columnIndex[c], TITLE[c].name);
+        for (let c = 0; c < this.ColumnIndex.length; c++) {
+          this.sheet.setValue(this.headStartIndex[r], this.ColumnIndex[c], TITLE[c].name);
         }
       }
     }
@@ -114,8 +117,8 @@ export class CheckCostPrice {
    */
   setHeaderStyle() {
     for (let r = 0; r < this.headStartIndex.length; r++) {
-      for (let c = 0; c < this.columnIndex.length; c++) {
-        this.sheet.setStyle(this.headStartIndex[r], this.columnIndex[c], this.HeadStyle);
+      for (let c = 0; c < this.ColumnIndex.length; c++) {
+        this.sheet.setStyle(this.headStartIndex[r], this.ColumnIndex[c], this.HeadStyle);
       }
     }
   }
@@ -124,7 +127,7 @@ export class CheckCostPrice {
    * Draw a table
    */
   drawTables() {
-    const resourceViews = this.quotation.conferenceHall.resourceViews;
+    SetDataSource(this.sheet, this.quotation)
     const tableColumns = [];
     TITLE.forEach(h => {
       const col = new GC.Spread.Sheets.Tables.TableColumn();
@@ -133,27 +136,30 @@ export class CheckCostPrice {
       tableColumns.push(col);
     });
 
-    const { tables, subTotals } = LayoutRowColBlock();
+    const { tables, subTotals, totalMap } = LayoutRowColBlock(this.spread);
     this.sheet.suspendPaint();
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
         if (Object.hasOwnProperty.call(tables[i], key)) {
-          const table = this.sheet.tables.add(`tableCost_${key}`, tables[i][key].row - 1, this.sourceSheetColCount, tables[i][key].rowCount + 1, this.colCount);
-          // GeneratorTableStyle()
+          const table = this.sheet.tables.add(`tableCost_${key}`, tables[i][key].row - 1, this.sourceSheetColCount, tables[i][key].rowCount + 1, this.colCount, GeneratorCostTableStyle());
+          table.bindColumns(tableColumns);
           table.expandBoundRows(true);
           table.autoGenerateColumns(false);
           table.highlightFirstColumn(false);
           table.highlightLastColumn(false);
           table.showHeader(false);
           table.showFooter(false);
-          table.bind(tableColumns, 'resources', resourceViews[i]);
+          table.bindingPath(`conferenceHall.resourceViewsMap.${key}.resources`);
         }
       }
     }
 
+    this.setStyle(tables, subTotals, totalMap);
     this.enableCellEditable(tables);
     this.setFormula(tables);
-    this.drawSubTotal(tables, subTotals)
+    this.drawSubTotal(tables)
+    this.setSubTotal(subTotals);
+    this.drawTotal(totalMap);
 
     this.sheet.resumePaint();
   }
@@ -186,15 +192,15 @@ export class CheckCostPrice {
             if (colMap.numberOfDays) {
               costTotalPrice.push(`${colMap.numberOfDays}${r + 1}`)
             }
-            costTotalPrice.push(`${numberToColumn(this.columnIndex[0] + 1)}${r + 1}`);
+            costTotalPrice.push(`${numberToColumn(this.ColumnIndex[0] + 1)}${r + 1}`);
 
             const costTotalPriceFormula = costTotalPrice.join('*');
-            const grossProfitFormula = `${colMap.total}${r + 1} - ${numberToColumn(this.columnIndex[1] + 1)}${r + 1}`;
-            const grossMarginFormula = `${numberToColumn(this.columnIndex[2] + 1)}${r + 1} / ${colMap.total}${r + 1}`;
+            const grossProfitFormula = `${colMap.total}${r + 1} - ${numberToColumn(this.ColumnIndex[1] + 1)}${r + 1}`;
+            const grossMarginFormula = `${numberToColumn(this.ColumnIndex[2] + 1)}${r + 1} / ${colMap.total}${r + 1}`;
 
-            this.sheet.setFormula(r, this.columnIndex[1], `IFERROR(${costTotalPriceFormula},"")`);
-            this.sheet.setFormula(r, this.columnIndex[2], `IFERROR(${grossProfitFormula},"")`);
-            this.sheet.setFormula(r, this.columnIndex[3], `IFERROR(${grossMarginFormula},"")`);
+            this.sheet.setFormula(r, this.ColumnIndex[1], `IFERROR(${costTotalPriceFormula},"")`);
+            this.sheet.setFormula(r, this.ColumnIndex[2], `IFERROR(${grossProfitFormula},"")`);
+            this.sheet.setFormula(r, this.ColumnIndex[3], `IFERROR(${grossMarginFormula},"")`);
           }
         }
       }
@@ -204,9 +210,8 @@ export class CheckCostPrice {
   /**
    * Draw subtotals
    * @param {*} tables 
-   * @param {*} subTotals 
    */
-  drawSubTotal(tables, subTotals) {
+  drawSubTotal(tables) {
     const tableSubMap = {};
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
@@ -218,10 +223,10 @@ export class CheckCostPrice {
             rows.push(r);
           }
 
-          for (let c = 0; c < this.columnIndex.length; c++) {
+          for (let c = 0; c < this.ColumnIndex.length; c++) {
             const formulaSum = [];
             for (let r = 0; r < rows.length; r++) {
-              formulaSum.push(`${numberToColumn(this.columnIndex[c] + 1)}${rows[r] + 1}`)
+              formulaSum.push(`${numberToColumn(this.ColumnIndex[c] + 1)}${rows[r] + 1}`)
             }
             sub.push(formulaSum.join('+'))
           }
@@ -230,41 +235,67 @@ export class CheckCostPrice {
         }
       }
     }
+    this.TableSubMap = tableSubMap;
+    console.log(tableSubMap, 'tableSubMap');
+  }
 
+
+  /**
+   * Set subtotal
+   * @param {*} subTotals 
+   */
+  setSubTotal(subTotals) {
     for (let j = 0; j < subTotals.length; j++) {
       for (const key in subTotals[j]) {
         if (Object.hasOwnProperty.call(subTotals[j], key)) {
-          for (let c = 0; c < this.columnIndex.length; c++) {
-            this.sheet.setFormula(subTotals[j][key].row, this.columnIndex[c], `IFERROR(${tableSubMap[key][c]},"")`);
+          for (let c = 0; c < this.ColumnIndex.length; c++) {
+            this.sheet.setFormula(subTotals[j][key].row, this.ColumnIndex[c], `IFERROR(${this.TableSubMap[key][c]},"")`);
           }
         }
       }
     }
   }
 
-  // 绘制总计
-  drawTotal() {
 
+  /**
+   * Draw total
+   * @param {*} totalMap 
+   */
+  drawTotal(totalMap) {
+    if (!totalMap || !this.TableSubMap) return;
 
+    const formulas = [[], [], [], []];
+
+    for (const key in this.TableSubMap) {
+      if (Object.hasOwnProperty.call(this.TableSubMap, key)) {
+        this.TableSubMap[key].forEach((value, index) => {
+          formulas[index].push(value);
+        });
+      }
+    }
+
+    formulas.forEach((formula, index) => {
+      const formulaStr = formula.join('+');
+      this.sheet.setFormula(totalMap.row, this.ColumnIndex[index], `IFERROR(${formulaStr},"")`);
+    });
   }
 
   /**
    * Turn on the specified cell to edit
    */
   enableCellEditable(tables) {
+    const cells = [];
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
         if (Object.hasOwnProperty.call(tables[i], key)) {
           for (let r = tables[i][key].row; r < tables[i][key].row + tables[i][key].rowCount; r++) {
-            this.sheet.getRange(r, this.columnIndex[0], 1, 1).locked(false);
-
-            // this.sheet.getRange(r, this.columnIndex[1], 1, 1).locked(false);
-            // this.sheet.getRange(r, this.columnIndex[2], 1, 1).locked(false);
-            // this.sheet.getRange(r, this.columnIndex[3], 1, 1).locked(false);
+            cells.push({ row: r, col: this.ColumnIndex[0] });
+            this.sheet.getRange(r, this.ColumnIndex[0], 1, 1).locked(false);
           }
         }
       }
     }
+    CheckCostPrice.CellEdit = cells;
   }
 
   /**
@@ -280,6 +311,46 @@ export class CheckCostPrice {
       console.error(`Missing keys: ${missingKeys.join(', ')}`);
       return false;
     }
+  }
+
+  /**
+   * Style the body
+   * @param {*} tables 
+   * @param {*} subTotals 
+   * @param {*} totalMap 
+   */
+  setStyle(tables, subTotals, totalMap) {
+    const lineBorder = GeneratorLineBorder();
+    const { style } = GeneratorCellStyle('costStyle', { hAlign: 1, vAlign: 1, borderBottom: lineBorder, borderLeft: lineBorder, borderRight: lineBorder, borderTop: lineBorder, });
+    for (let i = 0; i < tables.length; i++) {
+      for (const key in tables[i]) {
+        if (Object.hasOwnProperty.call(tables[i], key)) {
+          this.sheet.getRange(tables[i][key].row, this.ColumnIndex[0], tables[i][key].rowCount, this.colCount).setStyle(style)
+        }
+      }
+    }
+
+    for (let i = 0; i < subTotals.length; i++) {
+      for (const key in subTotals[i]) {
+        if (Object.hasOwnProperty.call(subTotals[i], key)) {
+          this.sheet.getRange(subTotals[i][key].row, this.ColumnIndex[0], 1, this.colCount).setStyle(style)
+        }
+      }
+
+    }
+
+    if (totalMap) {
+      this.sheet.getRange(totalMap.row, this.ColumnIndex[0], 1, this.colCount).setStyle(style)
+    }
+  }
+
+  /**
+   * Get editable cells
+   * @param {*} tables 
+   * @returns 
+   */
+  getCellEditable() {
+    return CheckCostPrice.CellEdit;
   }
 }
 
