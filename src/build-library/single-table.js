@@ -62,6 +62,9 @@ import {
   initShowCostPrice
 } from '../common/single-table';
 
+import { LayoutRowColBlock } from '../common/core';
+import { CheckCostPrice } from '../common/cost-price';
+
 import { UpdateSort } from './public';
 
 const NzhCN = require('nzh/cn');
@@ -991,6 +994,13 @@ export const insertField = (spread, fileName, value) => {
       value: !!((value === 0 || value))
     });
   }
+
+  const layout = new LayoutRowColBlock(spread);
+  const { Tables, TotalMap } = layout.getLayout();
+
+  const costPrice = new CheckCostPrice(spread, template, store.getters['quotationModule/GetterQuotationInit']);
+  costPrice.updateTotalPosition(Tables, TotalMap)
+
 };
 
 /**
