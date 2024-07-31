@@ -14,8 +14,10 @@ import { regChineseCharacter } from 'utils/regular-expression';
 import API from 'api';
 
 import { CreateTable } from '../common/sheetWorkBook';
-import { GeneratorStyle, GeneratorLineBorder } from '../common/generator';
+import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { TOTAL_COMBINED_MAP, ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
+
+import { numberToColumn } from '../common/public'
 
 import IdentifierTemplate from '../common/identifier-template'
 
@@ -40,7 +42,6 @@ import {
   rowComputedFieldSort,
   plusColumnTotalSum,
   columnsTotal,
-  numberToColumn,
   mixedDescriptionFields,
   tableHeader,
   columnComputedValue,
@@ -981,8 +982,8 @@ const RenderHeaderClass = (spread, quotation, columnTotal) => {
 
   sheet.addRows(top.mixCount, resourceViews.length);
 
-  const { style } = GeneratorStyle('classNameHeader', { fontWeight: 'normal', textIndent: 1 });
-  const classNameHeaderCenter = GeneratorStyle('classNameHeaderCenter', { fontWeight: 'normal', textIndent: 0, hAlign: 1, borderTop: GeneratorLineBorder() });
+  const { style } = GeneratorCellStyle('classNameHeader', { fontWeight: 'normal', textIndent: 1 });
+  const classNameHeaderCenter = GeneratorCellStyle('classNameHeaderCenter', { fontWeight: 'normal', textIndent: 0, hAlign: 1, borderTop: GeneratorLineBorder() });
 
   let columnHeader = null;
   for (const key in initTotal.bindPath) {
@@ -1305,7 +1306,7 @@ const renderSheet = (spread) => {
               rows.push(rowClassIndex + classRow1);
             }
 
-            const { style } = GeneratorStyle('className', { textIndent: 1 });
+            const { style } = GeneratorCellStyle('className', { textIndent: 1 });
             mergeRow(sheet, rows, 0, 1, columnCount);
 
             for (let index = 0; index < rows.length; index++) {

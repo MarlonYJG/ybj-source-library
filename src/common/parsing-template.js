@@ -11,6 +11,14 @@ import { updateFormula } from './public'
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
 
 /**
+ * Get the template
+ * @returns 
+ */
+const getTemplate = () => {
+  return store.getters['quotationModule/GetterQuotationWorkBook'];
+}
+
+/**
  * Insert the start of the column of the table
  */
 export const PubGetTableStartColumnIndex = () => {
@@ -21,7 +29,7 @@ export const PubGetTableStartColumnIndex = () => {
  * @returns
  */
 export const PubGetTableColumnCount = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   return template.cloudSheet.center.columnCount;
 };
 
@@ -30,7 +38,7 @@ export const PubGetTableColumnCount = () => {
  * @returns 
  */
 export const getTemplateTopRowCol = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   if (template.cloudSheet.top) {
     return {
       rowCount: template.cloudSheet.top.rowCount,
@@ -47,7 +55,7 @@ export const getTemplateTopRowCol = () => {
  * Template render markers
  */
 export const templateRenderFlag = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   const { mixRender = false, classType = null, isHaveChild = false } = template;
 
   return {
@@ -232,7 +240,7 @@ export const mergeColumn = (sheet, field, row, rowCount, columnCount = 1, column
  */
 export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMove = false, allowResize = true, isLocked = true) => {
   const sheet = spread.getActiveSheet();
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   let x = 2;
   let y = 2;
   let curWidth = 100;
@@ -260,7 +268,7 @@ export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMo
  * @param {*} total
  */
 export const showTotal = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   const total = template.cloudSheet.total;
   let show = true;
   if (total) {
@@ -287,7 +295,7 @@ export const showTotal = () => {
  */
 export const showSubTotal = () => {
   let show = true;
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   const subTotal = template.cloudSheet.center.total;
   if (showTotal()) {
     if (subTotal) {
@@ -358,7 +366,7 @@ export const getFormulaFieldRowCol = (field) => {
  * @returns 
  */
 export const getTemplateClassType = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   if (template.templateClassIdentifier) {
     if (Object.keys(DEFINE_IDENTIFIER_MAP).includes(template.templateClassIdentifier)) {
       return DEFINE_IDENTIFIER_MAP[template.templateClassIdentifier].identifier;
@@ -376,7 +384,7 @@ export const getTemplateClassType = () => {
  * @returns 
  */
 export const isMultiHead = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   const regex = /title@/;
   if (template.templateClassIdentifier && regex.test(template.templateClassIdentifier)) {
     return true;
@@ -389,7 +397,7 @@ export const isMultiHead = () => {
  * @returns 
  */
 export const getProjectNameField = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getTemplate();
   const projectNameField = template.cloudSheet.top.bindPath.quotation.name;
   return projectNameField;
 }

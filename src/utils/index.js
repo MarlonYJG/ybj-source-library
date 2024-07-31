@@ -265,3 +265,15 @@ export const flattenArray = (nestedArray, field) => {
   traverse(nestedArray);
   return result;
 };
+
+/**
+ * Pass in an object map and sort it according to the specified field row.
+ * @param {*} map 
+ * @returns 
+ */
+export const sortObjectByRow = (map) => {
+  const entries = Object.entries(map);
+  entries.sort((a, b) => a[1].row - b[1].row);
+  const sortedArray = entries.map(entry => ({ [entry[0]]: entry[1] }));
+  return sortedArray;
+}
