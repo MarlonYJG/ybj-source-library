@@ -8,10 +8,10 @@ import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, getProjectCfg, getProjectNumberRuler, translateSheet } from './common/single-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
-import { formatterPrice } from './common/parsing-quotation';
+import { formatterPrice, getShowCostPrice } from './common/parsing-quotation';
 import { getTemplateClassType, getProjectNameField } from './common/parsing-template';
 import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
-import { SetDataSource,SpreadLocked } from './common/sheetWorkBook';
+import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
 
 import { spreadExportExcel, spreadExportPDF, spreadStyleLocked } from './parsing-library/public';
 import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal } from './parsing-library/single-table';
@@ -42,6 +42,7 @@ export {
   MENU_DELETE,
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
+  getShowCostPrice,
   GetAllTableRange,
   ShowCostPrice,
   setProjectName,

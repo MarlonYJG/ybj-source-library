@@ -1,7 +1,7 @@
 /*
  * @Author: Marlon
  * @Date: 2024-05-16 14:20:35
- * @Description:单表-build
+ * @Description:single-build
  */
 import _ from 'lodash';
 import * as GC from '@grapecity/spread-sheets';
@@ -10,18 +10,23 @@ import { isNumber } from 'utils/index';
 import { FormatDate } from 'utils/date';
 import { regChineseCharacter } from 'utils/regular-expression';
 
-import { UPDATE_QUOTATION_PATH, DELETE_QUOTATION_PATH, UPDATE_HEAD_TOTAL, SET_WORK_SHEET_QUOTATION, SET_SHEET_LEAVEL_POSITION, IGNORE_EVENT } from 'store/quotation/mutation-types';
+import {
+  UPDATE_QUOTATION_PATH, DELETE_QUOTATION_PATH, UPDATE_HEAD_TOTAL,
+  SET_WORK_SHEET_QUOTATION, SET_SHEET_LEAVEL_POSITION, IGNORE_EVENT
+} from 'store/quotation/mutation-types';
 
 import { NEW_OLD_FIELD_MAP } from './config';
 
 import { commandRegister, onOpenMenu } from './contextMenu';
+import { ShowCostPrice } from './head';
 
 import { CreateTable } from '../common/sheetWorkBook';
 import IdentifierTemplate from '../common/identifier-template';
 
 import { CombinationTypeBuild } from '../common/combination-type';
 import { ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, TOTAL_COMBINED_MAP } from '../common/constant';
-import { GeneratorStyle, GeneratorLineBorder } from '../common/generator';
+import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
+import { numberToColumn } from '../common/public'
 
 import { getPositionBlock } from '../common/parsing-quotation';
 import {
@@ -46,7 +51,6 @@ import {
   GenerateFieldsRow,
   classificationAlgorithms,
   columnsTotal,
-  numberToColumn,
   columnTotalSumFormula,
   mixedDescriptionFields,
   PubGetTableRowCount,
@@ -54,8 +58,12 @@ import {
   columnComputedValue,
   // setCellFormatter,
   SetComputedSubTotal,
-  renderSheetImage
+  renderSheetImage,
+  initShowCostPrice
 } from '../common/single-table';
+
+import { LayoutRowColBlock } from '../common/core';
+import { CheckCostPrice } from '../common/cost-price';
 
 import { UpdateSort } from './public';
 
@@ -986,6 +994,13 @@ export const insertField = (spread, fileName, value) => {
       value: !!((value === 0 || value))
     });
   }
+
+  const layout = new LayoutRowColBlock(spread);
+  const { Tables, TotalMap } = layout.getLayout();
+
+  const costPrice = new CheckCostPrice(spread, template, store.getters['quotationModule/GetterQuotationInit']);
+  costPrice.updateTotalPosition(Tables, TotalMap)
+
 };
 
 /**
@@ -1352,7 +1367,7 @@ export const Render = (spread, isInit) => {
               rows.push(rowClassIndex + classRow1);
             }
 
-            const { style } = GeneratorStyle('className', { textIndent: 1 });
+            const { style } = GeneratorCellStyle('className', { textIndent: 1 });
             mergeRow(sheet, rows, 0, 1, columnCount);
 
             for (let index = 0; index < rows.length; index++) {
@@ -1489,6 +1504,12 @@ export const Render = (spread, isInit) => {
   }
 
   positionBlock(sheet);
+
+  if (isInit) {
+    initShowCostPrice(spread);
+  } else {
+    ShowCostPrice(spread);
+  }
 };
 
 /**

@@ -5,6 +5,21 @@
  */
 
 /**
+ *Index letter algorithm
+ * @param {*} number
+ * @returns
+ */
+export const numberToColumn = (number) => {
+  let result = '';
+  while (number > 0) {
+    const remainder = (number - 1) % 26;
+    result = String.fromCharCode(65 + remainder) + result;
+    number = Math.floor((number - 1) / 26);
+  }
+  return result;
+};
+
+/**
  * Alphabetical index algorithm
  * @param {*} column
  * @returns
