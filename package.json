@@ -2,7 +2,7 @@
   "name": "ybj-source-library",
   "version": "1.1.1",
   "description": "A library for generating and parsing quotations using spreadjs15",
-  "main": "src/index.js",
+  "main": "dist/index.min.js",
   "scripts": {
     "lint": "eslint .",
     "build": "node build.js",
@@ -10,7 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "files": [
-    "src",
     "dist",
     "README.md",
     "LICENSE",
@@ -50,6 +49,7 @@
   "homepage": "https://github.com/MarlonYJG/ybj-source-library#readme",
   "dependencies": {
     "colors": "^1.4.0",
+    "dotenv": "^16.4.5",
     "node-rsync": "^1.0.3",
     "uglify-js": "^3.18.0"
   }
