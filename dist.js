@@ -8,11 +8,13 @@ const path = require('path');
 const { exec } = require('child_process');
 const colors = require('colors')
 
+const files = ['dist', 'README.md', 'LICENSE', 'package.json'];
 const packageJsonPath = path.resolve(__dirname, 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 packageJson.main = 'dist/index.min.js';
+packageJson.files = files;
 fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-console.log(colors.green('Successfully updated "main" field to dist/index.min.js.'));
+console.log(colors.green('Successfully updated package.json'));
 
 console.log(colors.blue('Executing npm run build...'));
 const buildProcess = exec('npm run build');
