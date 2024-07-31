@@ -34,46 +34,20 @@ export class CheckCostPrice {
     this.sourceSheetColCount = 0;
     this.headStartIndex = [];
     this.TableSubMap = null;
-    this.init();
+    this._init();
   }
-  init() {
+
+  _init() {
     const sheet = this.spread.getActiveSheet();
     this.sheet = sheet;
     this.sourceSheetColCount = this.template.sheets[sheet.name()].columnCount;
-    this.getColIndex();
-  }
-
-  /**
-   * Delete the added columns
-   */
-  deleteCol() {
-    this.sheet.suspendPaint();
-    const colCount = this.sheet.getColumnCount();
-    if (this.sourceSheetColCount < colCount) {
-      this.sheet.deleteColumns(colCount - this.colCount, this.colCount);
-    }
-    this.sheet.resumePaint()
-  }
-
-  /**
-   * Initialize the rendering
-   */
-  render() {
-    this.check();
-    const startColIndex = this.sheet.getColumnCount();
-    this.sheet.suspendPaint()
-    this.sheet.addColumns(startColIndex, this.colCount);
-    for (let c = startColIndex; c < startColIndex + this.colCount; c++) {
-      this.sheet.setColumnWidth(c, 100);
-    }
-    this.sheet.resumePaint()
-    this.getHeaderStyle();
+    this._getColIndex();
   }
 
   /**
    * Get the column index
    */
-  getColIndex() {
+  _getColIndex() {
     const columnIndex = [];
     for (let c = this.sourceSheetColCount; c < this.colCount + this.sourceSheetColCount; c++) {
       columnIndex.push(c);
@@ -84,7 +58,7 @@ export class CheckCostPrice {
   /**
    * Get the header style
    */
-  getHeaderStyle() {
+  _getHeaderStyle() {
     if (!isMultiHead()) {
       const row = this.template.cloudSheet.top.rowCount - 1;
       const col = 1;
@@ -98,29 +72,37 @@ export class CheckCostPrice {
     }
   }
 
-  /**--------------------- */
-
   /**
    * Draw the header
+   * @param {*} classType 
    */
-  drawTitles() {
+  _drawTitles(classType) {
     const columnIndex = CheckCostPrice.ColumnIndex;
     this.sheet.suspendPaint()
-    this.setHeaderStyle();
-    if (this.headStartIndex.length) {
-      for (let r = 0; r < this.headStartIndex.length; r++) {
-        for (let c = 0; c < columnIndex.length; c++) {
-          this.sheet.setValue(this.headStartIndex[r], columnIndex[c], TITLE[c].name);
+
+    if (classType !== 'noLevel') {
+      if (classType === 'Level_1_row') {
+        this._setHeaderStyle();
+        if (this.headStartIndex.length) {
+          for (let r = 0; r < this.headStartIndex.length; r++) {
+            for (let c = 0; c < columnIndex.length; c++) {
+              this.sheet.setValue(this.headStartIndex[r], columnIndex[c], TITLE[c].name);
+            }
+          }
         }
+
+      } else {
+        // TODO 二级分类
       }
     }
+
     this.sheet.resumePaint()
   }
 
   /**
    * Style the headers
    */
-  setHeaderStyle() {
+  _setHeaderStyle() {
     const columnIndex = CheckCostPrice.ColumnIndex;
     for (let r = 0; r < this.headStartIndex.length; r++) {
       for (let c = 0; c < columnIndex.length; c++) {
@@ -130,39 +112,61 @@ export class CheckCostPrice {
   }
 
   /**
-   * Draw a table
+   * Sets the header style of the No Category type
+   * @param {*} tables 
    */
-  drawTables() {
-    SetDataSource(this.sheet, this.quotation)
-
-    const layout = new LayoutRowColBlock(this.spread);
-    const { Tables, SubTotals, TotalMap, Levels } = layout.getLayout();
-    console.log(Tables, SubTotals, TotalMap);
-
-    const classType = layout.getClassType();
-
-    if (classType === 'noLevel') {
-      // 
-    } else if (classType === 'Level_1_row') {
-      this.sheet.suspendPaint();
-      this.createTable(Tables, -1, 1)
-      this.setStyle(Tables, SubTotals, TotalMap, Levels);
-      this.enableCellEditable(Tables);
-      this.setFormula(Tables);
-      this.drawSubTotal(Tables)
-      this.setSubTotal(SubTotals);
-      this.drawTotal(TotalMap);
-
-      this.sheet.resumePaint();
+  _setHeaderStyleNoLevel(tables) {
+    let row = null;
+    const columnIndex = CheckCostPrice.ColumnIndex;
+    for (const key in tables[0]) {
+      if (Object.hasOwnProperty.call(tables[0], key)) {
+        row = tables[0][key].row - 1;
+        const table = this.sheet.tables.findByName(`tableCost_${key}`);
+        if (table) {
+          table.showHeader(true);
+          for (let i = 0; i < columnIndex.length; i++) {
+            table.filterButtonVisible(i, false);
+          }
+        }
+      }
     }
+    this.sheet.getRange(row, columnIndex[0], 1, this.colCount).setStyle(this.HeadStyle);
   }
 
+  /**
+   * Draw a table
+   * @param {*} classType 
+   * @param {*} Tables 
+   * @param {*} SubTotals 
+   * @param {*} TotalMap 
+   * @param {*} Levels 
+   */
+  _drawTables(classType, Tables, SubTotals, TotalMap, Levels) {
+    SetDataSource(this.sheet, this.quotation)
+
+    this.sheet.suspendPaint();
+
+    this._createTable(Tables, -1, 1);
+    this._setStyle(Tables, SubTotals, TotalMap, Levels);
+    this._enableCellEditable(Tables);
+    this._setFormula(Tables);
+    this._drawSubTotal(Tables)
+    this._drawTotal(TotalMap);
+
+    if (classType === 'noLevel') {
+      this._setHeaderStyleNoLevel(Tables);
+    } else if (classType === 'Level_1_row') {
+      this._setSubTotal(SubTotals);
+    }
+
+    this.sheet.resumePaint();
+  }
 
   /**
    * Set the calculation formula
    * @param {*} tables 
    */
-  setFormula(tables) {
+  _setFormula(tables) {
     const columnIndex = CheckCostPrice.ColumnIndex;
     const title = this.template.cloudSheet.center.equipment.bindPath;
     const colMap = {};
@@ -205,7 +209,7 @@ export class CheckCostPrice {
    * Draw subtotals
    * @param {*} tables 
    */
-  drawSubTotal(tables) {
+  _drawSubTotal(tables) {
     const columnIndex = CheckCostPrice.ColumnIndex;
     const tableSubMap = {};
     for (let i = 0; i < tables.length; i++) {
@@ -233,12 +237,11 @@ export class CheckCostPrice {
     this.TableSubMap = tableSubMap;
   }
 
-
   /**
    * Set subtotal
    * @param {*} subTotals 
    */
-  setSubTotal(subTotals) {
+  _setSubTotal(subTotals) {
     if (subTotals) {
       const columnIndex = CheckCostPrice.ColumnIndex;
       for (let j = 0; j < subTotals.length; j++) {
@@ -258,7 +261,7 @@ export class CheckCostPrice {
    * Draw total
    * @param {*} totalMap 
    */
-  drawTotal(totalMap) {
+  _drawTotal(totalMap) {
     if (!totalMap || !this.TableSubMap) return;
 
     const columnIndex = CheckCostPrice.ColumnIndex;
@@ -279,20 +282,9 @@ export class CheckCostPrice {
   }
 
   /**
-   * Update the location of the total
-   * @param {*} tables 
-   * @param {*} totalMap 
-   */
-  updateTotalPosition(tables, totalMap) {
-    this.setTotalStyle(totalMap);
-    this.drawSubTotal(tables)
-    this.drawTotal(totalMap);
-  }
-
-  /**
    * Turn on the specified cell to edit
    */
-  enableCellEditable(tables) {
+  _enableCellEditable(tables) {
     const cells = [];
     const columnIndex = CheckCostPrice.ColumnIndex;
     for (let i = 0; i < tables.length; i++) {
@@ -312,13 +304,13 @@ export class CheckCostPrice {
    * Verify that the necessary conditions for calculating the cost price are met
    * @returns 
    */
-  check() {
+  _check() {
     const title = this.template.cloudSheet.center.equipment.bindPath;
     const missingKeys = KEYS.filter(key => !Object.prototype.hasOwnProperty.call(title, key));
     if (missingKeys.length === 0) {
       return true;
     } else {
-      console.error(`Missing keys: ${missingKeys.join(', ')}`);
+      console.warn(`Missing keys: ${missingKeys.join(', ')}`);
       return false;
     }
   }
@@ -330,12 +322,12 @@ export class CheckCostPrice {
    * @param {*} totalMap 
    * @param {*} Levels 
    */
-  setStyle(tables, subTotals, totalMap, Levels) {
+  _setStyle(tables, subTotals, totalMap, Levels) {
     const columnIndex = CheckCostPrice.ColumnIndex;
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
         if (Object.hasOwnProperty.call(tables[i], key)) {
-          this.sheet.getRange(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount).setStyle(this.style())
+          this.sheet.getRange(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount).setStyle(this._style())
         }
       }
     }
@@ -344,7 +336,7 @@ export class CheckCostPrice {
       for (let i = 0; i < subTotals.length; i++) {
         for (const key in subTotals[i]) {
           if (Object.hasOwnProperty.call(subTotals[i], key)) {
-            this.sheet.getRange(subTotals[i][key].row, columnIndex[0], 1, this.colCount).setStyle(this.style())
+            this.sheet.getRange(subTotals[i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
           }
         }
       }
@@ -355,7 +347,7 @@ export class CheckCostPrice {
         for (let i = 0; i < Levels[0].length; i++) {
           for (const key in Levels[0][i]) {
             if (Object.hasOwnProperty.call(Levels[0][i], key)) {
-              this.sheet.getRange(Levels[0][i][key].row, columnIndex[0], 1, this.colCount).setStyle(this.style())
+              this.sheet.getRange(Levels[0][i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
             }
           }
 
@@ -365,17 +357,17 @@ export class CheckCostPrice {
       }
     }
 
-    this.setTotalStyle(totalMap);
+    this._setTotalStyle(totalMap);
   }
 
   /**
    * Set the grand total style
    * @param {*} totalMap 
    */
-  setTotalStyle(totalMap) {
+  _setTotalStyle(totalMap) {
     if (totalMap) {
       const columnIndex = CheckCostPrice.ColumnIndex;
-      this.sheet.getRange(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount).setStyle(this.style());
+      this.sheet.getRange(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount).setStyle(this._style());
     }
   }
 
@@ -383,7 +375,7 @@ export class CheckCostPrice {
    * Generate style
    * @returns 
    */
-  style() {
+  _style() {
     const lineBorder = GeneratorLineBorder();
     const { style } = GeneratorCellStyle('costStyle', { hAlign: 1, vAlign: 1, borderBottom: lineBorder, borderLeft: lineBorder, borderRight: lineBorder, borderTop: lineBorder, });
     return style;
@@ -395,7 +387,7 @@ export class CheckCostPrice {
    * @param {*} r 
    * @param {*} rc 
    */
-  createTable(tables, r, rc) {
+  _createTable(tables, r, rc) {
     const tableColumns = [];
     TITLE.forEach(h => {
       const col = new GC.Spread.Sheets.Tables.TableColumn();
@@ -420,6 +412,53 @@ export class CheckCostPrice {
         }
       }
     }
+  }
+
+  /**
+  * Delete the added columns
+  */
+  deleteCol() {
+    this.sheet.suspendPaint();
+    const colCount = this.sheet.getColumnCount();
+    if (this.sourceSheetColCount < colCount) {
+      this.sheet.deleteColumns(colCount - this.colCount, this.colCount);
+    }
+    this.sheet.resumePaint()
+  }
+
+  /**
+   * Initialize the rendering
+   */
+  render() {
+    this._check();
+    const startColIndex = this.sheet.getColumnCount();
+    this.sheet.suspendPaint()
+    this.sheet.addColumns(startColIndex, this.colCount);
+    for (let c = startColIndex; c < startColIndex + this.colCount; c++) {
+      this.sheet.setColumnWidth(c, 100);
+    }
+    this.sheet.resumePaint()
+    this._getHeaderStyle();
+
+    const layout = new LayoutRowColBlock(this.spread);
+    const { Tables, SubTotals, TotalMap, Levels } = layout.getLayout();
+    const classType = layout.getClassType();
+
+    console.log(Tables, SubTotals, TotalMap);
+
+    this._drawTitles(classType);
+    this._drawTables(classType, Tables, SubTotals, TotalMap, Levels);
+  }
+
+  /**
+ * Update the location of the total
+ * @param {*} tables 
+ * @param {*} totalMap 
+ */
+  updateTotalPosition(tables, totalMap) {
+    this._setTotalStyle(totalMap);
+    this._drawSubTotal(tables)
+    this._drawTotal(totalMap);
   }
 
   /**

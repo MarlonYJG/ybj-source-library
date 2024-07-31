@@ -951,10 +951,10 @@ export const getTemplateClassType = () => {
       if (resourceViews.length === 1 && resourceViews[0].name === '无分类') {
         return 'noLevel'
       } else {
-        return 'Level_1_row'// default
+        return 'Level_1_row'
       }
     } else {
-      console.error('模板分类标识符不存在,无法确定模板分类类型【模板错误】');
+      return 'Level_1_row'
     }
   }
 

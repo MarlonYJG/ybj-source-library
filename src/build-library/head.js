@@ -338,8 +338,6 @@ export const ShowCostPrice = (spread) => {
     if (showCost) {
       costPrice.deleteCol()
       costPrice.render()
-      costPrice.drawTitles();
-      costPrice.drawTables();
     } else {
       costPrice.deleteCol()
     }

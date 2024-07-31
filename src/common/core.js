@@ -42,19 +42,19 @@ export class LayoutRowColBlock {
 
   constructor(spread) {
     this.Spread = spread;
-    this.init();
+    this._init();
   }
 
-  init() {
+  _init() {
     const classType = getTemplateClassType();
     LayoutRowColBlock.ClassType = classType;
-    this.initLayout(classType)
+    this._initLayout(classType)
   }
   /**
    * Get the layout
    * @param {*} classType 
    */
-  initLayout(classType) {
+  _initLayout(classType) {
     if (classType) {
       switch (classType) {
         case 'noLevel':
