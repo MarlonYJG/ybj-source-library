@@ -48,7 +48,8 @@ import {
   setCellFormatter,
   SetComputedSubTotal,
   renderSheetImage,
-  translateSheet
+  translateSheet,
+  initShowCostPrice
 } from '../common/single-table';
 
 import {
@@ -1449,4 +1450,5 @@ export const Render = (spread) => {
   renderFinishedAddImage(spread, template, quotation);
   // setLastColumnWidth(spread, template);
   translateSheet(spread);
+  initShowCostPrice(spread);
 };

@@ -140,15 +140,16 @@ export class CheckCostPrice {
    * @param {*} SubTotals 
    * @param {*} TotalMap 
    * @param {*} Levels 
+   * @param {*} locked 
    */
-  _drawTables(classType, Tables, SubTotals, TotalMap, Levels) {
+  _drawTables(classType, Tables, SubTotals, TotalMap, Levels, locked) {
     SetDataSource(this.sheet, this.quotation)
 
     this.sheet.suspendPaint();
 
     this._createTable(Tables, -1, 1);
     this._setStyle(Tables, SubTotals, TotalMap, Levels);
-    this._enableCellEditable(Tables);
+    !locked && this._enableCellEditable(Tables);
     this._setFormula(Tables);
     this._drawSubTotal(Tables)
     this._drawTotal(TotalMap);
@@ -429,7 +430,7 @@ export class CheckCostPrice {
   /**
    * Initialize the rendering
    */
-  render() {
+  render(locked) {
     this._check();
     const startColIndex = this.sheet.getColumnCount();
     this.sheet.suspendPaint()
@@ -447,7 +448,7 @@ export class CheckCostPrice {
     console.log(Tables, SubTotals, TotalMap);
 
     this._drawTitles(classType);
-    this._drawTables(classType, Tables, SubTotals, TotalMap, Levels);
+    this._drawTables(classType, Tables, SubTotals, TotalMap, Levels, locked);
   }
 
   /**

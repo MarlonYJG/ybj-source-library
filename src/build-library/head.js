@@ -327,7 +327,7 @@ export const FrozenHead = (spread) => {
 /**
  * Show the cost price
  */
-export const ShowCostPrice = (spread) => {
+export const ShowCostPrice = (spread, locked = false) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
   const showCost = store.getters['quotationModule/GetterShowCostPrice'];
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
@@ -337,7 +337,7 @@ export const ShowCostPrice = (spread) => {
     const costPrice = new CheckCostPrice(spread, template, quotation);
     if (showCost) {
       costPrice.deleteCol()
-      costPrice.render()
+      costPrice.render(locked)
     } else {
       costPrice.deleteCol()
     }
