@@ -6,9 +6,9 @@
 import _ from 'lodash';
 import * as GC from '@grapecity/spread-sheets';
 import store from 'store';
-import { isNumber } from 'utils/index';
-import { FormatDate } from 'utils/date';
-import { regChineseCharacter } from 'utils/regular-expression';
+import { isNumber } from '../utils/index';
+import { FormatDate } from '../utils/index';
+import { regChineseCharacter } from '../utils/index';
 
 import {
   UPDATE_QUOTATION_PATH, DELETE_QUOTATION_PATH, UPDATE_HEAD_TOTAL,

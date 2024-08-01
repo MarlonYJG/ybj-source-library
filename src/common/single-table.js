@@ -7,7 +7,7 @@ import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
 import API from 'api';
-import { ResDatas } from 'utils/res-format.js';
+import { ResDatas } from '../utils/index';
 import { GetUserCompany, imgUrlToBase64 } from 'utils';
 import store from 'store';
 
@@ -951,10 +951,10 @@ export const getTemplateClassType = () => {
       if (resourceViews.length === 1 && resourceViews[0].name === '无分类') {
         return 'noLevel'
       } else {
-        return 'Level_1_row'// default
+        return 'Level_1_row'
       }
     } else {
-      console.error('模板分类标识符不存在,无法确定模板分类类型【模板错误】');
+      return 'Level_1_row'
     }
   }
 

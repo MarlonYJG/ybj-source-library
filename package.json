@@ -50,6 +50,7 @@
   "homepage": "https://github.com/MarlonYJG/ybj-source-library#readme",
   "dependencies": {
     "colors": "^1.4.0",
+    "dotenv": "^16.4.5",
     "node-rsync": "^1.0.3",
     "uglify-js": "^3.18.0"
   }
