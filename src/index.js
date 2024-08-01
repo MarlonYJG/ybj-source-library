@@ -3,6 +3,7 @@
  * @Date: 2024-06-28 10:13:41
  * @Description: 
  */
+import Template from './template/index';
 
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, getProjectCfg, getProjectNumberRuler, translateSheet } from './common/single-table';
@@ -42,6 +43,7 @@ export {
   MENU_DELETE,
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
+  Template,
   getShowCostPrice,
   GetAllTableRange,
   ShowCostPrice,
