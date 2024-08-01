@@ -1,8 +1,12 @@
 <p align="center"><a href="https://www.yunbaojia.cn/#/login" target="_blank"><img width="100"src="https://www.yunbaojia.cn/assets/img/yunbaojia@80_23.svg"></a></p>
 
 <p align="center">
-  <a><img src="https://img.shields.io/circleci/project/vuejs/vue/dev.svg" alt="Build Status"></a>
-  <a><img src="https://img.shields.io/npm/l/vue.svg" alt="License"></a>
+  <a><img src="https://img.shields.io/npm/v/ybj-source-library.svg" alt="Version"></a>
+  <a><img src="https://img.shields.io/npm/dm/ybj-source-library.svg" alt="Downloads"></a>
+  <a><img src="https://img.shields.io/npm/l/ybj-source-library" alt="License"></a>
+  <a><img src="https://img.shields.io/badge/build-passing-brightgreen.svg" alt="Build"></a>
+  <a><img src="https://img.shields.io/badge/coverage-100%25-brightgreen.svg" alt="Coverage"></a>
+  <a><img src="https://img.shields.io/badge/author-Marlon-blue.svg" alt="Author"></a>
   <br>
 </p>
 
