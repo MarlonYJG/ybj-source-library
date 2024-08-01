@@ -8,9 +8,9 @@ import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
 import store from 'store';
 import { GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from 'utils';
-import { getSystemDate } from 'utils/date';
-import { ResDatas } from 'utils/res-format';
-import { regChineseCharacter } from 'utils/regular-expression';
+import { getSystemDate } from '../utils/index';
+import { ResDatas } from '../utils/index';
+import { regChineseCharacter } from '../utils/index';
 import API from 'api';
 
 import { CreateTable } from '../common/sheetWorkBook';

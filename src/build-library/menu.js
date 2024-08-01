@@ -4,7 +4,7 @@
  * @Description:
  */
 import _ from 'lodash';
-import { isNumber } from 'utils/index';
+import { isNumber } from '../utils/index';
 
 import { MENU_TOTAL } from './config';
 import { showTotal } from '../common/parsing-template'

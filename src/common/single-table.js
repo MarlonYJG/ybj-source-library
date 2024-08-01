@@ -7,7 +7,7 @@ import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
 import API from 'api';
-import { ResDatas } from 'utils/res-format.js';
+import { ResDatas } from '../utils/index';
 import { GetUserCompany, imgUrlToBase64 } from 'utils';
 import store from 'store';
 
