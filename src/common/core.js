@@ -58,10 +58,10 @@ export class LayoutRowColBlock {
     if (classType) {
       switch (classType) {
         case 'noLevel':
-          this.noLevel();
+          this._noLevel();
           break;
         case 'Level_1_row':
-          this.Level_1_row();
+          this._Level_1_row();
           break;
         case '':
           // TODO
@@ -74,33 +74,7 @@ export class LayoutRowColBlock {
     }
   }
 
-  /**
-   * Obtain the template classification type
-   * @returns 
-   */
-  getClassType() {
-    console.log(LayoutRowColBlock.ClassType, '模板分类类型');
-    return LayoutRowColBlock.ClassType;
-  }
-
-  getLayout() {
-    console.log(LayoutRowColBlock.Levels, '层级');
-    console.log(LayoutRowColBlock.Tables, '布局');
-    console.log(LayoutRowColBlock.SubTotals, '子表');
-    console.log(LayoutRowColBlock.Summations, '子表合计');
-    console.log(LayoutRowColBlock.TotalMap, '合计');
-
-    return {
-      Levels: LayoutRowColBlock.Levels,
-      Tables: LayoutRowColBlock.Tables,
-      SubTotals: LayoutRowColBlock.SubTotals,
-      Summations: LayoutRowColBlock.Summations,
-      TotalMap: LayoutRowColBlock.TotalMap,
-    }
-  }
-
-  // 无分类
-  noLevel() {
+  _noLevel() {
     const sheet = this.Spread.getActiveSheet();
     let tableMap = {};
     let totalMap = null;
@@ -144,7 +118,7 @@ export class LayoutRowColBlock {
 
   }
 
-  Level_1_row() {
+  _Level_1_row() {
     const sheet = this.Spread.getActiveSheet();
     let level_1 = {};
     let tableMap = {};
@@ -218,6 +192,52 @@ export class LayoutRowColBlock {
     LayoutRowColBlock.Summations = null;
     LayoutRowColBlock.TotalMap = totalMap;
   }
+
+  /**
+   * Obtain the template classification type
+   * @returns 
+   */
+  getClassType() {
+    console.log(LayoutRowColBlock.ClassType, '模板分类类型');
+    return LayoutRowColBlock.ClassType;
+  }
+
+  getLayout() {
+    console.log(LayoutRowColBlock.Levels, '层级');
+    console.log(LayoutRowColBlock.Tables, '布局');
+    console.log(LayoutRowColBlock.SubTotals, '子表');
+    console.log(LayoutRowColBlock.Summations, '子表合计');
+    console.log(LayoutRowColBlock.TotalMap, '合计');
+
+    return {
+      Levels: LayoutRowColBlock.Levels,
+      Tables: LayoutRowColBlock.Tables,
+      SubTotals: LayoutRowColBlock.SubTotals,
+      Summations: LayoutRowColBlock.Summations,
+      TotalMap: LayoutRowColBlock.TotalMap,
+    }
+  }
+
+  getLevel() {
+    const levels = LayoutRowColBlock.Levels;
+    const levelCell = [];
+    if (levels && levels.length) {
+      for (let i = 0; i < levels.length; i++) {
+        for (let j = 0; j < levels[i].length; j++) {
+          for (const key in levels[i][j]) {
+            if (Object.hasOwnProperty.call(levels[i][j], key)) {
+              levelCell.push(levels[i][j][key]);
+            }
+          }
+        }
+      }
+    }
+    return {
+      rows: levelCell.map((item) => item.row),
+      cells: levelCell
+    }
+  }
+
 }
 
 export default LayoutRowColBlock;

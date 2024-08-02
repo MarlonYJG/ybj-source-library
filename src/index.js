@@ -6,7 +6,7 @@
 import Template from './template/index';
 
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
-import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, getProjectCfg, getProjectNumberRuler, translateSheet } from './common/single-table';
+import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
 import { formatterPrice, getShowCostPrice } from './common/parsing-quotation';
@@ -58,8 +58,6 @@ export {
   CombinationTypeBuild,
   CombinationType,
   formatterPrice,
-  getProjectCfg,
-  getProjectNumberRuler,
   SetDataSource,
   Reset,
   InsertTotal,
