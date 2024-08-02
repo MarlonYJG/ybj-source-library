@@ -331,8 +331,6 @@ export const ShowCostPrice = (spread, locked = false) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
   const showCost = store.getters['quotationModule/GetterShowCostPrice'];
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  console.log(showCost, '是否显示成本价');
-  console.log(template, 'template');
   if (spread && template) {
     const costPrice = new CheckCostPrice(spread, template, quotation);
     if (showCost) {

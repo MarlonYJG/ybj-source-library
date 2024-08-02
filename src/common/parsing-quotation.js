@@ -86,7 +86,7 @@ const getClassificationName = (classificationId) => {
  * @param {*} count
  * @returns
  */
-export const buildData = (tableId, insertIndex, count) => {
+export const buildData = (tableId, insertIndex, count, classType) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
@@ -102,14 +102,17 @@ export const buildData = (tableId, insertIndex, count) => {
   const resourceCount = [];
   const cname = getClassificationName(tableId);
   for (let index = 0; index < count; index++) {
-    resourceCount.push(Object.assign({
+    const item = {
       quantity: null,
-      classification: '',
-      classificationName: '',
+      classification: tableId,
+      classificationName: cname.length ? cname[0].classificationName : '',
       parentClassification: tableId,
-      parentClassificationName: cname.length ? cname[0].classificationName : '',
-      classname: cname.length ? cname[0].classificationName : '' // TODO
-    }, resource, { id: uuidv4() }));
+      parentClassificationName: cname.length ? cname[0].classificationName : ''
+    }
+    if (!['noLevel', 'Level_1_row'].includes(classType)) {
+      // TODO 如果是二级分类,修改二级分类名称以及parentClassification
+    }
+    resourceCount.push(Object.assign(item, resource, { id: uuidv4() }));
   }
 
   const resourceViews = conferenceHall.resourceViews;
@@ -148,21 +151,12 @@ export const getQuotationAllClassification = () => {
       classp = {
         classificationId: item.resourceLibraryId,
         classificationName: item.name,
-        children: []
+        children: [] // TODO 二级分类
       }
-
-      if (item.resources.length) {
-        item.resources.forEach(item => {
-          classp.children.push({
-            classificationId: item.classification,
-            classificationName: item.classificationName
-          });
-        })
-      }
-
       classification.push(classp);
     }
   })
+  return classification;
 }
 
 /**

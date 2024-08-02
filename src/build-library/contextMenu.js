@@ -9,13 +9,13 @@ import store from 'store';
 import _ from 'lodash';
 import { imgUrlToBase64 } from 'utils';
 import { SHOW_DRAWER, UPDATE_QUOTATION_PATH, SHOW_SORT, SORT_TYPE_ID, SHOW_DELETE, IGNORE_EVENT } from 'store/quotation/mutation-types';
-
+import { LayoutRowColBlock } from '../common/core';
 import { REGULAR } from '../common/constant';
 import { SetDataSource } from '../common/sheetWorkBook';
 import { uniqAndSortBy, GetAllTableRange } from '../common/public';
 
 import { buildData, getPositionBlock } from '../common/parsing-quotation';
-import { setRowStyle, AddEquipmentImage, templateRenderFlag } from '../common/parsing-template';
+import { setRowStyle, AddEquipmentImage, getComputedColumnFormula } from '../common/parsing-template';
 
 import { mergeSpan, columnComputedValue } from '../common/single-table';
 
@@ -44,15 +44,18 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
     imageObj = image;
   }
 
-  sheet.suspendPaint();
+  console.log(resourceViews);
 
+
+  sheet.suspendPaint();
+  const computedColumnFormula = getComputedColumnFormula(equipment.bindPath);
   for (let index = 0; index < resourceViews.length; index++) {
     if (resourceViews[index].resourceLibraryId == classId) {
       const table = resourceViews[index].resources;
       for (let i = 0; i < table.length; i++) {
         mergeSpan(sheet, equipment.spans, row + i);
         setRowStyle(sheet, equipment, row + i, imageObj);
-        columnComputedValue(sheet, equipment, row + i);
+        columnComputedValue(sheet, equipment, row + i, computedColumnFormula);
         sheet.getCell(row + i, 0).locked(true);
         ((item, startRow) => {
           repaintImage(spread, item, startRow);
@@ -60,7 +63,6 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
       }
     }
   }
-
   sheet.resumePaint();
 };
 
@@ -91,7 +93,7 @@ const repaintImage = (spread, rowData, rowIndex) => {
  * @param {*} options
  * @param {*} buildDataConfig
  */
-const tableInsert = (context, options, buildDataConfig) => {
+const tableInsert = (context, options, buildDataConfig, classType) => {
   const sheet = context.getSheetFromName(options.sheetName);
   const table = sheet.tables.findByName(options.tableName);
   const activeRow = options.activeRow;
@@ -106,7 +108,7 @@ const tableInsert = (context, options, buildDataConfig) => {
   const tableId = options.tableName.split('table')[1];
   if (insertIndex !== null) {
     const { index, count } = buildDataConfig;
-    const conferenceHall = buildData(tableId, insertIndex + index, count);
+    const conferenceHall = buildData(tableId, insertIndex + index, count, classType);
     store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
       path: ['conferenceHall'],
       value: conferenceHall
@@ -124,7 +126,9 @@ const tableInsert = (context, options, buildDataConfig) => {
  * @param {*} options
  * @param {*} param2
  */
+// eslint-disable-next-line no-unused-vars
 const leavelInsert = (context, options, { index, count }) => {
+  // eslint-disable-next-line no-unused-vars
   const sheet = context.getSheetFromName(options.sheetName);
 };
 
@@ -448,15 +452,18 @@ export const commandRegister = (spread) => {
       name: 'addRow',
       execute: (context, options, isUndo) => {
         const Commands = GC.Spread.Sheets.Commands;
-        const { leavel1Area } = getPositionBlock();
+        const layout = new LayoutRowColBlock(spread);
+        const { rows } = layout.getLevel();
+        const classType = layout.getClassType();
+
         if (isUndo) {
           // Commands.undoTransaction(context, options);
         } else {
           Commands.startTransaction(context, options);
-          if (leavel1Area.includes(options.activeRow)) {
+          if (rows.includes(options.activeRow)) {
             leavelInsert(context, options, { index: 1, count: 1 });
           } else {
-            tableInsert(context, options, { index: 1, count: 1 });
+            tableInsert(context, options, { index: 1, count: 1 }, classType);
           }
           Commands.endTransaction(context, options);
         }
