@@ -6,8 +6,6 @@
 import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
-import API from 'api';
-import { ResDatas } from '../utils/index';
 import { GetUserCompany, imgUrlToBase64 } from 'utils';
 import store from 'store';
 
@@ -51,37 +49,6 @@ export const AssociatedFieldsColumn = () => {
     fields.push(`total${index}`);
   }
   return fields;
-};
-
-/**
- * Get the element configuration
- * @returns
- */
-export const getProjectCfg = async () => {
-  let elecfg = null;
-  await API.qtElementType().then(res => {
-    const Res = new ResDatas({ res }).init();
-    elecfg = Res;
-  });
-  return elecfg;
-};
-
-/**
- * Get Item Number - Generate Rule
- * @param {*} eleId
- * @returns
- */
-export const getProjectNumberRuler = async (eleId) => {
-  let rules = [];
-  if (eleId) {
-    await API.qtProjectNameRule(eleId).then(res => {
-      const Res = new ResDatas({ res }).init();
-      if (Res) {
-        rules = Res.filter((item) => item.flag);
-      }
-    });
-  }
-  return rules;
 };
 
 /**
