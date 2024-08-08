@@ -366,7 +366,7 @@ export const getFormulaFieldRowCol = (field) => {
  * @returns 
  */
 export const getTemplateClassType = () => {
-  const template = getTemplate();
+  const template = getTemplate().cloudSheet;
   if (template.templateClassIdentifier) {
     if (Object.keys(DEFINE_IDENTIFIER_MAP).includes(template.templateClassIdentifier)) {
       return DEFINE_IDENTIFIER_MAP[template.templateClassIdentifier].identifier;
@@ -384,13 +384,26 @@ export const getTemplateClassType = () => {
  * @returns 
  */
 export const isMultiHead = () => {
-  const template = getTemplate();
+  const template = getTemplate().cloudSheet;
   const regex = /title@/;
   if (template.templateClassIdentifier && regex.test(template.templateClassIdentifier)) {
     return true;
   }
   return false;
 }
+
+/**
+ * Whether it is a Level_1_row@Level_2_row type
+ * @returns 
+ */
+export const isL1L2RowMerge = () => {
+  const template = getTemplate().cloudSheet;
+  if (template.templateClassIdentifier === 'Level_1_row@Level_2_row') {
+    return true;
+  }
+  return false;
+}
+
 
 /**
  * Obtain the project name field in the template

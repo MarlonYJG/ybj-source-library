@@ -1,8 +1,11 @@
 /*
  * @Author: Marlon
- * @Date: 2024-08-01 13:11:10
- * @Description: template noLevel
+ * @Date: 2024-08-08 15:56:05
+ * @Description: 
  */
+
+import { templateClassIdentifier } from './config'
+
 export const sheet = {
   "allowUndo": false,
   "newTabVisible": false,
@@ -16,7 +19,7 @@ export const sheet = {
   "sheets": {},
   "cloudSheet": {
     "name": "设备租赁1",
-    "templateClassIdentifier": "noLevel",
+    "templateClassIdentifier": templateClassIdentifier,
     "version": "1.5",
     "sheets": {
       "会场": {

@@ -9,6 +9,67 @@ import store from 'store';
 import { GetColumnComputedTotal } from '../build-library/single-table';
 import { PubGetTableStartRowIndex, PubGetTableRowCount } from './single-table';
 
+/**
+ * Define a template classification identifier
+ */
+export const DEFINE_IDENTIFIER_MAP = {
+  'noLevel': {
+    label: '无分类',
+    identifier: 'noLevel',
+  },
+  'Level_1_row': {
+    label: '一级分类 + 按 行 合并 + top层配置表头',
+    identifier: 'Level_1_row',
+  },
+  'Level_1_col': {
+    label: '一级分类 + 按 列 合并 + top层配置表头',
+    identifier: 'Level_1_col',
+  },
+  'title@Level_1_row': {
+    label: '一级分类 + 按 行 合并 +  center中的表头',
+    identifier: 'title@Level_1_row',
+  },
+  'title@Level_1_col': {
+    label: '一级分类 + 按 列 合并 +  center中的表头',
+    identifier: 'title@Level_1_col',
+  },
+  'Level_1_row@Level_2_row': {
+    label: '',
+    identifier: 'Level_1_row@Level_2_row'
+  },
+  'Level_1_row@Level_2_col': {
+    label: '',
+    identifier: 'Level_1_row@Level_2_col'
+  },
+  'Level_1_col@Level_2_row': {
+    label: '',
+    identifier: 'Level_1_col@Level_2_row'
+  },
+  'Level_1_col@Level_2_col': {
+    label: '',
+    identifier: 'Level_1_col@Level_2_col'
+  },
+  'title@Level_1_row@Level_2_row': {
+    label: '',
+    identifier: 'title@Level_1_row@Level_2_row'
+  },
+  'title@Level_1_row@Level_2_col': {
+    label: '',
+    identifier: 'title@Level_1_row@Level_2_col'
+  },
+  'title@Level_1_col@Level_2_row': {
+    label: '',
+    identifier: 'title@Level_1_col@Level_2_row'
+  },
+  'title@Level_1_col@Level_2_col': {
+    label: '',
+    identifier: 'title@Level_1_col@Level_2_col'
+  }
+}
+
+/**
+ * IdentifierTemplate
+ */
 export class IdentifierTemplate {
   constructor(sheet, name) {
     this.sheet = sheet;
@@ -97,64 +158,6 @@ export class IdentifierTemplate {
     if (this.builtInIdMap[templateId]) {
       return this.builtInIdMap[templateId];
     }
-  }
-}
-
-/**
- * Define a template classification identifier
- */
-export const DEFINE_IDENTIFIER_MAP = {
-  'noLevel': {
-    label: '无分类',
-    identifier: 'noLevel',
-  },
-  'Level_1_row': {
-    label: '一级分类 + 按 行 合并 + top层配置表头',
-    identifier: 'Level_1_row',
-  },
-  'Level_1_col': {
-    label: '一级分类 + 按 列 合并 + top层配置表头',
-    identifier: 'Level_1_col',
-  },
-  'title@Level_1_row': {
-    label: '一级分类 + 按 行 合并 +  center中的表头',
-    identifier: 'title@Level_1_row',
-  },
-  'title@Level_1_col': {
-    label: '一级分类 + 按 列 合并 +  center中的表头',
-    identifier: 'title@Level_1_col',
-  },
-  'Level_1_row@Level_2_row': {
-    label: '',
-    identifier: 'Level_1_row@Level_2_row'
-  },
-  'Level_1_row@Level_2_col': {
-    label: '',
-    identifier: 'Level_1_row@Level_2_col'
-  },
-  'Level_1_col@Level_2_row': {
-    label: '',
-    identifier: 'Level_1_col@Level_2_row'
-  },
-  'Level_1_col@Level_2_col': {
-    label: '',
-    identifier: 'Level_1_col@Level_2_col'
-  },
-  'title@Level_1_row@Level_2_row': {
-    label: '',
-    identifier: 'title@Level_1_row@Level_2_row'
-  },
-  'title@Level_1_row@Level_2_col': {
-    label: '',
-    identifier: 'title@Level_1_row@Level_2_col'
-  },
-  'title@Level_1_col@Level_2_row': {
-    label: '',
-    identifier: 'title@Level_1_col@Level_2_row'
-  },
-  'title@Level_1_col@Level_2_col': {
-    label: '',
-    identifier: 'title@Level_1_col@Level_2_col'
   }
 }
 
