@@ -905,11 +905,12 @@ export const initShowCostPrice = (spread) => {
 export const getTemplateClassType = () => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const templateClassIdentifier = template.cloudSheet.templateClassIdentifier;
   const resourceViews = quotation.conferenceHall.resourceViews;
 
-  if (template.templateClassIdentifier) {
-    if (Object.keys(DEFINE_IDENTIFIER_MAP).includes(template.templateClassIdentifier)) {
-      return template.templateClassIdentifier
+  if (templateClassIdentifier) {
+    if (Object.keys(DEFINE_IDENTIFIER_MAP).includes(templateClassIdentifier)) {
+      return templateClassIdentifier
     } else {
       console.error('模板分类标识符不存在,无法确定模板分类类型【模板错误】');
     }
