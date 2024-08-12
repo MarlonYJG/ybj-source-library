@@ -341,3 +341,29 @@ export const ShowCostPrice = (spread, locked = false) => {
     }
   }
 }
+
+/**
+ * Update the discount value
+ * @param {*} spread 
+ */
+export const UpdateDiscount = (spread, percentage) => {
+  const priceFields = ['discountUnitPrice'];
+  // 获取模板
+  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  console.log(template, 'template');
+
+  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const sourceResourceViews = _.cloneDeep(quotation.conferenceHall.resourceViews);
+  const resourceViews = quotation.conferenceHall.resourceViews;
+
+  console.log(resourceViews, percentage);
+  console.log(priceFields,sourceResourceViews);
+  
+  resourceViews.forEach(item => {
+    if (item.resources.length) {
+      // 
+    }
+  });
+
+
+}

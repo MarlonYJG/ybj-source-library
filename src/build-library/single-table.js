@@ -83,9 +83,9 @@ const OnEventBind = (spread) => {
   // sheet.bind(GC.Spread.Sheets.Events.LeaveCell, (sender, args) => {
   //   console.log(1);
   // });
-  // sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
-  //   console.log(2);
-  // });
+  sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
+    console.log(2);
+  });
   // sheet.bind(GC.Spread.Sheets.Events.EditEnding, (sender, args) => {
   //   console.log(3);
   // });
