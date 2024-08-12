@@ -3,6 +3,7 @@
  * @Date: 2024-06-19 13:29:25
  * @Description:
  */
+import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import * as ExcelIO from '@grapecity/spread-excelio';
 import _ from 'lodash';
@@ -17,7 +18,7 @@ import { MENU_TOTAL } from './config';
 
 import { Render, insertField, removeAllTable, UpdateTotalBlock } from './single-table';
 
-import { getTemplateTopRowCol } from '../common/parsing-template';
+import { getTemplateTopRowCol, getDiscountField } from '../common/parsing-template';
 
 import { CheckCostPrice } from '../common/cost-price';
 
@@ -347,23 +348,45 @@ export const ShowCostPrice = (spread, locked = false) => {
  * @param {*} spread 
  */
 export const UpdateDiscount = (spread, percentage) => {
-  const priceFields = ['discountUnitPrice'];
-  // 获取模板
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
-  console.log(template, 'template');
+  const discountField = getDiscountField();
+  if (discountField) {
+    const priceAdjustment = new Decimal(percentage).dividedBy(new Decimal(100)).toNumber();
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['priceAdjustment'],
+      value: priceAdjustment
+    });
 
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const sourceResourceViews = _.cloneDeep(quotation.conferenceHall.resourceViews);
-  const resourceViews = quotation.conferenceHall.resourceViews;
+    const sheet = spread.getActiveSheet();
+    const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+    console.log(template, 'template');
 
-  console.log(resourceViews, percentage);
-  console.log(priceFields,sourceResourceViews);
-  
-  resourceViews.forEach(item => {
-    if (item.resources.length) {
-      // 
-    }
-  });
+    const quotation = store.getters['quotationModule/GetterQuotationInit'];
+    const conferenceHall = _.cloneDeep(quotation.conferenceHall);
+    const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
+    const resourceViewsMap = {};
+    // percentage * sourceR / 100
+    resourceViews.forEach((item) => {
+      if (item.resources.length) {
+        item.resources.forEach((resource) => {
+          if (Object.keys(resource).includes(discountField)) {
+            const sourcePrice = resource.unitPrice;
+            resource[discountField] = new Decimal(priceAdjustment).times(new Decimal(sourcePrice)).toNumber();
+          } else {
+            console.warn(`resource not include ${discountField}`);
+          }
+        });
+      }
+    });
+    resourceViews.forEach(item => {
+      resourceViewsMap[item.resourceLibraryId] = item;
+    });
+    conferenceHall.resourceViews = resourceViews;
+    conferenceHall.resourceViewsMap = resourceViewsMap;
 
-
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['conferenceHall'],
+      value: conferenceHall
+    });
+    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit'])
+  }
 }
