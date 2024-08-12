@@ -25,7 +25,7 @@ import {
   Sort, DeleteProduct, HeadDelete, spreadPrint,
   spreadExportExcel as headSpreadExportExcel,
   spreadExportPDF as headSpreadExportPDF,
-  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice
+  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice, UpdateDiscount
 } from './build-library/head';
 
 export let store = null;
@@ -44,6 +44,7 @@ export {
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
   Template,
+  UpdateDiscount,
   getShowCostPrice,
   GetAllTableRange,
   ShowCostPrice,
