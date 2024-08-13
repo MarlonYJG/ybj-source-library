@@ -3,6 +3,8 @@
  * @Date: 2024-05-16 14:20:35
  * @Description:single-build
  */
+import { Message } from 'element-ui';
+import Decimal from 'decimal.js';
 import _ from 'lodash';
 import * as GC from '@grapecity/spread-sheets';
 import store from 'store';
@@ -42,7 +44,8 @@ import {
   showTotal,
   showSubTotal,
   getComputedColumnFormula,
-  getFormulaFieldRowCol
+  getFormulaFieldRowCol,
+  showDiscount
 } from '../common/parsing-template';
 
 import {
@@ -70,6 +73,8 @@ import { UpdateSort } from './public';
 const NzhCN = require('nzh/cn');
 
 let RangeChangedTimer = null;
+let UpdateUppercaseTimer = null;
+let CellValue = null;
 
 /**
  * Event bind
@@ -84,7 +89,8 @@ const OnEventBind = (spread) => {
   //   console.log(1);
   // });
   sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
-    console.log(2);
+    console.log('EditEnded事件');
+    limitDiscountInput(spread, args);
   });
   // sheet.bind(GC.Spread.Sheets.Events.EditEnding, (sender, args) => {
   //   console.log(3);
@@ -109,11 +115,17 @@ const OnEventBind = (spread) => {
       store.commit(`quotationModule/${SET_WORK_SHEET_QUOTATION}`, dataSource);
       UpdateTotalBlock(sheet);
     }
+
+    UpdateUppercaseTimer && clearTimeout(UpdateUppercaseTimer);
+    UpdateUppercaseTimer = setTimeout(() => {
+      updateUppercaseAmounts(spread, sheet.getDataSource().getSource());
+    }, 0);
   });
 
   sheet.bind(GC.Spread.Sheets.Events.ValueChanged, (sender, args) => {
     const dataSource = sheet.getDataSource().getSource();
     console.log(dataSource, 'ValueChanged 事件', args);
+    CellValue = _.cloneDeep(args);
 
     const { leavel1Area, leavel2Area } = getPositionBlock();
     // watch classification
@@ -149,6 +161,62 @@ const OnEventMenu = (spread) => {
   commandRegister(spread);
   onOpenMenu(spread);
 };
+
+/**
+ * Update all uppercase amounts
+ */
+const updateUppercaseAmounts = (spread, dataSource) => {
+  if (dataSource) {
+    const layout = new LayoutRowColBlock(spread);
+    layout.setTotalUppercaseAmounts(dataSource)
+  }
+}
+
+/**
+ * Limit discount inputs
+ * @param {*} spread 
+ * @param {*} args 
+ */
+const limitDiscountInput = (spread, args) => {
+  const discount = showDiscount();
+  if (typeof discount === 'object' || discount) {
+    if (discount.column === args.col) {
+      const sheet = spread.getActiveSheet();
+      const table = sheet.tables.find(args.row, args.col);
+      const tableId = table.name().split('table')[1]
+      const layout = new LayoutRowColBlock(spread);
+      const proItem = layout.getProductByActiveCell(args.row, args.col, tableId);
+      if (proItem && (proItem.unitPrice === 0 || proItem.unitPrice)) {
+        const discount = store.getters['GetterDiscount'];
+        const unitPrice = Number(proItem.unitPrice);
+        const minVal = new Decimal(discount).dividedBy(new Decimal(10)).times(new Decimal(Number(unitPrice))).toNumber();
+        const newVal = Number(args.editingText);
+        sheet.suspendPaint();
+        if (isNumber(newVal)) {
+          if (newVal < minVal) {
+            Message({
+              showClose: true,
+              message: '单价超出修改范围，请重新输入',
+              type: 'error'
+            });
+            console.error('折扣价不能小于最低价');
+            sheet.setValue(args.row, args.col, Number(CellValue.oldValue));
+          }
+        } else {
+          sheet.setValue(args.row, args.col, Number(CellValue.oldValue));
+          Message({
+            showClose: true,
+            message: '请输入数值类型的值',
+            type: 'error'
+          });
+          console.error('请输入数值类型的值');
+        }
+        sheet.resumePaint();
+      }
+    }
+  }
+}
+
 
 /**
  * config sheet

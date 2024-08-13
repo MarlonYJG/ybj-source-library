@@ -439,15 +439,38 @@ export const getDiscountField = () => {
 
 /**
  * Whether or not to display discounts
+ * @param {*} template 
  * @returns 
  */
-export const ShowDiscount = (template) => {
+export const showDiscount = (temp) => {
+  const template = temp || getTemplate();
   if (template) {
     const discountField = template.cloudSheet.center.equipment.bindPath;
-    if (!Object.keys(discountField).includes('discountUnitPrice') && !Object.keys(discountField).includes('unitPrice')) {
-      return false;
+    if (Object.keys(discountField).includes('discountUnitPrice')) {
+      return discountField.discountUnitPrice || false;
     }
-    return true;
   }
   return false;
+}
+
+
+/**
+ * Initialize the Price Setup field
+ * @param {*} template 
+ * @returns 
+ */
+export const initPriceSetField = (temp) => {
+  const template = temp || getTemplate();
+  if (template && template.cloudSheet) {
+    const priceFields = ['unitPrice', 'unitPrice1', 'unitPrice2'];
+    const bindFields = template.cloudSheet.center.equipment.bindPath;
+    const equipment = Object.keys(bindFields);
+    for (let i = 0; i < equipment.length; i++) {
+      if (priceFields.includes(equipment[i])) {
+        return bindFields[equipment[i]].bindPath || equipment[i];
+      }
+    }
+  }
+  console.warn('The price setup field does not exist');
+  return null;
 }
