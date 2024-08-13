@@ -453,24 +453,16 @@ export const showDiscount = (temp) => {
   return false;
 }
 
-
 /**
- * Initialize the Price Setup field
+ * Whether or not to display the price settings
  * @param {*} template 
  * @returns 
  */
-export const initPriceSetField = (temp) => {
+export const showPriceSet = (temp) => {
   const template = temp || getTemplate();
-  if (template && template.cloudSheet) {
-    const priceFields = ['unitPrice', 'unitPrice1', 'unitPrice2'];
-    const bindFields = template.cloudSheet.center.equipment.bindPath;
-    const equipment = Object.keys(bindFields);
-    for (let i = 0; i < equipment.length; i++) {
-      if (priceFields.includes(equipment[i])) {
-        return bindFields[equipment[i]].bindPath || equipment[i];
-      }
-    }
+  if (template) {
+    return !!showDiscount(template);
   }
   console.warn('The price setup field does not exist');
-  return null;
+  return false;
 }

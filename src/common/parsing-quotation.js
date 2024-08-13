@@ -179,3 +179,16 @@ export const initDiscountPercentage = (quo) => {
   }
   return 1
 }
+
+/**
+ * Initialize the Price Setup field
+ * @param {*} quotation 
+ * @returns 
+ */
+export const initPriceSetField = (quo) => {
+  const quotation = quo || getQuotation();
+  if (quotation && quotation.priceStatus) {
+    return Number(quotation.priceStatus);
+  }
+  return 0;
+}

@@ -18,7 +18,7 @@ import { MENU_TOTAL } from './config';
 
 import { Render, insertField, removeAllTable, UpdateTotalBlock } from './single-table';
 
-import { getTemplateTopRowCol, getDiscountField } from '../common/parsing-template';
+import { getTemplateTopRowCol, getDiscountField, showPriceSet } from '../common/parsing-template';
 
 import { CheckCostPrice } from '../common/cost-price';
 
@@ -364,7 +364,7 @@ export const UpdateDiscount = (spread, percentage) => {
     const conferenceHall = _.cloneDeep(quotation.conferenceHall);
     const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
     const resourceViewsMap = {};
-    // percentage * sourceR / 100
+
     resourceViews.forEach((item) => {
       if (item.resources.length) {
         item.resources.forEach((resource) => {
@@ -388,5 +388,64 @@ export const UpdateDiscount = (spread, percentage) => {
       value: conferenceHall
     });
     SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit'])
+  }
+}
+
+// Update top price settings
+export const UpdatePriceSet = (spread, priceSet) => {
+  console.log(priceSet, 'priceSet');
+  
+  if (showPriceSet()) {
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['priceStatus'],
+      value: priceSet
+    });
+
+    // 初始化折扣
+
+    const quotation = store.getters['quotationModule/GetterQuotationInit'];
+    const conferenceHall = _.cloneDeep(quotation.conferenceHall);
+    const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
+    const resourceViewsMap = {};
+
+    resourceViews.forEach((item) => {
+      if (item.resources.length) {
+        item.resources.forEach((resource) => {
+          if (Object.keys(resource).includes('discountUnitPrice')) {
+            let sourcePrice = resource.unitPrice;
+            if (priceSet === 0 || priceSet) {
+              if (priceSet === 0) {
+                if (_.has(resource, 'unitPrice')) {
+                  sourcePrice = resource.unitPrice;
+                } else {
+                  console.error('resource not include unitPrice');
+                }
+              } else {
+                if (_.has(resource, `unitPrice${priceSet}`)) {
+                  sourcePrice = resource[`unitPrice${priceSet}`];
+                } else {
+                  console.error(`resource not include unitPrice${priceSet}`);
+                }
+              }
+            }
+            resource.discountUnitPrice = sourcePrice;
+          } else {
+            console.warn('resource not include discountUnitPrice');
+          }
+        });
+      }
+    });
+    resourceViews.forEach(item => {
+      resourceViewsMap[item.resourceLibraryId] = item;
+    });
+    conferenceHall.resourceViews = resourceViews;
+    conferenceHall.resourceViewsMap = resourceViewsMap;
+
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['conferenceHall'],
+      value: conferenceHall
+    });
+    const sheet = spread.getActiveSheet();
+    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
   }
 }
