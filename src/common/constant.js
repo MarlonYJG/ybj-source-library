@@ -5,7 +5,7 @@
  */
 
 export const REGULAR = {
-   
+
   chineseCharacters: new RegExp('[\\u4E00-\\u9FFF]+', 'g')
 };
 
@@ -239,4 +239,13 @@ export const DESCRIPTION_MAP = {
     key: 'taxRateDescription',
     percentage: 'taxRate|tax'// 新：tax
   }
+};
+
+/**
+ * Price setup field mapping table
+ */
+export const PRICE_SET_MAP = {
+  0: 'unitPrice',
+  1: 'unitPrice1',
+  2: 'unitPrice2',
 };

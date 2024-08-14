@@ -26,7 +26,7 @@ import { CreateTable } from '../common/sheetWorkBook';
 import IdentifierTemplate from '../common/identifier-template';
 
 import { CombinationTypeBuild } from '../common/combination-type';
-import { ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, TOTAL_COMBINED_MAP } from '../common/constant';
+import { ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, TOTAL_COMBINED_MAP, PRICE_SET_MAP } from '../common/constant';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { numberToColumn } from '../common/public'
 
@@ -186,10 +186,12 @@ const limitDiscountInput = (spread, args) => {
       const tableId = table.name().split('table')[1]
       const layout = new LayoutRowColBlock(spread);
       const proItem = layout.getProductByActiveCell(args.row, args.col, tableId);
-      if (proItem && (proItem.unitPrice === 0 || proItem.unitPrice)) {
+      const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
+      // resetDiscountRatio();
+      if (proItem && _.has(proItem, PRICE_SET_MAP[PriceStatus])) {
         const discount = store.getters['GetterDiscount'];
-        const unitPrice = Number(proItem.unitPrice);
-        const minVal = new Decimal(discount).dividedBy(new Decimal(10)).times(new Decimal(Number(unitPrice))).toNumber();
+        const Price = Number(proItem[PRICE_SET_MAP[PriceStatus]]);
+        const minVal = new Decimal(discount).dividedBy(new Decimal(10)).times(new Decimal(Number(Price))).toNumber();
         const newVal = Number(args.editingText);
         sheet.suspendPaint();
         if (isNumber(newVal)) {
@@ -217,6 +219,15 @@ const limitDiscountInput = (spread, args) => {
   }
 }
 
+/**
+ * Reset the discount ratio
+ */
+export const resetDiscountRatio = () => {
+  store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+    path: ['priceAdjustment'],
+    value: 1
+  });
+}
 
 /**
  * config sheet

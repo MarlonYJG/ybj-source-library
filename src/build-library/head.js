@@ -10,13 +10,13 @@ import _ from 'lodash';
 import { Message } from 'element-ui';
 import store from 'store';
 import { SHOW_DELETE, UPDATE_QUOTATION_PATH, IGNORE_EVENT, FROZEN_HEAD_TEMPLATE } from 'store/quotation/mutation-types';
-
+import { PRICE_SET_MAP } from '../common/constant'
 import { SetDataSource } from '../common/sheetWorkBook';
 
 import { Reset } from './public';
 import { MENU_TOTAL } from './config';
 
-import { Render, insertField, removeAllTable, UpdateTotalBlock } from './single-table';
+import { Render, insertField, removeAllTable, UpdateTotalBlock, resetDiscountRatio } from './single-table';
 
 import { getTemplateTopRowCol, getDiscountField, showPriceSet } from '../common/parsing-template';
 
@@ -364,12 +364,12 @@ export const UpdateDiscount = (spread, percentage) => {
     const conferenceHall = _.cloneDeep(quotation.conferenceHall);
     const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
     const resourceViewsMap = {};
-
+    const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
     resourceViews.forEach((item) => {
       if (item.resources.length) {
         item.resources.forEach((resource) => {
           if (Object.keys(resource).includes(discountField)) {
-            const sourcePrice = resource.unitPrice;
+            const sourcePrice = resource[PRICE_SET_MAP[PriceStatus]];
             resource[discountField] = new Decimal(priceAdjustment).times(new Decimal(sourcePrice)).toNumber();
           } else {
             console.warn(`resource not include ${discountField}`);
@@ -387,21 +387,21 @@ export const UpdateDiscount = (spread, percentage) => {
       path: ['conferenceHall'],
       value: conferenceHall
     });
-    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit'])
+    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+
+    ShowCostPrice(spread);
   }
 }
 
 // Update top price settings
 export const UpdatePriceSet = (spread, priceSet) => {
-  console.log(priceSet, 'priceSet');
-  
   if (showPriceSet()) {
     store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
       path: ['priceStatus'],
       value: priceSet
     });
 
-    // 初始化折扣
+    resetDiscountRatio()
 
     const quotation = store.getters['quotationModule/GetterQuotationInit'];
     const conferenceHall = _.cloneDeep(quotation.conferenceHall);
@@ -447,5 +447,7 @@ export const UpdatePriceSet = (spread, priceSet) => {
     });
     const sheet = spread.getActiveSheet();
     SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+
+    ShowCostPrice(spread);
   }
 }

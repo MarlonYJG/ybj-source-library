@@ -286,3 +286,13 @@ export class ResDatas {
     }
   }
 }
+
+/**
+ * Whether it is in percentage format
+ * @param {*} value 
+ * @returns 
+ */
+export const isPercentage = (value) => {
+  const pattern = /^\d+(\.\d+)?%$/;
+  return pattern.test(value);
+};
