@@ -186,7 +186,8 @@ const limitDiscountInput = (spread, args) => {
       const tableId = table.name().split('table')[1]
       const layout = new LayoutRowColBlock(spread);
       const proItem = layout.getProductByActiveCell(args.row, args.col, tableId);
-      const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
+      // const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
+      const PriceStatus = 0;
       // resetDiscountRatio();
       if (proItem && _.has(proItem, PRICE_SET_MAP[PriceStatus])) {
         const discount = store.getters['GetterDiscount'];

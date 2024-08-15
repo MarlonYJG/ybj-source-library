@@ -16,6 +16,7 @@ import { SetDataSource } from '../common/sheetWorkBook';
 import { Reset } from './public';
 import { MENU_TOTAL } from './config';
 
+// eslint-disable-next-line no-unused-vars
 import { Render, insertField, removeAllTable, UpdateTotalBlock, resetDiscountRatio } from './single-table';
 
 import { getTemplateTopRowCol, getDiscountField, showPriceSet } from '../common/parsing-template';
@@ -364,7 +365,8 @@ export const UpdateDiscount = (spread, percentage) => {
     const conferenceHall = _.cloneDeep(quotation.conferenceHall);
     const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
     const resourceViewsMap = {};
-    const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
+    // const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
+    const PriceStatus = 0;
     resourceViews.forEach((item) => {
       if (item.resources.length) {
         item.resources.forEach((resource) => {
@@ -401,7 +403,7 @@ export const UpdatePriceSet = (spread, priceSet) => {
       value: priceSet
     });
 
-    resetDiscountRatio()
+    // resetDiscountRatio()
 
     const quotation = store.getters['quotationModule/GetterQuotationInit'];
     const conferenceHall = _.cloneDeep(quotation.conferenceHall);
