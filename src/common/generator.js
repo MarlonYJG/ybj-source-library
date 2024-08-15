@@ -4,6 +4,7 @@
  * @Description:Spread generator
  */
 import * as GC from '@grapecity/spread-sheets';
+const NzhCN = require('nzh/cn');
 
 /**
  * Style Generator of cell style
@@ -69,6 +70,10 @@ export const GeneratorTableStyle = () => {
   return tableStyle;
 };
 
+/**
+ * Cost price table style
+ * @returns 
+ */
 export const GeneratorCostTableStyle = () => {
   const tableStyle = new GC.Spread.Sheets.Tables.TableTheme();
   const tStyleInfo = new GC.Spread.Sheets.Tables.TableStyle();
@@ -84,3 +89,34 @@ export const GeneratorCostTableStyle = () => {
   tableStyle.wholeTableStyle(tStyleInfo)
   return tableStyle;
 };
+
+/**
+ * Numbers to Chinese capitalization
+ * @param {*} value 
+ * @returns 
+ */
+export const numToUpperCase = (value) => {
+  return NzhCN.encodeB(parseFloat(value));
+}
+
+/**
+ * Chinese capitalization formatter
+ */
+export const GeneratorUpperCaseFormatter = () => {
+  function CustomNumberFormat() { }
+  CustomNumberFormat.prototype = new GC.Spread.Formatter.FormatterBase();
+  CustomNumberFormat.prototype.format = function (obj) {
+    if (typeof obj === "number") {
+      return numToUpperCase(obj);
+    } else if (typeof obj === "string") {
+      if (Number.isFinite(+obj)) {
+        return numToUpperCase(parseFloat(obj));
+      }
+    }
+    return obj ? obj.toString() : "";
+  };
+  CustomNumberFormat.prototype.parse = function (str) {
+    return new GC.Spread.Formatter.GeneralFormatter().parse(str);
+  };
+  return new CustomNumberFormat();
+}

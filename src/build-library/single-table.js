@@ -815,6 +815,7 @@ const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
               }
               // sheet.autoFitColumn(rows.column);
             }
+
           }
         }
       }
@@ -842,6 +843,7 @@ const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
         if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
           const rows = totalField.bindPath[key];
           if (rows.bindPath === 'sumAmount') {
+            // TODO 待优化
             const fieldFormula = sumAmountAssignment(key, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindKeys);
 
             console.log(fieldFormula, 'sumAmount');
