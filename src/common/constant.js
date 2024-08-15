@@ -248,4 +248,7 @@ export const PRICE_SET_MAP = {
   0: 'unitPrice',
   1: 'unitPrice1',
   2: 'unitPrice2',
+  'unitPrice': 0,
+  'unitPrice1': 1,
+  'unitPrice2': 2
 };
