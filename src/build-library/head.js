@@ -3,21 +3,23 @@
  * @Date: 2024-06-19 13:29:25
  * @Description:
  */
+import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import * as ExcelIO from '@grapecity/spread-excelio';
 import _ from 'lodash';
 import { Message } from 'element-ui';
 import store from 'store';
 import { SHOW_DELETE, UPDATE_QUOTATION_PATH, IGNORE_EVENT, FROZEN_HEAD_TEMPLATE } from 'store/quotation/mutation-types';
-
+import { PRICE_SET_MAP } from '../common/constant'
 import { SetDataSource } from '../common/sheetWorkBook';
 
 import { Reset } from './public';
 import { MENU_TOTAL } from './config';
 
-import { Render, insertField, removeAllTable, UpdateTotalBlock } from './single-table';
+// eslint-disable-next-line no-unused-vars
+import { Render, insertField, removeAllTable, UpdateTotalBlock, resetDiscountRatio } from './single-table';
 
-import { getTemplateTopRowCol } from '../common/parsing-template';
+import { getTemplateTopRowCol, getDiscountField, showPriceSet } from '../common/parsing-template';
 
 import { CheckCostPrice } from '../common/cost-price';
 
@@ -347,23 +349,107 @@ export const ShowCostPrice = (spread, locked = false) => {
  * @param {*} spread 
  */
 export const UpdateDiscount = (spread, percentage) => {
-  const priceFields = ['discountUnitPrice'];
-  // 获取模板
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
-  console.log(template, 'template');
+  const discountField = getDiscountField();
+  if (discountField) {
+    const priceAdjustment = new Decimal(percentage).dividedBy(new Decimal(100)).toNumber();
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['priceAdjustment'],
+      value: priceAdjustment
+    });
 
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const sourceResourceViews = _.cloneDeep(quotation.conferenceHall.resourceViews);
-  const resourceViews = quotation.conferenceHall.resourceViews;
+    const sheet = spread.getActiveSheet();
+    const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+    console.log(template, 'template');
 
-  console.log(resourceViews, percentage);
-  console.log(priceFields,sourceResourceViews);
-  
-  resourceViews.forEach(item => {
-    if (item.resources.length) {
-      // 
-    }
-  });
+    const quotation = store.getters['quotationModule/GetterQuotationInit'];
+    const conferenceHall = _.cloneDeep(quotation.conferenceHall);
+    const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
+    const resourceViewsMap = {};
+    // const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
+    const PriceStatus = 0;
+    resourceViews.forEach((item) => {
+      if (item.resources.length) {
+        item.resources.forEach((resource) => {
+          if (Object.keys(resource).includes(discountField)) {
+            const sourcePrice = resource[PRICE_SET_MAP[PriceStatus]];
+            resource[discountField] = new Decimal(priceAdjustment).times(new Decimal(sourcePrice)).toNumber();
+          } else {
+            console.warn(`resource not include ${discountField}`);
+          }
+        });
+      }
+    });
+    resourceViews.forEach(item => {
+      resourceViewsMap[item.resourceLibraryId] = item;
+    });
+    conferenceHall.resourceViews = resourceViews;
+    conferenceHall.resourceViewsMap = resourceViewsMap;
 
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['conferenceHall'],
+      value: conferenceHall
+    });
+    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
 
+    ShowCostPrice(spread);
+  }
+}
+
+// Update top price settings
+export const UpdatePriceSet = (spread, priceSet) => {
+  if (showPriceSet()) {
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['priceStatus'],
+      value: priceSet
+    });
+
+    // resetDiscountRatio()
+
+    const quotation = store.getters['quotationModule/GetterQuotationInit'];
+    const conferenceHall = _.cloneDeep(quotation.conferenceHall);
+    const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
+    const resourceViewsMap = {};
+
+    resourceViews.forEach((item) => {
+      if (item.resources.length) {
+        item.resources.forEach((resource) => {
+          if (Object.keys(resource).includes('discountUnitPrice')) {
+            let sourcePrice = resource.unitPrice;
+            if (priceSet === 0 || priceSet) {
+              if (priceSet === 0) {
+                if (_.has(resource, 'unitPrice')) {
+                  sourcePrice = resource.unitPrice;
+                } else {
+                  console.error('resource not include unitPrice');
+                }
+              } else {
+                if (_.has(resource, `unitPrice${priceSet}`)) {
+                  sourcePrice = resource[`unitPrice${priceSet}`];
+                } else {
+                  console.error(`resource not include unitPrice${priceSet}`);
+                }
+              }
+            }
+            resource.discountUnitPrice = sourcePrice;
+          } else {
+            console.warn('resource not include discountUnitPrice');
+          }
+        });
+      }
+    });
+    resourceViews.forEach(item => {
+      resourceViewsMap[item.resourceLibraryId] = item;
+    });
+    conferenceHall.resourceViews = resourceViews;
+    conferenceHall.resourceViewsMap = resourceViewsMap;
+
+    store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+      path: ['conferenceHall'],
+      value: conferenceHall
+    });
+    const sheet = spread.getActiveSheet();
+    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+
+    ShowCostPrice(spread);
+  }
 }

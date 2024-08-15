@@ -414,3 +414,55 @@ export const getProjectNameField = () => {
   const projectNameField = template.cloudSheet.top.bindPath.quotation.name;
   return projectNameField;
 }
+
+/**
+ * Get the field where the discount is calculated
+ * @returns 
+ */
+export const getDiscountField = () => {
+  const template = getTemplate();
+  const discountField = template.cloudSheet.center.equipment.bindPath;
+  if (Object.keys(discountField).includes('discountUnitPrice') || Object.keys(discountField).includes('unitPrice')) {
+    if (Object.keys(discountField).includes('discountUnitPrice') && Object.keys(discountField).includes('unitPrice')) {
+      console.warn('The discount field is ambiguous');
+    }
+    if (Object.keys(discountField).includes('discountUnitPrice')) {
+      return discountField.discountUnitPrice.bindPath || 'discountUnitPrice';
+    } else if (Object.keys(discountField).includes('unitPrice')) {
+      return discountField.unitPrice.bindPath || 'unitPrice';
+    }
+  } else {
+    console.error('The discount field does not exist');
+  }
+  return null;
+}
+
+/**
+ * Whether or not to display discounts
+ * @param {*} template 
+ * @returns 
+ */
+export const showDiscount = (temp) => {
+  const template = temp || getTemplate();
+  if (template) {
+    const discountField = template.cloudSheet.center.equipment.bindPath;
+    if (Object.keys(discountField).includes('discountUnitPrice')) {
+      return discountField.discountUnitPrice || false;
+    }
+  }
+  return false;
+}
+
+/**
+ * Whether or not to display the price settings
+ * @param {*} template 
+ * @returns 
+ */
+export const showPriceSet = (temp) => {
+  const template = temp || getTemplate();
+  if (template) {
+    return !!showDiscount(template);
+  }
+  console.warn('The price setup field does not exist');
+  return false;
+}

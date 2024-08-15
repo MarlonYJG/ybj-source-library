@@ -166,3 +166,29 @@ export const getQuotationAllClassification = () => {
 export const getShowCostPrice = () => {
   return getQuotation().showCost;
 }
+
+/**
+ * Initialize the percentage of the discount
+ * @param {*} quotation 
+ * @returns 
+ */
+export const initDiscountPercentage = (quo) => {
+  const quotation = quo || getQuotation();
+  if (quotation) {
+    return quotation.priceAdjustment || 1;
+  }
+  return 1
+}
+
+/**
+ * Initialize the Price Setup field
+ * @param {*} quotation 
+ * @returns 
+ */
+export const initPriceSetField = (quo) => {
+  const quotation = quo || getQuotation();
+  if (quotation && quotation.priceStatus) {
+    return Number(quotation.priceStatus);
+  }
+  return 0;
+}
