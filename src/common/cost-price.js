@@ -23,6 +23,7 @@ const KEYS = ['numberOfDays', 'quantity', 'total']
 export class CheckCostPrice {
   static CellEdit = [];
   static ColumnIndex = [];
+  static Formatter = '0.00'
 
   constructor(spread, template, quotation) {
     this.spread = spread;
@@ -42,6 +43,15 @@ export class CheckCostPrice {
     this.sheet = sheet;
     this.sourceSheetColCount = this.template.sheets[sheet.name()].columnCount;
     this._getColIndex();
+    this._getFormatter();
+  }
+
+  _getFormatter() {
+    const layout = new LayoutRowColBlock(this.spread);
+    const formatter = layout.getConfigFirstData()
+    if (formatter) {
+      CheckCostPrice.Formatter = formatter;
+    }
   }
 
   /**
@@ -182,6 +192,7 @@ export class CheckCostPrice {
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
         if (Object.hasOwnProperty.call(tables[i], key)) {
+
           for (let r = tables[i][key].row; r < tables[i][key].row + tables[i][key].rowCount; r++) {
 
             const costTotalPrice = [];
@@ -197,6 +208,9 @@ export class CheckCostPrice {
             const grossProfitFormula = `${colMap.total}${r + 1} - ${numberToColumn(columnIndex[1] + 1)}${r + 1}`;
             const grossMarginFormula = `${numberToColumn(columnIndex[2] + 1)}${r + 1} / ${colMap.total}${r + 1}`;
 
+            this.sheet.setFormatter(r, columnIndex[1], CheckCostPrice.Formatter)
+            this.sheet.setFormatter(r, columnIndex[2], CheckCostPrice.Formatter)
+            this.sheet.setFormatter(r, columnIndex[3], CheckCostPrice.Formatter)
             this.sheet.setFormula(r, columnIndex[1], `IFERROR(${costTotalPriceFormula},"")`);
             this.sheet.setFormula(r, columnIndex[2], `IFERROR(${grossProfitFormula},"")`);
             this.sheet.setFormula(r, columnIndex[3], `IFERROR(${grossMarginFormula},"")`);
@@ -204,6 +218,18 @@ export class CheckCostPrice {
         }
       }
     }
+  }
+
+  /**
+   * 
+   * @param {*} r 
+   * @param {*} rc 
+   * @param {*} c 
+   * @param {*} cc 
+   * @param {*} formatter 
+   */
+  _setFormatter(r, rc, c, cc) {
+    this.sheet.getRange(r, rc, c, cc).formatter(CheckCostPrice.Formatter);
   }
 
   /**
@@ -249,6 +275,7 @@ export class CheckCostPrice {
         for (const key in subTotals[j]) {
           if (Object.hasOwnProperty.call(subTotals[j], key)) {
             for (let c = 0; c < columnIndex.length; c++) {
+              this.sheet.setFormatter(subTotals[j][key].row, columnIndex[c], CheckCostPrice.Formatter);
               this.sheet.setFormula(subTotals[j][key].row, columnIndex[c], `IFERROR(${this.TableSubMap[key][c]},"")`);
             }
           }
@@ -278,6 +305,7 @@ export class CheckCostPrice {
 
     formulas.forEach((formula, index) => {
       const formulaStr = formula.join('+');
+      this.sheet.setFormatter(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], CheckCostPrice.Formatter);
       this.sheet.setFormula(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], `IFERROR(${formulaStr},"")`);
     });
   }

@@ -9,7 +9,7 @@ import { sortObjectByRow } from '../utils/index'
 
 import { CombinationTypeBuild } from './combination-type'
 import { getTemplateClassType } from './single-table';
-import { showTotal } from './parsing-template';
+import { showTotal, getPriceColumn } from './parsing-template';
 
 const NzhCN = require('nzh/cn');
 
@@ -342,6 +342,32 @@ export class LayoutRowColBlock {
     return null;
   }
 
+  /**
+ * Get Configuration Information (First Data)
+ */
+  getConfigFirstData() {
+    const resourceViews = getQuotationResource();
+    if (resourceViews.length) {
+      const resources = resourceViews[0].resources;
+      if (resources && resources.length) {
+        const firstTable = LayoutRowColBlock.Tables[0];
+        const sheet = this.Spread.getActiveSheet();
+        let tableId = null;
+
+        for (const key in firstTable) {
+          if (Object.prototype.hasOwnProperty.call(firstTable, key)) {
+            tableId = key;
+          }
+        }
+        const table = sheet.tables.findByName(`table${tableId}`);
+        const priceCol = getPriceColumn();
+        if (table && (priceCol === 0 || priceCol)) {
+          return sheet.getFormatter(firstTable[tableId].row, priceCol);
+        }
+      }
+    }
+    return null
+  }
 }
 
 export default LayoutRowColBlock;

@@ -9,6 +9,7 @@ import store from 'store';
 
 import { updateFormula } from './public'
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
+import { PRICE_SET_MAP } from "./constant";
 
 /**
  * Get the template
@@ -466,3 +467,22 @@ export const showPriceSet = (temp) => {
   console.warn('The price setup field does not exist');
   return false;
 }
+
+/**
+ * Get the Unit Price column in the template
+ * @returns 
+ */
+export const getPriceColumn = () => {
+  const template = getTemplate();
+  let priceFieldCol = null;
+  const binds = template.cloudSheet.center.equipment.bindPath;
+  for (const key in binds) {
+    if (Object.hasOwnProperty.call(binds, key)) {
+      if ([].concat(Object.keys(PRICE_SET_MAP), ['discountUnitPrice']).includes(key)) {
+        priceFieldCol = binds[key].column;
+      }
+    }
+  }
+  return priceFieldCol;
+}
+

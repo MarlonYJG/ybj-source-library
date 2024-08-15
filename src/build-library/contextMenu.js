@@ -21,6 +21,7 @@ import { mergeSpan, columnComputedValue } from '../common/single-table';
 
 import { Reset, UpdateSort } from './public';
 
+// eslint-disable-next-line no-unused-vars
 import { Render, positionBlock, OperationWorkBookSync, UpdateTotalBlock } from './single-table';
 
 /**
