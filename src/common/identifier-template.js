@@ -6,8 +6,7 @@
 import _ from 'lodash';
 import store from 'store';
 
-import { GetColumnComputedTotal } from '../build-library/single-table';
-import { PubGetTableStartRowIndex, PubGetTableRowCount } from './single-table';
+import { PubGetTableStartRowIndex, PubGetTableRowCount, GetColumnComputedTotal } from './single-table';
 
 /**
  * Define a template classification identifier

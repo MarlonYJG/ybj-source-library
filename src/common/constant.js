@@ -217,6 +217,11 @@ export const ASSOCIATED_FIELDS_FORMULA_MAP = {
   concessional: {
     label: '优惠后合计',
     formula: '{{concessional}}'
+  },
+
+  DXzje: {
+    label: '大写总金额',
+    formula: '{{concessional}}'
   }
 };
 

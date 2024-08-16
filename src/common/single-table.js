@@ -6,24 +6,28 @@
 import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
-import { GetUserCompany, imgUrlToBase64 } from 'utils';
 import store from 'store';
-
-import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR } from './constant';
+import { GetUserCompany, imgUrlToBase64, regChineseCharacter } from '../utils/index';
+import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR, ASSOCIATED_FIELDS_FORMULA_MAP } from './constant';
 import { columnToNumber, PubGetRandomNumber, replacePlaceholders } from './public';
+import { GeneratorUpperCaseFormatter } from './generator';
 
+import { NEW_OLD_FIELD_MAP } from '../build-library/config'
 import { ShowCostPrice } from '../build-library/head'
+import { synchronousStoreSumAmount } from '../build-library/single-table'
 
 import {
   templateRenderFlag,
   setCell,
   AddEquipmentImage,
   showSubTotal,
+  getTableHeaderDataTable,
+  getFormulaFieldRowCol
 } from './parsing-template';
-import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
+import { IdentifierTemplate, DEFINE_IDENTIFIER_MAP } from './identifier-template'
 import { formatterPrice, getShowCostPrice } from './parsing-quotation';
 
-import { SHOW_COST_PRICE_HEAD } from "store/quotation/mutation-types";
+import { SHOW_COST_PRICE_HEAD, UPDATE_QUOTATION_PATH } from "store/quotation/mutation-types";
 
 const NzhCN = require('nzh/cn');
 
@@ -31,7 +35,7 @@ const NzhCN = require('nzh/cn');
  * Row computed fields
  * @returns
  */
-export const GenerateFieldsRow = () => {
+const GenerateFieldsRow = () => {
   const totalBeforeTax = ['totalBeforeTax'];
   for (let index = 0; index < GENERATE_FIELDS_NUMBER.totalBeforeTax; index++) {
     totalBeforeTax.push(`totalBeforeTax${index}`);
@@ -587,7 +591,7 @@ export const columnTotalSumFormula = (columnTotal) => {
  * @param {*} totalBinds
  * @returns
  */
-export const rowComputedFieldSort = (totalBinds = {}) => {
+const rowComputedFieldSort = (totalBinds = {}) => {
   const totalBindsArr = [];
   for (const key in totalBinds) {
     if (Object.hasOwnProperty.call(totalBinds, key)) {
@@ -928,3 +932,461 @@ export const getTemplateClassType = () => {
 
   return null
 }
+
+/**
+ * Get the formula for the calculated column
+ * @param {*} sheet
+ * @returns
+ */
+export const GetColumnComputedTotal = (sheet) => {
+  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const { type = null } = template.cloudSheet.center;
+  const resourceViews = quotation.conferenceHall.resourceViews;
+
+  const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
+
+  // Obtain the index of the table
+  let header = [];
+
+  // table header
+  if (!noClass) {
+    if (type) {
+      const headerTable = getTableHeaderDataTable(type);
+      if (headerTable.length) {
+        header = headerTable;
+      }
+    }
+  }
+
+  const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header);
+
+  let insertTableIndex = PubGetTableStartRowIndex();
+  const columnTotal = [];
+  for (let index = 0; index < resourceViews.length; index++) {
+    if (index === 0) {
+      const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, null);
+      columnTotal.push(columnTotalMap);
+      insertTableIndex = insertTableIndex + classRow + tableHeaderRow + resourceViews[index].resources.length;
+    } else {
+      const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null);
+      columnTotal.push(columnTotalMap);
+      insertTableIndex = insertTableIndex + subTotal + classRow + tableHeaderRow + resourceViews[index].resources.length;
+    }
+  }
+
+  return columnTotal;
+};
+
+/**
+ * Clears the relevant calculated value for the totals area when no data is available
+ * @param {*} sheet 
+ * @param {*} row 
+ * @param {*} totalField 
+ * @param {*} fixedBindValueMap 
+ * @param {*} quotation 
+ * @param {*} template 
+ * @param {*} libraryType 
+ */
+export const clearTotalNoData = (sheet, row, totalField, fixedBindValueMap, quotation, template, libraryType) => {
+  const totalFieldBind = totalField.bindPath;
+
+  console.log('==================clearTotalNoData==========');
+  // Set a fixed value
+  for (const key in totalFieldBind) {
+    if (Object.hasOwnProperty.call(totalFieldBind, key)) {
+      const rows = totalFieldBind[key];
+      if (template.truckage) {
+        const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage');
+        TruckageIdentifier.truckageFreight(totalField, row, fixedBindValueMap);
+      } else {
+        if (rows.bindPath) {
+          if (Object.keys(DESCRIPTION_MAP).includes(rows.bindPath)) {
+            mixedDescriptionFields(sheet, quotation, row, rows);
+          }
+          if (fixedBindValueMap[rows.bindPath] === 0 || fixedBindValueMap[rows.bindPath]) {
+            sheet.setValue(row + rows.row, rows.column, fixedBindValueMap[rows.bindPath]);
+          }
+          if (rows.bindPath === 'sumAmount') {
+            fixedBindValueMap[rows.bindPath] = null;
+            sheet.setFormula(row + rows.row, rows.column, '');
+            sheet.setValue(row + rows.row, rows.column, '');
+            libraryType === 'build' && synchronousStoreSumAmount(null);
+          }
+        }
+      }
+    }
+  }
+
+  // Dynamic fields
+  for (const key in totalFieldBind) {
+    if (Object.hasOwnProperty.call(totalFieldBind, key)) {
+      const rows = totalFieldBind[key];
+      if (!rows.bindPath) {
+        let fieldName = key;
+        if (!regChineseCharacter.test(rows.name)) {
+          fieldName = rows.name;
+        }
+
+        console.log(row + rows.row, rows.column, rows);
+
+        sheet.setFormula(row + rows.row, rows.column, '');
+        sheet.setValue(row + rows.row, rows.column, '');
+        fixedBindValueMap[fieldName] = null;
+        if (libraryType === 'build') {
+          store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
+            path: [fieldName],
+            value: null
+          });
+        }
+      }
+    }
+  }
+};
+
+/**
+ * Calculate calculated field value in Total
+ * @param {*} sheet
+ * @param {*} field
+ * @param {*} rowIndex
+ * @param {*} fixedBindValueMap
+ * @param {*} fixedBindCellMap
+ * @param {*} key
+ * @param {*} cb
+ * @param {*} totalBinds
+ * @param {*} cbVal
+ * @param {*} columnTotal
+ * @param {*} columnTotalSum
+ */
+export const rowComputedField = (sheet, field, rowIndex, fixedBindValueMap, fixedBindCellMap, key, cb, totalBinds, cbVal, columnTotal, columnTotalSum) => {
+  let fieldName = key;
+  if (!regChineseCharacter.test(field.name)) {
+    fieldName = field.name;
+  }
+
+  console.log(fieldName, '无bindpath字段');
+  const fieldInfo = getFormulaFieldRowCol(field)
+  if (ASSOCIATED_FIELDS_FORMULA_MAP[fieldName]) {
+    if (fieldName === 'managementExpense') {
+      const fieldFormula = managementExpenseAssignment(fieldName, fixedBindValueMap, fixedBindCellMap, columnTotalSum);
+      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      const val = sheet.getValue(rowIndex + fieldInfo.row, fieldInfo.column);
+      fieldFormula && cb(fieldFormula);
+      if (val === 0 || val) {
+        cbVal(val);
+      }
+    } else if (GenerateFieldsRow().includes(fieldName)) {
+      const fieldFormula = totalBeforeTaxAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      const val = sheet.getValue(rowIndex + fieldInfo.row, fieldInfo.column);
+      fieldFormula && cb(fieldFormula);
+      if (val === 0 || val) {
+        cbVal(val);
+      }
+    } else if (fieldName === 'serviceCharge') {
+      const fieldFormula = serviceChargeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      const val = sheet.getValue(rowIndex + fieldInfo.row, fieldInfo.column);
+      fieldFormula && cb(fieldFormula);
+      if (val === 0 || val) {
+        cbVal(val);
+      }
+    } else if (fieldName === 'totalServiceCharge') {
+      const fieldFormula = totalServiceChargeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      const val = sheet.getValue(rowIndex + fieldInfo.row, fieldInfo.column);
+      fieldFormula && cb(fieldFormula);
+      if (val === 0 || val) {
+        cbVal(val);
+      }
+    } else if (fieldName === 'addTaxRateBefore') {
+      const fieldFormula = addTaxRateBeforeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      const val = sheet.getValue(rowIndex + fieldInfo.row, fieldInfo.column);
+      fieldFormula && cb(fieldFormula);
+      if (val === 0 || val) {
+        cbVal(val);
+      }
+    } else if (fieldName === 'taxes') {
+      const fieldFormula = taxesAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      const val = sheet.getValue(rowIndex + fieldInfo.row, fieldInfo.column);
+      fieldFormula && cb(fieldFormula);
+      if (val === 0 || val) {
+        cbVal(val);
+      }
+    } else if (fieldName === 'serviceChargeFee') {
+      serviceChargeFeeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+      console.error('该总计的组合类型字段(serviceChargeFee)已废弃，建议修改模板总计规则(不符合标准规则)!');
+    } else if (fieldName === 'DXzje') {
+      console.log(fixedBindCellMap, columnTotalSum);
+
+      const fieldFormula = sumAmountFormula(fieldName, fixedBindCellMap, columnTotalSum);
+      console.log(fieldFormula);
+
+      sheet.setFormatter(rowIndex + fieldInfo.row, fieldInfo.column, GeneratorUpperCaseFormatter());
+      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+    } else {
+      console.warn('在ASSOCIATED_FIELDS_FORMULA_MAP定义,但未存在过相关逻辑的字段', fieldName);
+    }
+  } else {
+    console.warn('模板的总计block：识别出未在ASSOCIATED_FIELDS_FORMULA_MAP定义的字段', fieldName);
+  }
+};
+
+
+// -----------------
+/**
+ * sumAmount assignment (运费 + 项目费用) + (管理费 + 服务费 + 税金)
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @returns
+ */
+// eslint-disable-next-line no-unused-vars
+export const sumAmountFormula = (fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindKeys, fixedBindValueMap) => {
+  const { taxes = null, managementExpense = null, serviceCharge = null, serviceChargeFee = null, freight = null, projectCost = null } = fixedBindCellMap;
+  const fieldFormulas = [];
+  if (columnTotalSum) {
+    fieldFormulas.push(`(${columnTotalSum})`);
+  }
+  if (freight) {
+    fieldFormulas.push(`(${freight})`);
+  }
+  if (projectCost) {
+    fieldFormulas.push(`(${projectCost})`);
+  }
+  if (serviceCharge) {
+    fieldFormulas.push(`(${serviceCharge})`);
+  }
+  if (serviceChargeFee) {
+    fieldFormulas.push(`(${serviceChargeFee})`);
+  }
+  if (managementExpense) {
+    fieldFormulas.push(`(${managementExpense})`);
+  }
+  if (taxes) {
+    fieldFormulas.push(`(${taxes})`);
+  }
+  return fieldFormulas.join('+');
+};
+
+/**
+ * managementExpense assignment
+ * @param {*} fieldName
+ * @param {*} fixedBindValueMap
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @returns
+ */
+const managementExpenseAssignment = (fieldName, fixedBindValueMap, fixedBindCellMap, columnTotalSum) => {
+  const managementFeeCell = fixedBindCellMap.managementFee;
+  const managementFee = managementFeeCell || fixedBindValueMap.managementFee;
+
+  if (managementFee === 0 || managementFee) {
+    if (columnTotalSum) {
+      return `(${columnTotalSum}) * ${managementFee} / 100`;
+    }
+  } else {
+    console.error('未检测到有埋点字段管理费率(managementFee)或管理费率字段(managementFee),无法计算管理费');
+  }
+  return '';
+};
+
+/**
+ * The sum of all the accumulations【value + 】
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @param {*} totalBinds
+ * @returns
+ */
+const totalBeforeTaxAssignment = (fieldName, fixedBindCellMap, columnTotalSum, totalBinds) => {
+  // eslint-disable-next-line no-unused-vars
+  const { managementExpense = null, serviceCharge = null, taxes = null } = fixedBindCellMap;
+  const totalBeforeFormula = totalBeforeAssignment(fieldName = 'totalBeforeTax', fixedBindCellMap, columnTotalSum, totalBinds);
+
+  const rowNames = rowComputedFieldSort(totalBinds);
+  const currentField = rowNames.findIndex((name) => name === fieldName);
+  const managementExpenseIndex = rowNames.findIndex((name) => name === 'managementExpense');
+  const serviceChargeIndex = rowNames.findIndex((name) => name === 'serviceCharge');
+  // const taxesIndex = rowNames.findIndex((name) => name === 'taxes');
+
+  const sum = [];
+  if (totalBeforeFormula) {
+    sum.push(totalBeforeFormula);
+  }
+
+  if (currentField > managementExpenseIndex && managementExpense) {
+    sum.push(managementExpense);
+  }
+  if (currentField > serviceChargeIndex && serviceCharge) {
+    sum.push(serviceCharge);
+  }
+  // if (currentField > taxesIndex && taxes) {
+  //   sum.push(taxes);
+  // }
+
+  return sum.join('+');
+};
+
+/**
+ * Specific fields + freight + projectCost
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @param {*} totalBinds
+ * @returns
+ */
+const totalBeforeAssignment = (fieldName = 'totalBeforeTax', fixedBindCellMap, columnTotalSum, totalBinds = {}) => {
+  const { freight = null, projectCost = null } = fixedBindCellMap;
+  const rowNames = rowComputedFieldSort(totalBinds);
+
+  const currentField = rowNames.findIndex((name) => name === fieldName);
+  const freightIndex = rowNames.findIndex((name) => name === 'freight');
+  const projectCostIndex = rowNames.findIndex((name) => name === 'projectCost');
+  const sum = [];
+  if (columnTotalSum) {
+    sum.push(columnTotalSum);
+  }
+  if (currentField > freightIndex && freight) {
+    sum.push(freight);
+  }
+  if (currentField > projectCostIndex && projectCost) {
+    sum.push(projectCost);
+  }
+
+  return sum.join('+');
+};
+
+/**
+ * serviceCharge assignment
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @param {*} totalBinds
+ * @returns
+ */
+const serviceChargeAssignment = (fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap) => {
+  const { rate = null, tax = null } = fixedBindCellMap;
+  // eslint-disable-next-line no-unused-vars
+  const { taxRate = null } = fixedBindValueMap;
+
+  if (fieldName === 'serviceCharge') {
+    const totalBeforeTaxFormula = totalBeforeTaxAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+    if (totalBeforeTaxFormula) {
+      const rate_ = rate || fixedBindValueMap[NEW_OLD_FIELD_MAP.rate] || fixedBindValueMap.rate;
+      if (rate_ === 0 || rate_) {
+        return `(${totalBeforeTaxFormula}) * ${rate_} / 100`;
+      } else {
+        console.error('未检测到有埋点字段服务费率(rate)或服务费率字段(serviceCharge：旧；rate：新),无法计算服务费');
+      }
+    }
+  } else if (fieldName === 'taxes') {
+    const totalBeforeTaxFormula = totalBeforeTaxAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+    if (totalBeforeTaxFormula) {
+      const tax_ = tax || fixedBindValueMap[NEW_OLD_FIELD_MAP.tax] || fixedBindValueMap.tax;
+      if (tax_ === 0 || tax_) {
+        return `(${totalBeforeTaxFormula}) * ${tax_} / 100`;
+      } else {
+        console.error('未检测到有埋点字段税率(tax)或税率字段(taxRate),无法计算税金');
+      }
+    }
+  }
+
+  return null;
+};
+
+/**
+ * serviceChargeFee assignment
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @param {*} totalBinds
+ */
+// eslint-disable-next-line no-unused-vars
+const serviceChargeFeeAssignment = (fieldName, fixedBindCellMap, columnTotalSum, totalBinds) => {
+  // TODO 未开发功能
+};
+
+/**
+ * totalServiceCharge assignment
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @param {*} totalBinds
+ * @returns
+ */
+const totalServiceChargeAssignment = (fieldName, fixedBindCellMap, columnTotalSum, totalBinds) => {
+  const totalBeforeTaxFormula = totalBeforeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds);
+  const { serviceCharge = null } = fixedBindCellMap;
+  if (serviceCharge && totalBeforeTaxFormula) {
+    return `(${totalBeforeTaxFormula}) + (${serviceCharge})`;
+  } else {
+    console.error('缺少服务费，无法计算!');
+  }
+  return null;
+};
+
+/**
+ * taxes assignment
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @param {*} totalBinds
+ * @returns
+ */
+const taxesAssignment = (fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap) => {
+  const { tax = null, rate = null, totalServiceCharge = null } = fixedBindCellMap;
+  if (!totalServiceCharge) {
+    if (tax && rate) {
+      const totalBeforeTaxFormula = totalBeforeTaxAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+
+      if (totalBeforeTaxFormula) {
+        const tax_ = tax || fixedBindValueMap[NEW_OLD_FIELD_MAP.tax] || fixedBindValueMap.tax;
+        if (tax_ === 0 || tax_) {
+          return `(${totalBeforeTaxFormula}) * ${tax_} / 100`;
+        } else {
+          console.error('未检测到有埋点字段税率(旧：rate；新:tax)或税率字段(旧：taxRate；新：tax),无法计算税金');
+        }
+      }
+    } else if (tax) {
+      return serviceChargeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
+    }
+  } else {
+    const tax_ = tax || fixedBindValueMap.tax;
+    if (tax_ === 0 || tax_) {
+      return `(${totalServiceCharge}) * ${tax_} / 100`;
+    } else {
+      console.error('未检测到有埋点字段税率(tax)或税率字段(tax),无法计算税金');
+    }
+  }
+  return null;
+};
+
+/**
+ * addTaxRateBefore assignment
+ * @param {*} fieldName
+ * @param {*} fixedBindCellMap
+ * @param {*} columnTotalSum
+ * @param {*} totalBinds
+ * @returns
+ */
+const addTaxRateBeforeAssignment = (fieldName, fixedBindCellMap, columnTotalSum, totalBinds) => {
+  const { managementExpense = null, serviceCharge = null, serviceChargeFee = null } = fixedBindCellMap;
+  const serviceChargeFormula = serviceChargeFee || serviceCharge;
+  const sum1Formula = totalBeforeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds);
+
+  const formula = [];
+  if (serviceChargeFormula) {
+    formula.push(serviceChargeFormula);
+  }
+
+  if (managementExpense) {
+    formula.push(managementExpense);
+  }
+  if (formula.length) {
+    return `(${sum1Formula}) + ${formula.join('+')}`;
+  }
+  return '';
+};
