@@ -13,7 +13,7 @@ import { columnToNumber, PubGetRandomNumber, replacePlaceholders } from './publi
 import { GeneratorUpperCaseFormatter } from './generator';
 
 import { NEW_OLD_FIELD_MAP } from '../build-library/config'
-import { ShowCostPrice } from '../build-library/head'
+import { ShowCostPrice, ShowCostPriceStatus } from '../build-library/head'
 import { synchronousStoreSumAmount } from '../build-library/single-table'
 
 import {
@@ -899,7 +899,7 @@ export const translateTable = (spread, tableMap) => {
 export const initShowCostPrice = (spread) => {
   const isShow = getShowCostPrice();
   store.commit(`quotationModule/${SHOW_COST_PRICE_HEAD}`, isShow);
-  ShowCostPrice(spread)
+  ShowCostPrice(spread, ShowCostPriceStatus());
 }
 
 /**

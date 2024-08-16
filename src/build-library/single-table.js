@@ -16,13 +16,13 @@ import {
 } from 'store/quotation/mutation-types';
 
 import { commandRegister, onOpenMenu } from './contextMenu';
-import { ShowCostPrice } from './head';
+import { ShowCostPrice, ShowCostPriceStatus } from './head';
 
 import { CreateTable } from '../common/sheetWorkBook';
 import IdentifierTemplate from '../common/identifier-template';
 
 import { CombinationTypeBuild } from '../common/combination-type';
-import {  DESCRIPTION_MAP, TOTAL_COMBINED_MAP, PRICE_SET_MAP } from '../common/constant';
+import { DESCRIPTION_MAP, TOTAL_COMBINED_MAP, PRICE_SET_MAP } from '../common/constant';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { numberToColumn } from '../common/public'
 
@@ -1143,7 +1143,7 @@ export const Render = (spread, isInit) => {
   if (isInit) {
     initShowCostPrice(spread);
   } else {
-    ShowCostPrice(spread);
+    ShowCostPrice(spread, ShowCostPriceStatus());
   }
 };
 
