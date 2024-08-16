@@ -140,7 +140,8 @@ export class CheckCostPrice {
         }
       }
     }
-    this.sheet.getRange(row, columnIndex[0], 1, this.colCount).setStyle(this.HeadStyle);
+    this._setRangeStyle(row, columnIndex[0], 1, this.colCount);
+    // this.sheet.getRange(row, columnIndex[0], 1, this.colCount).setStyle(this.HeadStyle);
   }
 
   /**
@@ -345,6 +346,20 @@ export class CheckCostPrice {
   }
 
   /**
+   * Set the interval style
+   * @param {*} r 
+   * @param {*} rc 
+   * @param {*} c 
+   * @param {*} cc 
+   */
+  _setRangeStyle(r, rc, c, cc) {
+    this.sheet.getRange(r, rc, c, cc).hAlign(1);
+    this.sheet.getRange(r, rc, c, cc).vAlign(1);
+    const lineBorder = GeneratorLineBorder();
+    this.sheet.getRange(r, rc, c, cc).setBorder(lineBorder, { all: true })
+  }
+
+  /**
    * Style the body
    * @param {*} tables 
    * @param {*} subTotals 
@@ -356,7 +371,8 @@ export class CheckCostPrice {
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
         if (Object.hasOwnProperty.call(tables[i], key)) {
-          this.sheet.getRange(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount).setStyle(this._style())
+          this._setRangeStyle(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount);
+          // this.sheet.getRange(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount).setStyle(this._style())
         }
       }
     }
@@ -365,7 +381,8 @@ export class CheckCostPrice {
       for (let i = 0; i < subTotals.length; i++) {
         for (const key in subTotals[i]) {
           if (Object.hasOwnProperty.call(subTotals[i], key)) {
-            this.sheet.getRange(subTotals[i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
+            this._setRangeStyle(subTotals[i][key].row, columnIndex[0], 1, this.colCount);
+            // this.sheet.getRange(subTotals[i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
           }
         }
       }
@@ -376,7 +393,8 @@ export class CheckCostPrice {
         for (let i = 0; i < Levels[0].length; i++) {
           for (const key in Levels[0][i]) {
             if (Object.hasOwnProperty.call(Levels[0][i], key)) {
-              this.sheet.getRange(Levels[0][i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
+              this._setRangeStyle(Levels[0][i][key].row, columnIndex[0], 1, this.colCount);
+              // this.sheet.getRange(Levels[0][i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
             }
           }
 
@@ -396,7 +414,8 @@ export class CheckCostPrice {
   _setTotalStyle(totalMap) {
     if (totalMap) {
       const columnIndex = CheckCostPrice.ColumnIndex;
-      this.sheet.getRange(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount).setStyle(this._style());
+      this._setRangeStyle(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount);
+      // this.sheet.getRange(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount).setStyle(this._style());
     }
   }
 
