@@ -3,7 +3,7 @@
  * @Date: 2024-08-01 13:11:10
  * @Description: template
  */
-import { sheet as common } from './public'
+import common from './public'
 import { sheet as noLevel } from "./noLevel/index";
 import { sheet as Level_1_row } from './Level_1_row/index'
 

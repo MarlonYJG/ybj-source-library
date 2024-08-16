@@ -7,15 +7,12 @@ import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
 import store from 'store';
-import { GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from 'utils';
-import { getSystemDate } from '../utils/index';
-import { ResDatas } from '../utils/index';
-import { regChineseCharacter } from '../utils/index';
+import { getSystemDate, isNumber, ResDatas, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 import API from 'api';
 
 import { CreateTable } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
-import { TOTAL_COMBINED_MAP, ASSOCIATED_FIELDS_FORMULA_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
+import { TOTAL_COMBINED_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
 
 import { numberToColumn } from '../common/public'
 
@@ -33,14 +30,12 @@ import {
   mergeColumn,
   showTotal,
   getComputedColumnFormula,
-  getFormulaFieldRowCol
 } from '../common/parsing-template';
 import {
-  templateTotalMap, GenerateFieldsRow, mergeSpan, setCellStyle, setTotalRowHeight, PubGetTableStartRowIndex,
+  templateTotalMap, mergeSpan, setCellStyle, setTotalRowHeight, PubGetTableStartRowIndex,
   PubGetTableRowCount,
   classificationAlgorithms,
   rowComputedFieldSort,
-  plusColumnTotalSum,
   columnsTotal,
   mixedDescriptionFields,
   tableHeader,
@@ -49,14 +44,25 @@ import {
   SetComputedSubTotal,
   renderSheetImage,
   translateSheet,
-  initShowCostPrice
+  initShowCostPrice,
+  columnTotalSumFormula,
+  GetColumnComputedTotal,
+  clearTotalNoData,
+  sumAmountFormula,
+  totalBeforeTaxFormula,
 } from '../common/single-table';
+
+import { rowComputedField } from '../build-library/single-table'
 
 import {
   PubGetResourceViews,
   // eslint-disable-next-line no-unused-vars
   setLastColumnWidth
 } from './public';
+
+const NzhCN = require('nzh/cn');
+
+let SumAmount = null;
 
 /**
  * Get an index of the first-level classification
@@ -749,222 +755,142 @@ const taxesAssignment = (fieldName, totalBinds, columnTotalSum, fixedBindValueMa
 };
 
 /**
- *rowComputed set value
- * @param {*} sheet
- * @param {*} field
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @param {*} columnTotal
- * @param {*} rowIndex
- * @param {*} key
- * @param {*} cb
- * @param {*} totalBinds
- * @param {*} columnSum
- * @param {*} columnTotalSum
- */
-const rowComputedField = (sheet, field, fixedBindValueMap, computedFieldMap, columnTotal, rowIndex, key, cb, totalBinds, columnSum, columnTotalSum) => {
-  let fieldName = key;
-  if (!regChineseCharacter.test(field.name)) {
-    fieldName = field.name;
-  }
-  const fieldInfo = getFormulaFieldRowCol(field);
-  console.log(fieldName, 'fieldName 无bindpath字段');
-
-  if (ASSOCIATED_FIELDS_FORMULA_MAP[fieldName]) {
-    setCellFormatter(sheet, rowIndex + fieldInfo.row, fieldInfo.column);
-    if (fieldName === 'managementExpense') {
-      const fieldVal = managementExpenseAssignment(columnTotal, fixedBindValueMap, computedFieldMap);
-      sheet.setValue(rowIndex + fieldInfo.row, fieldInfo.column, fieldVal);
-      fieldVal && cb(fieldVal);
-    } else if (GenerateFieldsRow().includes(fieldName)) {
-      totalAfterTaxsAssignment(fieldName, columnTotal, fieldInfo, columnSum, totalBinds, columnTotalSum, fixedBindValueMap, () => {
-        setCellFormatter(sheet, rowIndex + fieldInfo.row, fieldInfo.column);
-      }, (column, fieldVal) => {
-        sheet.setValue(rowIndex + fieldInfo.row, column, fieldVal);
-        fieldVal && cb(fieldVal);
-      });
-    } else if (fieldName === 'serviceCharge') {
-      const fieldVal = serviceChargeAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-      sheet.setValue(rowIndex + fieldInfo.row, fieldInfo.column, fieldVal);
-      fieldVal && cb(fieldVal);
-    } else if (fieldName === 'totalServiceCharge') {
-      const fieldVal = totalServiceChargeAssignment(totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-      sheet.setValue(rowIndex + fieldInfo.row, fieldInfo.column, fieldVal);
-      fieldVal && cb(fieldVal);
-    } else if (fieldName === 'addTaxRateBefore') {
-      const fieldVal = addTaxRateBeforeAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-      sheet.setValue(rowIndex + fieldInfo.row, fieldInfo.column, fieldVal);
-      fieldVal && cb(fieldVal);
-    } else if (fieldName === 'taxes') {
-      const fieldVal = taxesAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-      sheet.setValue(rowIndex + fieldInfo.row, fieldInfo.column, fieldVal);
-      fieldVal && cb(fieldVal);
-    } else if (fieldName === 'serviceChargeFee') {
-      const fieldVal = serviceChargeFeeAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-      sheet.setValue(rowIndex + fieldInfo.row, fieldInfo.column, fieldVal);
-      fieldVal && cb(fieldVal, 'serviceCharge');
-    } else {
-      console.warn('在ASSOCIATED_FIELDS_FORMULA_MAP定义,但未存在过相关逻辑的字段', fieldName);
-    }
-    sheet.autoFitColumn(fieldInfo.column);
-  } else {
-    console.warn('模板的总计block：识别出未在ASSOCIATED_FIELDS_FORMULA_MAP定义的字段', fieldName);
-  }
-};
-
-/**
- * Total set value
+ * Set dynamic field value for total
  * @param {*} sheet
  * @param {*} totalField
  * @param {*} row
- * @param {*} columnTotal
- * @param {*} position
- * @param {*} columnComputed
+ * @param {*} totalBinds
  */
-// eslint-disable-next-line no-unused-vars
-const setTotalRowValue = (sheet, totalField, row, columnTotal, position, columnComputed) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const { truckage = null, cloudSheet: { total } } = store.getters['quotationModule/GetterQuotationWorkBook'];
-  const totalBinds = total ? total[templateTotalMap(total.select)].bindPath : null;
+const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
+  console.log(totalField, row, totalBinds);
 
-  const columnTotalSum = plusColumnTotalSum(columnTotal);
-  const columnSum = totalAfterTaxsColumnAssignment(columnTotal);
+  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const resourceViews = quotation.conferenceHall.resourceViews;
+  const columnTotal = GetColumnComputedTotal(sheet);
+  const columnTotalSum = columnTotalSumFormula(columnTotal);
 
   const fixedBindValueMap = {};
-  const computedFieldMap = {};
   const fixedBindCellMap = {};
-
-  let columnHeader = null;
-  if (position) {
-    for (const key in position) {
-      if (Object.hasOwnProperty.call(position, key)) {
-        columnHeader = position[key].columnHeader;
-      }
-    }
-  }
+  // const fixedBindKeys = Object.keys(totalField.bindPath);
 
   // Get a fixed value
   for (const key in totalField.bindPath) {
     if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
-      const rows = _.cloneDeep(totalField.bindPath[key]);
+      const rows = totalField.bindPath[key];
+
+      console.log(rows, key, 'rows');
+
       if (rows.bindPath) {
-        if (columnHeader) {
-          if (rows.columnHeader !== columnHeader) {
-            const path = rows.bindPath.split('.');
-            fixedBindValueMap[key] = Number(_.get(quotation, path));
-          }
-        } else {
-          if (!Object.keys(DESCRIPTION_MAP).includes(rows.bindPath)) {
-            const path = rows.bindPath.split('.');
-            fixedBindValueMap[key] = Number(_.get(quotation, path));
+        const path = rows.bindPath.split('.');
+        if (_.has(quotation, path)) {
+          const val = _.get(quotation, path);
+          if (val === 0 || val) {
+            if (isNumber(Number(val))) {
+              fixedBindValueMap[rows.bindPath] = Number(val);
+            }
           }
         }
       }
     }
   }
+  if (resourceViews && resourceViews.length) {
+    if (!template.truckage) {
+      // Set a fixed value
+      for (const key in totalField.bindPath) {
+        if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
+          const rows = totalField.bindPath[key];
 
-  if (!truckage) {
-    // Set a fixed value
-    for (const key in totalField.bindPath) {
-      if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
-        const rows = _.cloneDeep(totalField.bindPath[key]);
-
-        console.log(rows, 'rows');
-
-        if (rows.bindPath) {
-          // Binding value
-          if (columnHeader) {
-            if (rows.columnHeader === columnHeader) {
-              fixedBindCellMap[key] = {
-                row: row + rows.row,
-                column: rows.column
-              };
-
-              setCellFormatter(sheet, row + rows.row, rows.column);
-              sheet.setBindingPath(row + rows.row, rows.column, rows.bindPath);
-              sheet.autoFitColumn(rows.column);
-            }
-          } else {
+          if (rows.bindPath) {
+            // Binding value
             if (Object.keys(DESCRIPTION_MAP).includes(rows.bindPath)) {
               mixedDescriptionFields(sheet, quotation, row, rows);
             } else {
-              setCellFormatter(sheet, row + rows.row, rows.column);
+              // setCellFormatter(sheet, row + rows.row, rows.column);
+              console.log(row, rows.row);
 
-              fixedBindCellMap[key] = {
-                row: row + rows.row,
-                column: rows.column
-              };
+              fixedBindCellMap[key] = `${numberToColumn(rows.column + 1)}${row + rows.row + 1}`;
 
-              sheet.setBindingPath(row + rows.row, rows.column, rows.bindPath);
-              sheet.autoFitColumn(rows.column);
+              if (fixedBindValueMap[rows.bindPath] === 0 || fixedBindValueMap[rows.bindPath]) {
+                sheet.setValue(row + rows.row, rows.column, fixedBindValueMap[rows.bindPath]);
+              }
+              // sheet.autoFitColumn(rows.column);
+            }
+
+          }
+        }
+      }
+
+      // Dynamic fields
+      for (const key in totalField.bindPath) {
+        if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
+          const rows = totalField.bindPath[key];
+          let fieldName = key;
+          if (!regChineseCharacter.test(rows.name)) {
+            fieldName = rows.name;
+          }
+          if (!rows.bindPath) {
+            rowComputedField(sheet, rows, row, fixedBindValueMap, fixedBindCellMap, key, (formula) => {
+              fixedBindCellMap[fieldName] = formula;
+            }, totalBinds, (value) => {
+              fixedBindValueMap[fieldName] = value;
+            }, columnTotal, columnTotalSum);
+          }
+        }
+      }
+
+      // Calculate the final total (sumAmount)
+      for (const key in totalField.bindPath) {
+        if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
+          const rows = totalField.bindPath[key];
+          if (rows.bindPath === 'sumAmount') {
+            // TODO 最终价以优惠价为主
+            const fieldFormula = sumAmountFormula(key, fixedBindCellMap, columnTotalSum);
+
+            console.log(fieldFormula, 'sumAmount');
+
+            sheet.setFormula(row + rows.row, rows.column, fieldFormula);
+            const val = sheet.getValue(row + rows.row, rows.column);
+            if (val === 0 || val) {
+              SumAmount = val;
             }
           }
         }
       }
+    } else {
+      const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage');
+      TruckageIdentifier.truckageFreight(totalField, row, fixedBindValueMap);
     }
 
-    // Dynamic fields
-    for (const key in totalField.bindPath) {
-      if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
-        const rows = _.cloneDeep(totalField.bindPath[key]);
-        if (!rows.bindPath) {
-          rowComputedField(sheet, rows, fixedBindValueMap, computedFieldMap, columnTotal, row, key, (value, name) => {
-            let fieldName = key;
-            if (!regChineseCharacter.test(rows.name)) {
-              fieldName = rows.name;
-            }
-            if (name) {
-              computedFieldMap[name] = value;
-            } else {
-              computedFieldMap[fieldName] = value;
-            }
-          }, totalBinds, columnSum, columnTotalSum);
-        }
-      }
-    }
-
-    console.log(fixedBindCellMap, 'fixedBindCellMap');
-
-    for (const key in totalField.bindPath) {
-      if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
-        const rows = _.cloneDeep(totalField.bindPath[key]);
-        if (rows.bindPath) {
-          const path = rows.bindPath.split('.');
-          if (_.has(quotation, path)) {
-            if (_.get(quotation, path) !== 0 && !_.get(quotation, path)) {
-              let fieldName = key;
-              let value = '';
-              if (!regChineseCharacter.test(rows.name)) {
-                fieldName = rows.name;
-              }
-
-              if (fieldName === 'totalAfterTax') {
-                const total = computedFieldMap.totalServiceCharge || computedFieldMap.totalBeforeTax;
-                value = new Decimal(total).plus(new Decimal(computedFieldMap.taxes)).toNumber();
-              } else if (GenerateFieldsRow().includes(fieldName)) {
-                totalAfterTaxsAssignment(fieldName, columnTotal, rows, columnSum, totalBinds, columnTotalSum, fixedBindValueMap, null, (column, fieldVal) => {
-                  value = fieldVal;
-                });
-              }
-
-              if (value === 0 || value) {
-                computedFieldMap[fieldName] = value;
-              }
-
-              setCellFormatter(sheet, row + rows.row, rows.column);
-              sheet.setValue(row + rows.row, rows.column, value);
-              sheet.autoFitColumn(rows.column);
-            }
-          }
-        }
-      }
+    if (!template.truckage) {
+      updateUpperCase(sheet, row, totalField, quotation);
     }
   } else {
-    const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage');
-    TruckageIdentifier.truckageFreight(totalField, row, fixedBindValueMap);
+    clearTotalNoData(sheet, row, totalField, fixedBindValueMap, quotation, template, 'parsing');
   }
 
+  console.log(fixedBindValueMap, 'fixedBindValueMap');
+  console.log(fixedBindCellMap, 'fixedBindCellMap');
 };
+
+/**
+ * Update the uppercase value
+ * @param {*} sheet 
+ * @param {*} row 
+ * @param {*} totalField 
+ * @param {*} quotation 
+ */
+const updateUpperCase = (sheet, row, totalField, quotation) => {
+  for (const key in totalField.bindPath) {
+    if (Object.prototype.hasOwnProperty.call(totalField.bindPath, key)) {
+      const rows = totalField.bindPath[key];
+      if (rows.bindPath && rows.bindPath === 'DXzje') {
+        const sumAmount = SumAmount || _.get(quotation, rows.bindPath)
+        sheet.setValue(row + rows.row, rows.column, NzhCN.encodeB(sumAmount));
+      }
+    }
+  }
+}
+
 
 /**
  * A subtotal of the classification layer
@@ -1045,7 +971,8 @@ const RenderHeaderTotal = (spread, quotation, columnTotal) => {
   }
   setCellStyle(spread, mixTopTotal[combined], totalRowIndex, true);
   setTotalRowHeight(sheet, total, mixTopTotal[combined], totalRowIndex);
-  setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, columnTotal, initTotal.bindPath, null);
+  // 1setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, columnTotal, initTotal.bindPath, null);
+  setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, initTotal.bindPath, template);
 
   sheet.resumePaint();
 };
@@ -1230,7 +1157,8 @@ const RenderTotal = (spread, columnTotal, columnComputed) => {
     mergeSpan(sheet, Total.spans, totalRowIndex);
     setCellStyle(spread, Total, totalRowIndex, true);
     setTotalRowHeight(sheet, total, Total, totalRowIndex);
-    setTotalRowValue(sheet, Total, totalRowIndex, columnTotal, null, columnComputed);
+    // 1setTotalRowValue(sheet, Total, totalRowIndex, columnTotal, null, columnComputed);
+    setTotalRowValue(sheet, Total, totalRowIndex, Total.bindPath, template);
 
     sheet.resumePaint();
 
