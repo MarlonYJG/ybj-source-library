@@ -3,7 +3,6 @@
  * @Date: 2024-04-07 18:29:42
  * @Description: 单表 - 逻辑处理
  */
-import Decimal from 'decimal.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
 import store from 'store';
@@ -35,7 +34,6 @@ import {
   templateTotalMap, mergeSpan, setCellStyle, setTotalRowHeight, PubGetTableStartRowIndex,
   PubGetTableRowCount,
   classificationAlgorithms,
-  rowComputedFieldSort,
   columnsTotal,
   mixedDescriptionFields,
   tableHeader,
@@ -48,11 +46,9 @@ import {
   columnTotalSumFormula,
   GetColumnComputedTotal,
   clearTotalNoData,
+  rowComputedField,
   sumAmountFormula,
-  totalBeforeTaxFormula,
 } from '../common/single-table';
-
-import { rowComputedField } from '../build-library/single-table'
 
 import {
   PubGetResourceViews,
@@ -459,302 +455,6 @@ const initDataSetValue = (sheet, field, source, path, type) => {
 };
 
 /**
- * Gets the value of the calculated row
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const getComputedRowDefaultVal = (fixedBindValueMap, computedFieldMap) => {
-  const managementExpense = fixedBindValueMap.managementExpense || computedFieldMap.managementExpense;
-  const serviceCharge = fixedBindValueMap.serviceChargeFee || fixedBindValueMap.serviceCharge || computedFieldMap.serviceChargeFee || computedFieldMap.serviceCharge;
-  const taxes = fixedBindValueMap.taxes || computedFieldMap.taxes;
-
-  return {
-    managementExpense: Number(managementExpense),
-    serviceCharge: Number(serviceCharge),
-    taxes: Number(taxes)
-  };
-};
-
-/**
- * Excludes service charge and management fee
- * columnTotalSum + freight + projectCost + other
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @returns
- */
-const totalBeforeAssignment = (fieldName = 'totalBeforeTax', totalBinds = {}, columnTotalSum, fixedBindValueMap) => {
-  const { freight = 0, projectCost = 0 } = fixedBindValueMap;
-  const rowNames = rowComputedFieldSort(totalBinds);
-
-  const currentField = rowNames.findIndex((name) => name === fieldName);
-  const freightIndex = rowNames.findIndex((name) => name === 'freight');
-  const projectCostIndex = rowNames.findIndex((name) => name === 'projectCost');
-
-  let freightSum = 0;
-  let projectCostSum = 0;
-  if (currentField > freightIndex) {
-    freightSum = freight;
-  }
-  if (currentField > projectCostIndex) {
-    projectCostSum = projectCost;
-  }
-
-  return new Decimal(columnTotalSum).plus(new Decimal(freightSum)).plus(new Decimal(projectCostSum)).toNumber();
-};
-
-/**
- * Dynamically interpolated summary fields
- * @param {*} fieldName
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const totalBeforeTaxAssignment = (fieldName, totalBinds = {}, columnTotalSum, fixedBindValueMap, computedFieldMap) => {
-  // eslint-disable-next-line no-unused-vars
-  const { managementExpense = 0, serviceCharge = 0, taxes = 0 } = getComputedRowDefaultVal(fixedBindValueMap, computedFieldMap);
-  const totalBefore = totalBeforeAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap);
-  const sums = [];
-
-  const sumMap = {
-    managementExpense: 0,
-    serviceCharge: 0,
-    taxes: 0
-  };
-
-  const rowNames = rowComputedFieldSort(totalBinds);
-  const currentField = rowNames.findIndex((name) => name === fieldName);
-  const managementExpenseIndex = rowNames.findIndex((name) => name === 'managementExpense');
-  const serviceChargeIndex = rowNames.findIndex((name) => name === 'serviceCharge');
-  // const taxesIndex = rowNames.findIndex((name) => name === 'taxes');
-
-  if (currentField > managementExpenseIndex) {
-    sumMap.managementExpense = managementExpense || 0;
-  }
-  if (currentField > serviceChargeIndex) {
-    sumMap.serviceCharge = serviceCharge || 0;
-  }
-
-  // if (currentField > taxesIndex) {
-  //   sumMap.taxes = taxes || 0;
-  // }
-
-  for (const key in sumMap) {
-    if (Object.hasOwnProperty.call(sumMap, key)) {
-      sums.push(new Decimal(sumMap[key]));
-    }
-  }
-
-  return Decimal.add(new Decimal(totalBefore), new Decimal(sums[0]), new Decimal(sums[1]), new Decimal(sums[2])).toNumber();
-};
-/**
- * serviceChargeSum + managementExpenseSum + taxesSum
- * @param {*} fieldName
- * @param {*} totalBinds
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const serviceAndManageAndTaxSum = (fieldName, totalBinds = {}, fixedBindValueMap, computedFieldMap) => {
-  // eslint-disable-next-line no-unused-vars
-  const { managementExpense = 0, serviceCharge = 0, taxes = 0 } = getComputedRowDefaultVal(fixedBindValueMap, computedFieldMap);
-  const sums = [];
-
-  const sumMap = {
-    managementExpense: 0,
-    serviceCharge: 0,
-    taxes: 0
-  };
-
-  const rowNames = rowComputedFieldSort(totalBinds);
-  const currentField = rowNames.findIndex((name) => name === fieldName);
-  const managementExpenseIndex = rowNames.findIndex((name) => name === 'managementExpense');
-  const serviceChargeIndex = rowNames.findIndex((name) => name === 'serviceCharge');
-  // const taxesIndex = rowNames.findIndex((name) => name === 'taxes');
-
-  if (currentField > managementExpenseIndex) {
-    sumMap.managementExpense = managementExpense || 0;
-  }
-  if (currentField > serviceChargeIndex) {
-    sumMap.serviceCharge = serviceCharge || 0;
-  }
-
-  // if (currentField > taxesIndex) {
-  //   sumMap.taxes = taxes || 0;
-  // }
-
-  for (const key in sumMap) {
-    if (Object.hasOwnProperty.call(sumMap, key)) {
-      sums.push(new Decimal(sumMap[key]));
-    }
-  }
-  return Decimal.add(new Decimal(sums[0]), new Decimal(sums[1]), new Decimal(sums[2])).toNumber();
-};
-
-/**
- * The sum of the totals of each column
- * @param {*} columnTotal
- * @returns
- */
-const totalAfterTaxsColumnAssignment = (columnTotal) => {
-  const mapsum = {};
-  columnTotal.forEach(tableColumnComputedItem => {
-    for (const key in tableColumnComputedItem) {
-      if (Object.hasOwnProperty.call(tableColumnComputedItem, key)) {
-        if (Object.keys(mapsum).includes(key)) {
-          mapsum[tableColumnComputedItem[key].columnHeader] = Decimal.add(new Decimal(mapsum[key]), new Decimal(tableColumnComputedItem[key].sum)).toNumber();
-        } else {
-          mapsum[tableColumnComputedItem[key].columnHeader] = tableColumnComputedItem[key].sum;
-        }
-      }
-    }
-  });
-  return mapsum;
-};
-
-/**
- * totalAfterTaxs assignment
- * @param {*} columnTotal
- * @param {*} field
- * @param {*} columnSum
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @param {*} setUnitCb
- * @param {*} cb
- */
-const totalAfterTaxsAssignment = (fieldName, columnTotal, field, columnSum, totalBinds, columnTotalSum, fixedBindValueMap, setUnitCb, cb) => {
-  let totalHeader = '';
-  for (let index = 0; index < columnTotal.length; index++) {
-    if (index === 0) {
-      if (Object.keys(columnTotal[index]).includes('total')) {
-        totalHeader = columnTotal[index].total.columnHeader;
-        setUnitCb && setUnitCb();
-      } else {
-        console.error('缺少列总价字段(total)对应的行小计字段(totalBeforeTax)');
-      }
-    }
-  }
-
-  if (Object.keys(columnSum).includes(field.columnHeader)) {
-    if (!field.bindPath) {
-      if (field.columnHeader === totalHeader) {
-        cb(field.column, totalBeforeAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap));
-      } else if (fieldName === 'totalBeforeTax') {
-        cb(field.column, totalBeforeAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap));
-      } else {
-        cb(field.column, columnSum[field.columnHeader]);
-      }
-    }
-  } else {
-    console.warn('column Total 与统计埋点字段未在同一列');
-  }
-};
-/**
- * managementExpense assignment
- * @param {*} columnTotal
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const managementExpenseAssignment = (columnTotal, fixedBindValueMap, computedFieldMap) => {
-  const managementFee = fixedBindValueMap.managementFee || computedFieldMap.managementFee;
-
-  let sum = 0;
-  columnTotal.forEach(tableColumnComputedItem => {
-    const columns = Object.keys(tableColumnComputedItem);
-    if (columns.includes('total')) {
-      sum = new Decimal(sum).plus(new Decimal(tableColumnComputedItem.total.sum)).toNumber();
-    } else {
-      console.warn('管理费缺少列字段(total)合计,造成无法计算!');
-    }
-  });
-  return new Decimal(sum).times(new Decimal(managementFee)).dividedBy(new Decimal(100)).toNumber();
-};
-/**
- * serviceCharge assignment
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const serviceChargeAssignment = (fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap) => {
-  const { rate } = fixedBindValueMap;
-  const totalBeforeTax = totalBeforeTaxAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-
-  return new Decimal(totalBeforeTax).times(new Decimal(rate)).dividedBy(new Decimal(100)).toNumber();
-};
-/**
- * serviceChargeFee assignment
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const serviceChargeFeeAssignment = (fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap) => {
-  const totalBeforeTax = totalBeforeTaxAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-  const { serviceCharge } = getComputedRowDefaultVal(fixedBindValueMap, computedFieldMap);
-
-  return new Decimal(totalBeforeTax).times(new Decimal(serviceCharge)).dividedBy(new Decimal(100)).toNumber();
-};
-/**
- * totalServiceCharge assignment
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- */
-const totalServiceChargeAssignment = (totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap) => {
-  const totalBeforeTax = totalBeforeAssignment('totalBeforeTax', totalBinds, columnTotalSum, fixedBindValueMap);
-  const { serviceCharge } = getComputedRowDefaultVal(fixedBindValueMap, computedFieldMap);
-
-  return new Decimal(totalBeforeTax).plus(new Decimal(serviceCharge)).toNumber();
-};
-/**
- * addTaxRateBefore assignment
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const addTaxRateBeforeAssignment = (fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap) => {
-  const totalBeforeTax = totalBeforeTaxAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap);
-  return totalBeforeTax;
-};
-/**
- * taxes assignment
- * @param {*} totalBinds
- * @param {*} columnTotalSum
- * @param {*} fixedBindValueMap
- * @param {*} computedFieldMap
- * @returns
- */
-const taxesAssignment = (fieldName, totalBinds, columnTotalSum, fixedBindValueMap, computedFieldMap) => {
-  const { tax = null, totalServiceCharge = null } = fixedBindValueMap;
-  const totalBefore = totalBeforeAssignment(fieldName, totalBinds, columnTotalSum, fixedBindValueMap);
-  let includeServiceSum = totalServiceCharge || computedFieldMap.totalServiceCharge;
-  if (!includeServiceSum) {
-    const smtSum = serviceAndManageAndTaxSum(fieldName, totalBinds, fixedBindValueMap, computedFieldMap);
-    let smtSum_ = 0;
-    let totalBefore_ = 0;
-    if (smtSum) {
-      smtSum_ = smtSum;
-    }
-    if (totalBefore) {
-      totalBefore_ = totalBefore;
-    }
-    includeServiceSum = new Decimal(new Decimal(totalBefore_)).plus(new Decimal(smtSum_)).toNumber();
-  }
-  return new Decimal(includeServiceSum).times(new Decimal(tax)).dividedBy(new Decimal(100)).toNumber();
-};
-
-/**
  * Set dynamic field value for total
  * @param {*} sheet
  * @param {*} totalField
@@ -951,6 +651,7 @@ const RenderHeaderClass = (spread, quotation, columnTotal) => {
  * @param {*} quotation
  * @param {*} columnTotal
  */
+// eslint-disable-next-line no-unused-vars
 const RenderHeaderTotal = (spread, quotation, columnTotal) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
   const { top, total, mixTopTotal } = template.cloudSheet;
@@ -1137,6 +838,7 @@ export const InitTotal = (spread) => {
  * @param {*} spread
  * @param {*} columnTotal
  */
+// eslint-disable-next-line no-unused-vars
 const RenderTotal = (spread, columnTotal, columnComputed) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
