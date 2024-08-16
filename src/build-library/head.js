@@ -345,6 +345,15 @@ export const ShowCostPrice = (spread, locked = false) => {
 }
 
 /**
+ * Cost price status
+ * @returns 
+ */
+export const ShowCostPriceStatus = () => {
+  const costLocked = store.getters['GetterCostPrice'];
+  return costLocked === 1 ? false : true;
+}
+
+/**
  * Update the discount value
  * @param {*} spread 
  */
@@ -391,7 +400,7 @@ export const UpdateDiscount = (spread, percentage) => {
     });
     SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
 
-    ShowCostPrice(spread);
+    ShowCostPrice(spread, ShowCostPriceStatus());
   }
 }
 
@@ -450,6 +459,6 @@ export const UpdatePriceSet = (spread, priceSet) => {
     const sheet = spread.getActiveSheet();
     SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
 
-    ShowCostPrice(spread);
+    ShowCostPrice(spread, ShowCostPriceStatus());
   }
 }

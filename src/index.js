@@ -25,7 +25,7 @@ import {
   Sort, DeleteProduct, HeadDelete, spreadPrint,
   spreadExportExcel as headSpreadExportExcel,
   spreadExportPDF as headSpreadExportPDF,
-  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice, UpdateDiscount, UpdatePriceSet
+  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice, ShowCostPriceStatus, UpdateDiscount, UpdatePriceSet
 } from './build-library/head';
 
 export let store = null;
@@ -53,6 +53,7 @@ export {
   getShowCostPrice,
   GetAllTableRange,
   ShowCostPrice,
+  ShowCostPriceStatus,
   setProjectName,
   getProjectNameField,
   singleTableSyncStore,
