@@ -211,7 +211,7 @@ export class CheckCostPrice {
 
             this.sheet.setFormatter(r, columnIndex[1], CheckCostPrice.Formatter)
             this.sheet.setFormatter(r, columnIndex[2], CheckCostPrice.Formatter)
-            this.sheet.setFormatter(r, columnIndex[3], CheckCostPrice.Formatter)
+            this.sheet.setFormatter(r, columnIndex[3], '#,##0.00%');
             this.sheet.setFormula(r, columnIndex[1], `IFERROR(${costTotalPriceFormula},"")`);
             this.sheet.setFormula(r, columnIndex[2], `IFERROR(${grossProfitFormula},"")`);
             this.sheet.setFormula(r, columnIndex[3], `IFERROR(${grossMarginFormula},"")`);
@@ -276,7 +276,11 @@ export class CheckCostPrice {
         for (const key in subTotals[j]) {
           if (Object.hasOwnProperty.call(subTotals[j], key)) {
             for (let c = 0; c < columnIndex.length; c++) {
-              this.sheet.setFormatter(subTotals[j][key].row, columnIndex[c], CheckCostPrice.Formatter);
+              if (c === 3) {
+                this.sheet.setFormatter(subTotals[j][key].row, columnIndex[c], '#,##0.00%');
+              } else {
+                this.sheet.setFormatter(subTotals[j][key].row, columnIndex[c], CheckCostPrice.Formatter);
+              }
               this.sheet.setFormula(subTotals[j][key].row, columnIndex[c], `IFERROR(${this.TableSubMap[key][c]},"")`);
             }
           }
@@ -306,7 +310,11 @@ export class CheckCostPrice {
 
     formulas.forEach((formula, index) => {
       const formulaStr = formula.join('+');
-      this.sheet.setFormatter(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], CheckCostPrice.Formatter);
+      if (index === 3) {
+        this.sheet.setFormatter(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], '#,##0.00%');
+      } else {
+        this.sheet.setFormatter(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], CheckCostPrice.Formatter);
+      }
       this.sheet.setFormula(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], `IFERROR(${formulaStr},"")`);
     });
   }
