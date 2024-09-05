@@ -7,7 +7,7 @@ import * as GC from '@grapecity/spread-sheets';
 import { Message } from 'element-ui';
 import store from 'store';
 import _ from 'lodash';
-import { imgUrlToBase64 } from 'utils';
+import { imgUrlToBase64 } from '../utils/index';
 import { SHOW_DRAWER, UPDATE_QUOTATION_PATH, SHOW_SORT, SORT_TYPE_ID, SHOW_DELETE, IGNORE_EVENT } from 'store/quotation/mutation-types';
 import { LayoutRowColBlock } from '../common/core';
 import { REGULAR } from '../common/constant';
