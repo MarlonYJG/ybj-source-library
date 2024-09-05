@@ -9,7 +9,7 @@ import store from 'store';
 import { getSystemDate, isNumber, ResDatas, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 import API from 'api';
 
-import { CreateTable } from '../common/sheetWorkBook';
+import { CreateTable, SetDataSource } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { TOTAL_COMBINED_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
 
@@ -29,6 +29,7 @@ import {
   mergeColumn,
   showTotal,
   getComputedColumnFormula,
+  getPaths
 } from '../common/parsing-template';
 import {
   templateTotalMap, mergeSpan, setCellStyle, setTotalRowHeight, PubGetTableStartRowIndex,
@@ -1081,4 +1082,55 @@ export const Render = (spread) => {
   // setLastColumnWidth(spread, template);
   translateSheet(spread);
   initShowCostPrice(spread);
+};
+
+const InitWorksheet = (sheet, dataSource) => {
+  if (!sheet) return;
+  sheet.name('sheet');
+  sheet.tag('sheet');
+  SetDataSource(sheet, dataSource);
+};
+
+const InitBindPath = (spread, template, quotation) => {
+  InitBindValueTop(spread, template, quotation);
+  const { topPath, conferenceHallTopPath, conferenceHallBottomPath, bottomPath } = getPaths();
+
+  // top
+  FieldBindPath(spread, template, topPath);
+  // 主会场
+  FieldBindPath(spread, template, conferenceHallTopPath);
+  FieldBindPath(spread, template, conferenceHallBottomPath);
+  // bottom
+  FieldBindPath(spread, template, bottomPath);
+};
+
+const InitSheetRender = (spread, quotation) => {
+  // 逻辑处理
+  // LogicalTotalCalculationType(this.spread);
+  // render center
+  const { conferenceHall } = quotation;
+  const resourceViews = conferenceHall.resourceViews;
+  if (resourceViews.length) {
+    Render(spread);
+  } else {
+    InitTotal(spread);
+  }
+};
+
+/**
+ * Initialization of a single table
+ * @param {*} spread 
+ * @param {*} template 
+ * @param {*} dataSource 
+ * @returns 
+ */
+export const initSingleTable = (spread, template, dataSource) => {
+  if (!spread) {
+    console.error('spread is null');
+    return
+  }
+  const sheet = spread.getActiveSheet();
+  InitWorksheet(sheet, dataSource);
+  InitBindPath(spread, template, dataSource)
+  InitSheetRender(spread, dataSource)
 };

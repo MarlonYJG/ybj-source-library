@@ -17,7 +17,7 @@ export const SetDataSource = (sheet, dataSource) => {
 };
 
 /**
- * 锁表
+ * Lock the spreadsheet
  * @param {*} spread
  * @param {*} domId
  */

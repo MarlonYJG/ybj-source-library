@@ -486,3 +486,19 @@ export const getPriceColumn = () => {
   return priceFieldCol;
 }
 
+/**
+ * Get paths in the template
+ * @returns 
+ */
+export const getPaths = () => {
+  const topPath = ['cloudSheet', 'top', 'bindPath', 'quotation'];
+  const bottomPath = ['cloudSheet', 'bottom', 'bindPath', 'quotation'];
+  const conferenceHallTopPath = ['cloudSheet', 'top', 'bindPath', 'conferenceHall'];
+  const conferenceHallBottomPath = ['cloudSheet', 'bottom', 'bindPath', 'conferenceHall'];
+  return {
+    topPath,
+    bottomPath,
+    conferenceHallTopPath,
+    conferenceHallBottomPath
+  };
+}

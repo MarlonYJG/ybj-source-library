@@ -4,7 +4,7 @@
  * @Description: 
  */
 import Template from './template/index';
-
+import { startMobileMode } from './common/mobile'
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
@@ -15,7 +15,7 @@ import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
 import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
 
 import { spreadExportExcel, spreadExportPDF, spreadStyleLocked } from './parsing-library/public';
-import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal } from './parsing-library/single-table';
+import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal, initSingleTable } from './parsing-library/single-table';
 
 import { MENU_DELETE } from './build-library/config';
 import { menuTotal } from './build-library/menu';
@@ -44,6 +44,8 @@ export {
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
   Template,
+  startMobileMode,
+  initSingleTable,
   initPriceSetField,
   initDiscountPercentage,
   showPriceSet,
