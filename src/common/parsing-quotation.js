@@ -21,8 +21,8 @@ const getQuotation = () => {
  * Price format
  * @returns
  */
-export const formatterPrice = () => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+export const formatterPrice = (GetterQuotationInit) => {
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   let symbol = '';
   let type = '';
   let typeInt = '0.00';

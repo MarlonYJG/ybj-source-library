@@ -47,7 +47,7 @@ export class CheckCostPrice {
   }
 
   _getFormatter() {
-    const layout = new LayoutRowColBlock(this.spread);
+    const layout = new LayoutRowColBlock(this.spread, this.template, this.quotation);
     const formatter = layout.getConfigFirstData()
     if (formatter) {
       CheckCostPrice.Formatter = formatter;
@@ -496,7 +496,7 @@ export class CheckCostPrice {
     this.sheet.resumePaint()
     this._getHeaderStyle();
 
-    const layout = new LayoutRowColBlock(this.spread);
+    const layout = new LayoutRowColBlock(this.spread, this.template, this.quotation);
     const { Tables, SubTotals, TotalMap, Levels } = layout.getLayout();
     const classType = layout.getClassType();
 

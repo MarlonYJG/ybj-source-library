@@ -368,15 +368,15 @@ export const setTotalRowHeight = (sheet, total, totalField, row) => {
  * Insert the start of the row of the table
  * @returns
  */
-export const PubGetTableStartRowIndex = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+export const PubGetTableStartRowIndex = (GetterQuotationWorkBook) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   return template.cloudSheet.top.rowCount;
 };
 /**
  * The total number of rows inserted into the table
  */
-export const PubGetTableRowCount = (index = 0) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+export const PubGetTableRowCount = (index = 0, GetterQuotationInit) => {
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const resourceViews = quotation.conferenceHall.resourceViews;
   if (resourceViews.length === 1 && resourceViews[0].name === '无分类') {
     return resourceViews[0].resources.length;
@@ -402,8 +402,8 @@ const getClassRowCount = (type, subtotal) => {
  * @param {*} headers
  * @returns
  */
-export const classificationAlgorithms = (quotation, headers = []) => {
-  const { template, mixRender, classType } = templateRenderFlag();
+export const classificationAlgorithms = (quotation, headers = [], GetterQuotationWorkBook) => {
+  const { template, mixRender, classType } = templateRenderFlag(GetterQuotationWorkBook);
   const { total = null, type = null } = template.cloudSheet.center;
   const { classRowCount, subTotalCount } = getClassRowCount(type, total);
   const { resourceViews } = quotation.conferenceHall;
@@ -443,7 +443,7 @@ export const classificationAlgorithms = (quotation, headers = []) => {
         subTotal = subTotalCount;
       } else {
         classRCount = classRowCount;
-        subTotal = showSubTotal() ? subTotalCount : 0;
+        subTotal = showSubTotal(GetterQuotationWorkBook) ? subTotalCount : 0;
       }
     }
   }
@@ -470,8 +470,8 @@ export const classificationAlgorithms = (quotation, headers = []) => {
  * @param {*} subBindPath
  * @returns
  */
-export const columnsTotal = (sheet, tableStartRowIndex, tableIndex, showRowTotal = false, columnComputed, subBindPath) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+export const columnsTotal = (sheet, tableStartRowIndex, tableIndex, showRowTotal = false, columnComputed, subBindPath, GetterQuotationWorkBook = null, quotation = null) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const equipment = template.cloudSheet.center.equipment.bindPath;
 
   const columnTotalMap = {};
@@ -495,7 +495,7 @@ export const columnsTotal = (sheet, tableStartRowIndex, tableIndex, showRowTotal
     }
   }
   // Sets the formula for calculating the subtotals for each column
-  const resources = PubGetTableRowCount(tableIndex);
+  const resources = PubGetTableRowCount(tableIndex, quotation);
   for (const key in columnTotalMap) {
     const formula = [];
     if (Object.hasOwnProperty.call(columnTotalMap, key)) {
@@ -740,8 +740,8 @@ export const columnComputedValue = (sheet, equipment, startRow, computedColumnFo
  * @param {*} row
  * @param {*} column
  */
-export const setCellFormatter = (sheet, row, column) => {
-  const format = formatterPrice();
+export const setCellFormatter = (sheet, row, column, quotation) => {
+  const format = formatterPrice(quotation);
   if (format) {
     sheet.setFormatter(row, column, format);
   }
@@ -753,7 +753,7 @@ export const setCellFormatter = (sheet, row, column) => {
  * @param {*} columnTotalMap
  * @param {*} bindPath
  */
-export const SetComputedSubTotal = (sheet, columnTotalMap, bindPath) => {
+export const SetComputedSubTotal = (sheet, columnTotalMap, bindPath, quotation = null) => {
   for (const key in columnTotalMap) {
     if (Object.hasOwnProperty.call(columnTotalMap, key)) {
       if (columnTotalMap[key] && columnTotalMap[key].formula) {
@@ -761,7 +761,7 @@ export const SetComputedSubTotal = (sheet, columnTotalMap, bindPath) => {
         const subTotalRowIndex = formula[formula.length - 1].substring(1);
         if (bindPath && bindPath[key]) {
           const columnIndex = bindPath[key].columnHeader;
-          setCellFormatter(sheet, Number(subTotalRowIndex), columnToNumber(columnIndex) - 1);
+          setCellFormatter(sheet, Number(subTotalRowIndex), columnToNumber(columnIndex) - 1, quotation);
           sheet.setFormula(Number(subTotalRowIndex), columnToNumber(columnIndex) - 1, columnTotalMap[key].formula);
           // sheet.autoFitColumn(columnToNumber(columnIndex) - 1);
         }
@@ -782,7 +782,7 @@ export const SetComputedSubTotal = (sheet, columnTotalMap, bindPath) => {
  * @param {*} allowResize
  * @param {*} isLocked
  */
-const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked) => {
+const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template) => {
   table.forEach((item, index) => {
     let startRow = insertTableIndex + classRow + index;
     if (classIndex !== 0) {
@@ -796,7 +796,7 @@ const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, su
       }
       ((item, imgUrl, startRow) => {
         imgUrlToBase64(imgUrl, (base64) => {
-          AddEquipmentImage(spread, item.id, base64, startRow, allowMove, allowResize, isLocked);
+          AddEquipmentImage(spread, item.id, base64, startRow, allowMove, allowResize, isLocked, template);
         });
       })(item, imgUrl, startRow);
     }
@@ -811,19 +811,19 @@ const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, su
  * @param {*} allowResize
  * @param {*} isLocked
  */
-export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowResize, isLocked) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowResize, isLocked, GetterQuotationInit = null, template = null) => {
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const resourceViews = quotation.conferenceHall.resourceViews;
-  const { classRow, subTotal } = classificationAlgorithms(quotation);
+  const { classRow, subTotal } = classificationAlgorithms(quotation, [], template);
 
   let insertTableIndex = tableStartRowIndex;
   for (let index = 0; index < resourceViews.length; index++) {
     if (resourceViews[index].resources) {
       if (index === 0) {
-        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked);
+        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template);
         insertTableIndex = insertTableIndex + classRow + resourceViews[index].resources.length;
       } else {
-        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked);
+        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template);
         insertTableIndex = insertTableIndex + subTotal + classRow + resourceViews[index].resources.length;
       }
     }
@@ -938,9 +938,9 @@ export const getTemplateClassType = () => {
  * @param {*} sheet
  * @returns
  */
-export const GetColumnComputedTotal = (sheet) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+export const GetColumnComputedTotal = (sheet, GetterQuotationWorkBook = null, GetterQuotationInit = null) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const { type = null } = template.cloudSheet.center;
   const resourceViews = quotation.conferenceHall.resourceViews;
 
@@ -959,17 +959,17 @@ export const GetColumnComputedTotal = (sheet) => {
     }
   }
 
-  const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header);
+  const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header, template);
 
-  let insertTableIndex = PubGetTableStartRowIndex();
+  let insertTableIndex = PubGetTableStartRowIndex(template);
   const columnTotal = [];
   for (let index = 0; index < resourceViews.length; index++) {
     if (index === 0) {
-      const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, null);
+      const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, null, null, template, quotation);
       columnTotal.push(columnTotalMap);
       insertTableIndex = insertTableIndex + classRow + tableHeaderRow + resourceViews[index].resources.length;
     } else {
-      const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null);
+      const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null, null, template, quotation);
       columnTotal.push(columnTotalMap);
       insertTableIndex = insertTableIndex + subTotal + classRow + tableHeaderRow + resourceViews[index].resources.length;
     }

@@ -4,7 +4,7 @@
  * @Description: 
  */
 import Template from './template/index';
-import { startMobileMode } from './common/mobile'
+import { initMobileData, startMobileMode } from './parsing-library/mobile'
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
@@ -44,6 +44,7 @@ export {
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
   Template,
+  initMobileData,
   startMobileMode,
   initSingleTable,
   initPriceSetField,

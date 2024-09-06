@@ -124,9 +124,9 @@ const deleteBottomRow = (spread, template) => {
  * @returns
  */
 // eslint-disable-next-line no-unused-vars
-const getBottomStartRowIndex = (spread) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+const getBottomStartRowIndex = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const { rowCount } = template.cloudSheet.top;
   const { center, total } = template.cloudSheet;
   const resourceViews = PubGetResourceViews(spread, quotation);
@@ -144,7 +144,7 @@ const getBottomStartRowIndex = (spread) => {
   }
 
   // 总计所占行的个数
-  if (showTotal()) {
+  if (showTotal(template)) {
     const totalRowCount = total[templateTotalMap(total.select)].rowCount;
     if (totalRowCount) {
       startRowIndex = startRowIndex + totalRowCount;
@@ -408,8 +408,8 @@ const renderFinishedAddImage = (spread, template, quotation) => {
   }
 };
 
-const getHeaderRowCount = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+const getHeaderRowCount = (GetterQuotationWorkBook) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const { top, bottom } = template.cloudSheet;
   return top.rowCount + bottom.rowCount;
 };
@@ -467,7 +467,7 @@ const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
 
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   const resourceViews = quotation.conferenceHall.resourceViews;
-  const columnTotal = GetColumnComputedTotal(sheet);
+  const columnTotal = GetColumnComputedTotal(sheet, template, quotation);
   const columnTotalSum = columnTotalSumFormula(columnTotal);
 
   const fixedBindValueMap = {};
@@ -599,8 +599,8 @@ const updateUpperCase = (sheet, row, totalField, quotation) => {
  * @param {*} quotation
  * @param {*} columnTotal
  */
-const RenderHeaderClass = (spread, quotation, columnTotal) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+const RenderHeaderClass = (spread, quotation, columnTotal, GetterQuotationWorkBook = null) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const resourceViews = quotation.conferenceHall.resourceViews;
   const { top, center: { equipment }, mixTopTotal: { initTotal } } = template.cloudSheet;
   const rows = resourceViews.map((item, index) => { return top.mixCount + index; });
@@ -631,7 +631,7 @@ const RenderHeaderClass = (spread, quotation, columnTotal) => {
     const column = columnTotal[index];
     for (const key in column) {
       if (Object.hasOwnProperty.call(column, key)) {
-        setCellFormatter(sheet, rows[index], column[key].column);
+        setCellFormatter(sheet, rows[index], column[key].column, quotation);
         sheet.setValue(rows[index], column[key].column, column[key].sum);
         sheet.autoFitColumn(column[key].column);
         sheet.getCell(rows[index], column[key].column).setStyle(classNameHeaderCenter.style);
@@ -653,8 +653,8 @@ const RenderHeaderClass = (spread, quotation, columnTotal) => {
  * @param {*} columnTotal
  */
 // eslint-disable-next-line no-unused-vars
-const RenderHeaderTotal = (spread, quotation, columnTotal) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+const RenderHeaderTotal = (spread, quotation, columnTotal = null, GetterQuotationWorkBook = null) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const { top, total, mixTopTotal } = template.cloudSheet;
   const initTotal = mixTopTotal.initTotal;
   const { resourceViews } = quotation.conferenceHall;
@@ -802,7 +802,7 @@ export const FieldBindPath = (spread, template, bindingPath) => {
         if (ele.row === 0 || ele.row) {
           sheet.setBindingPath(ele.row, ele.column, ele.bindPath);
         } else {
-          const lastRow = getHeaderRowCount() - 1;
+          const lastRow = getHeaderRowCount(template) - 1;
           const row = lastRow - Number(ele.lastRow);
           sheet.setBindingPath(row, ele.column, ele.bindPath);
         }
@@ -815,14 +815,14 @@ export const FieldBindPath = (spread, template, bindingPath) => {
  * Initialize Total and assign a value
  * @param {*} spread
  */
-export const InitTotal = (spread) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+export const InitTotal = (spread, GetterQuotationWorkBook = null, quotation = null) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const sheet = spread.getActiveSheet();
   const { total } = template.cloudSheet;
 
-  if (showTotal()) {
-    const tableStartRowIndex = PubGetTableStartRowIndex();
-    const tableRowCount = PubGetTableRowCount();
+  if (showTotal(template)) {
+    const tableStartRowIndex = PubGetTableStartRowIndex(template);
+    const tableRowCount = PubGetTableRowCount(0, quotation);
     const templateTotal = total[templateTotalMap(total.select)];
     const totalStartRowIndex = tableStartRowIndex + tableRowCount;
 
@@ -840,17 +840,24 @@ export const InitTotal = (spread) => {
  * @param {*} columnTotal
  */
 // eslint-disable-next-line no-unused-vars
-const RenderTotal = (spread, columnTotal, columnComputed) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQuotationWorkBook = null, GetterQuotationInit = null) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+
+  console.log(template, 'template', '===== RenderTotal =========');
+
+
   const { total, bottom } = template.cloudSheet;
-  if (showTotal()) {
+  if (showTotal(template)) {
     const sheet = spread.getActiveSheet();
     sheet.suspendPaint();
 
     // index
     const bottomRowCount = bottom.rowCount;
     const totalRowIndex = sheet.getRowCount() - bottomRowCount;
+
+    console.log(total);
+
 
     const Total = total[templateTotalMap(total.select)];
     sheet.addRows(totalRowIndex, Total.rowCount);
@@ -866,7 +873,7 @@ const RenderTotal = (spread, columnTotal, columnComputed) => {
     sheet.resumePaint();
 
     if (template.truckage) {
-      const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage');
+      const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage', template, quotation);
       TruckageIdentifier.truckageRenderTotal(quotation);
     }
   }
@@ -876,13 +883,13 @@ const RenderTotal = (spread, columnTotal, columnComputed) => {
  * Product Rendering
  * @param {*} spread
  */
-const renderSheet = (spread) => {
+const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
   const sheet = spread.getActiveSheet();
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const { equipment, type = null, total = null, columnCount } = template.cloudSheet.center;
   const { mixTopTotal = null, image = null, top } = template.cloudSheet;
-  const { mixRender, classType, isHaveChild } = templateRenderFlag();
+  const { mixRender, classType, isHaveChild } = templateRenderFlag(GetterQuotationWorkBook);
   const resourceViews = quotation.conferenceHall.resourceViews;
 
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
@@ -894,9 +901,9 @@ const renderSheet = (spread) => {
   }
 
   // Obtain the index of the table
-  const tableStartRowIndex = PubGetTableStartRowIndex();
+  const tableStartRowIndex = PubGetTableStartRowIndex(template);
   const tableStartColumnIndex = PubGetTableStartColumnIndex();
-  const tableColumnCount = PubGetTableColumnCount();
+  const tableColumnCount = PubGetTableColumnCount(template);
 
   sheet.suspendPaint();
 
@@ -914,7 +921,10 @@ const renderSheet = (spread) => {
     }
   }
 
-  const { classRow, subTotal, classRow1, tableHeaderRow } = classificationAlgorithms(quotation, header);
+  console.log(quotation, '============');
+  console.log(template, '============');
+
+  const { classRow, subTotal, classRow1, tableHeaderRow } = classificationAlgorithms(quotation, header, template);
 
   // Render classification
   for (let i = 0; i < resourceViews.length; i++) {
@@ -972,13 +982,13 @@ const renderSheet = (spread) => {
     }
 
     // Add a list of products
-    sheet.addRows(rowClassIndex + classRow + tableHeaderRow, PubGetTableRowCount(i), GC.Spread.Sheets.SheetArea.viewport);
+    sheet.addRows(rowClassIndex + classRow + tableHeaderRow, PubGetTableRowCount(i, quotation), GC.Spread.Sheets.SheetArea.viewport);
     // Create a table
     const tableId = resourceViews[i].resourceLibraryId;
     const table = sheet.tables.findByName('table' + tableId);
     if (!table) {
       const { bindPath } = equipment;
-      CreateTable(sheet, tableId, rowClassIndex + classRow + tableHeaderRow, tableStartColumnIndex, PubGetTableRowCount(i), tableColumnCount, bindPath, `conferenceHall.resourceViewsMap.${tableId}.resources`);
+      CreateTable(sheet, tableId, rowClassIndex + classRow + tableHeaderRow, tableStartColumnIndex, PubGetTableRowCount(i, quotation), tableColumnCount, bindPath, `conferenceHall.resourceViewsMap.${tableId}.resources`);
     }
 
     // Initialize the product cell style
@@ -1004,7 +1014,7 @@ const renderSheet = (spread) => {
 
     // Add subtotal rows
     if (!noClass) {
-      const rowClassTotal = rowClassIndex + classRow + tableHeaderRow + PubGetTableRowCount(i) + headerRow;
+      const rowClassTotal = rowClassIndex + classRow + tableHeaderRow + PubGetTableRowCount(i, quotation) + headerRow;
       sheet.addRows(rowClassTotal, subTotal, GC.Spread.Sheets.SheetArea.viewport);
       if (total) {
         mergeSpan(sheet, total.spans, rowClassTotal);
@@ -1014,7 +1024,7 @@ const renderSheet = (spread) => {
           if (Object.hasOwnProperty.call(total.bindPath, key)) {
             const field = total.bindPath[key];
             if (field.bindPath) {
-              setCellFormatter(sheet, rowClassTotal + field.row, field.column);
+              setCellFormatter(sheet, rowClassTotal + field.row, field.column, quotation);
               sheet.setBindingPath(rowClassTotal + field.row, field.column, field.bindPath);
               sheet.autoFitColumn(field.column);
             }
@@ -1033,7 +1043,7 @@ const renderSheet = (spread) => {
 
   // Add product images
   if (image) {
-    renderSheetImage(spread, tableStartRowIndex, false, true, true);
+    renderSheetImage(spread, tableStartRowIndex, false, true, true, quotation, template);
   }
 
   // Subtotal assignment
@@ -1043,13 +1053,13 @@ const renderSheet = (spread) => {
   const subTotalBindPath = total ? total.bindPath : null;
   for (let index = 0; index < resourceViews.length; index++) {
     if (index === 0) {
-      const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, columnComputed, subTotalBindPath);
-      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+      const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, columnComputed, subTotalBindPath, template, quotation);
+      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath, quotation);
       columnTotal.push(columnTotalMap);
       insertTableIndex = insertTableIndex + classRow + tableHeaderRow + resourceViews[index].resources.length;
     } else {
-      const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null, subTotalBindPath);
-      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+      const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null, subTotalBindPath, template, quotation);
+      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath, quotation);
       columnTotal.push(columnTotalMap);
 
       insertTableIndex = insertTableIndex + subTotal + classRow + tableHeaderRow + resourceViews[index].resources.length;
@@ -1060,11 +1070,11 @@ const renderSheet = (spread) => {
 
   if (mixTopTotal) {
     // TODO header class 有新的标识符
-    RenderHeaderClass(spread, quotation, columnTotal);
+    RenderHeaderClass(spread, quotation, columnTotal, template);
     // TODO 顶部组合未同步修改
-    RenderHeaderTotal(spread, quotation, columnTotal);
+    RenderHeaderTotal(spread, quotation, columnTotal, template);
   } else {
-    RenderTotal(spread, columnTotal, columnComputed);
+    RenderTotal(spread, columnTotal, columnComputed, template, quotation);
   }
 };
 
@@ -1072,12 +1082,12 @@ const renderSheet = (spread) => {
  * Render styles by template type
  * @param {*} spread
  */
-export const Render = (spread) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
-  const quotation = _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
+export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
   console.log(quotation, 'quotation');
   console.log(template, 'template');
-  renderSheet(spread);
+  renderSheet(spread, GetterQuotationWorkBook, GetterQuotationInit);
   renderFinishedAddImage(spread, template, quotation);
   // setLastColumnWidth(spread, template);
   translateSheet(spread);
@@ -1104,16 +1114,16 @@ const InitBindPath = (spread, template, quotation) => {
   FieldBindPath(spread, template, bottomPath);
 };
 
-const InitSheetRender = (spread, quotation) => {
+const InitSheetRender = (spread, template, quotation) => {
   // 逻辑处理
   // LogicalTotalCalculationType(this.spread);
   // render center
   const { conferenceHall } = quotation;
   const resourceViews = conferenceHall.resourceViews;
   if (resourceViews.length) {
-    Render(spread);
+    Render(spread, template, quotation);
   } else {
-    InitTotal(spread);
+    InitTotal(spread, template, quotation);
   }
 };
 
@@ -1129,8 +1139,14 @@ export const initSingleTable = (spread, template, dataSource) => {
     console.error('spread is null');
     return
   }
+  console.log(spread);
+  console.log(template);
+  console.log(dataSource);
+
+
+
   const sheet = spread.getActiveSheet();
   InitWorksheet(sheet, dataSource);
   InitBindPath(spread, template, dataSource)
-  InitSheetRender(spread, dataSource)
+  InitSheetRender(spread, template, dataSource)
 };

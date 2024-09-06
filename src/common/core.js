@@ -44,7 +44,9 @@ export class LayoutRowColBlock {
   static TotalMap = null;
   static LevelsRowMap = null;
 
-  constructor(spread) {
+  constructor(spread, template, quotation) {
+    this.Template = template;
+    this.Quotation = quotation;
     this.Spread = spread;
     this._init();
   }
@@ -99,7 +101,7 @@ export class LayoutRowColBlock {
 
     tableMap = sortObjectByRow(tableMap)
 
-    if (showTotal()) {
+    if (showTotal(this.Template)) {
       const quotation = store.getters['quotationModule/GetterQuotationInit'];
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
@@ -179,7 +181,7 @@ export class LayoutRowColBlock {
     tableMap = sortObjectByRow(tableMap)
     subTotalMap = sortObjectByRow(subTotalMap)
 
-    if (showTotal()) {
+    if (showTotal(this.Template)) {
       const quotation = store.getters['quotationModule/GetterQuotationInit'];
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
@@ -262,7 +264,7 @@ export class LayoutRowColBlock {
    * @param {*} quotation 
    */
   setTotalUppercaseAmounts(quotation) {
-    if (quotation && showTotal()) {
+    if (quotation && showTotal(this.Template)) {
       const totalMap = LayoutRowColBlock.TotalMap;
       const total = getTemplateCloudSheet().total;
       const Total = total[CombinationTypeBuild(quotation)];

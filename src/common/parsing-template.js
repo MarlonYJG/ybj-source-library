@@ -29,8 +29,8 @@ export const PubGetTableStartColumnIndex = () => {
  * The total number of columns inserted into the table
  * @returns
  */
-export const PubGetTableColumnCount = () => {
-  const template = getTemplate();
+export const PubGetTableColumnCount = (GetterQuotationWorkBook) => {
+  const template = GetterQuotationWorkBook || getTemplate();
   return template.cloudSheet.center.columnCount;
 };
 
@@ -55,8 +55,8 @@ export const getTemplateTopRowCol = () => {
 /**
  * Template render markers
  */
-export const templateRenderFlag = () => {
-  const template = getTemplate();
+export const templateRenderFlag = (GetterQuotationWorkBook) => {
+  const template = GetterQuotationWorkBook || getTemplate();
   const { mixRender = false, classType = null, isHaveChild = false } = template;
 
   return {
@@ -239,9 +239,9 @@ export const mergeColumn = (sheet, field, row, rowCount, columnCount = 1, column
  * @param {*} allowResize
  * @param {*} isLocked
  */
-export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMove = false, allowResize = true, isLocked = true) => {
+export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMove = false, allowResize = true, isLocked = true, GetterQuotationWorkBook) => {
   const sheet = spread.getActiveSheet();
-  const template = getTemplate();
+  const template = GetterQuotationWorkBook || getTemplate();
   let x = 2;
   let y = 2;
   let curWidth = 100;
@@ -268,8 +268,10 @@ export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMo
  * Show total
  * @param {*} total
  */
-export const showTotal = () => {
-  const template = getTemplate();
+export const showTotal = (GetterQuotationWorkBook) => {
+  console.log(GetterQuotationWorkBook,'===========');
+  
+  const template = GetterQuotationWorkBook || getTemplate();
   const total = template.cloudSheet.total;
   let show = true;
   if (total) {
@@ -294,11 +296,11 @@ export const showTotal = () => {
  * Show subTotal
  * @returns 
  */
-export const showSubTotal = () => {
+export const showSubTotal = (GetterQuotationWorkBook) => {
   let show = true;
-  const template = getTemplate();
+  const template = GetterQuotationWorkBook || getTemplate();
   const subTotal = template.cloudSheet.center.total;
-  if (showTotal()) {
+  if (showTotal(GetterQuotationWorkBook)) {
     if (subTotal) {
       if (_.has(subTotal, ['show'])) {
         show = subTotal.show;

@@ -70,7 +70,9 @@ export const DEFINE_IDENTIFIER_MAP = {
  * IdentifierTemplate
  */
 export class IdentifierTemplate {
-  constructor(sheet, name) {
+  constructor(sheet, name, template, quotation) {
+    this.template = template;
+    this.quotation = quotation;
     this.sheet = sheet;
     this.instanceName = name;
     this.builtInIdMap = {
@@ -96,7 +98,7 @@ export class IdentifierTemplate {
   }
 
   truckageRenderTotal(quotation) {
-    const columnTotal = GetColumnComputedTotal(this.sheet);
+    const columnTotal = GetColumnComputedTotal(this.sheet, this.template, this.quotation);
     if (columnTotal.length) {
       const columnTotalMap = columnTotal[0];
       const subRow = PubGetTableStartRowIndex() + PubGetTableRowCount();

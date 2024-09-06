@@ -488,7 +488,7 @@ export const updateSubTotalRowValue = (sheet) => {
         }
       }
 
-      const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header);
+      const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header, null);
 
       const columnComputed = [];
       let insertTableIndex = tableStartRowIndex;
@@ -661,7 +661,7 @@ export const removeAllTable = (sheet, quotation) => {
   }
 
   if (!noClass) {
-    const { classRow } = classificationAlgorithms(quotation);
+    const { classRow } = classificationAlgorithms(quotation, [], null);
     if (startIndex !== null) {
       startIndex = startIndex - classRow;
     }
@@ -680,7 +680,7 @@ const getTotalStartRowIndex = (sheet) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
   const resourceViews = quotation.conferenceHall.resourceViews;
   const topBottomIndex = template.cloudSheet.top.rowCount;
-  const { subTotal } = classificationAlgorithms(quotation);
+  const { subTotal } = classificationAlgorithms(quotation, [], null);
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
 
   const tables = sheet.tables.all();
@@ -961,7 +961,7 @@ export const Render = (spread, isInit) => {
     }
   }
 
-  const { classRow, subTotal, classRow1, tableHeaderRow } = classificationAlgorithms(quotation, header);
+  const { classRow, subTotal, classRow1, tableHeaderRow } = classificationAlgorithms(quotation, header, null);
 
   console.log(' classRow, subTotal, classRow1, tableHeaderRow ');
   console.log(classRow, subTotal, classRow1, tableHeaderRow);

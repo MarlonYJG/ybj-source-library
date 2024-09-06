@@ -32,7 +32,7 @@ export const Reset = (spread) => {
       }
     }
   }
-  const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header);
+  const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header, null);
 
   let centerCount = tableHeaderRow;
   resourceViews.forEach((item) => {
