@@ -1,9 +1,13 @@
 /*
  * @Author: Marlon
- * @Date: 2024-08-01 13:11:10
- * @Description: template noLevel
+ * @Date: 2024-08-08 15:56:05
+ * @Description: 
  */
-export const sheet = {
+import { shengYangMingHan } from './public/shengYangMingHan';
+import { templateClassIdentifier } from './config'
+
+// eslint-disable-next-line no-unused-vars
+const sheet = {
   "allowUndo": false,
   "newTabVisible": false,
   "tabEditable": false,
@@ -16,7 +20,7 @@ export const sheet = {
   "sheets": {},
   "cloudSheet": {
     "name": "设备租赁1",
-    "templateClassIdentifier": "noLevel",
+    "templateClassIdentifier": templateClassIdentifier,
     "version": "1.5",
     "sheets": {
       "会场": {
@@ -4904,4 +4908,4 @@ export const sheet = {
   }
 }
 
-export default sheet
+export default shengYangMingHan

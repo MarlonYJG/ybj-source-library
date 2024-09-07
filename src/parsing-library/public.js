@@ -8,7 +8,9 @@ import * as ExcelIO from '@grapecity/spread-excelio';
 import { Message } from 'element-ui';
 import _ from 'lodash';
 
+// eslint-disable-next-line no-unused-vars
 import { columnToNumber, PubGetRandomNumber } from '../common/public';
+// eslint-disable-next-line no-unused-vars
 import { setCellFormatter } from '../common/single-table';
 
 /**

@@ -4,11 +4,14 @@
  * @Description: The corresponding row and column indexes are calculated based on the classification
  */
 import store from 'store';
+import { IGNORE_EVENT } from 'store/quotation/mutation-types';
 import { sortObjectByRow } from '../utils/index'
 
 import { CombinationTypeBuild } from './combination-type'
 import { getTemplateClassType } from './single-table';
-import { showTotal } from './parsing-template';
+import { showTotal, getPriceColumn } from './parsing-template';
+
+const NzhCN = require('nzh/cn');
 
 /**
  * Get quote data 
@@ -39,8 +42,11 @@ export class LayoutRowColBlock {
   static SubTotals = [];
   static Summations = [];
   static TotalMap = null;
+  static LevelsRowMap = null;
 
-  constructor(spread) {
+  constructor(spread, template, quotation) {
+    this.Template = template;
+    this.Quotation = quotation;
     this.Spread = spread;
     this._init();
   }
@@ -95,7 +101,7 @@ export class LayoutRowColBlock {
 
     tableMap = sortObjectByRow(tableMap)
 
-    if (showTotal()) {
+    if (showTotal(this.Template)) {
       const quotation = store.getters['quotationModule/GetterQuotationInit'];
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
@@ -115,7 +121,7 @@ export class LayoutRowColBlock {
     LayoutRowColBlock.SubTotals = null;
     LayoutRowColBlock.Summations = null;
     LayoutRowColBlock.TotalMap = totalMap;
-
+    LayoutRowColBlock.LevelsRowMap = null;
   }
 
   _Level_1_row() {
@@ -124,6 +130,7 @@ export class LayoutRowColBlock {
     let tableMap = {};
     let subTotalMap = {};
     let totalMap = null;
+    let levelsRowMap = {};
 
     const { top, bottom, total } = getTemplateCloudSheet();
 
@@ -134,6 +141,7 @@ export class LayoutRowColBlock {
 
       if (i === 0) {
 
+        levelsRowMap[resourceLibraryId] = top.rowCount;
         level_1[resourceLibraryId] = {
           row: top.rowCount,
           rowCount: 1,
@@ -149,8 +157,10 @@ export class LayoutRowColBlock {
           rowCount: 1,
         }
       } else {
+        const row = subTotalMap[resourceViews[i - 1].resourceLibraryId].row + subTotalMap[resourceViews[i - 1].resourceLibraryId].rowCount;
+        levelsRowMap[resourceLibraryId] = row;
         level_1[resourceLibraryId] = {
-          row: subTotalMap[resourceViews[i - 1].resourceLibraryId].row + subTotalMap[resourceViews[i - 1].resourceLibraryId].rowCount,
+          row: row,
           rowCount: 1,
         }
 
@@ -171,7 +181,7 @@ export class LayoutRowColBlock {
     tableMap = sortObjectByRow(tableMap)
     subTotalMap = sortObjectByRow(subTotalMap)
 
-    if (showTotal()) {
+    if (showTotal(this.Template)) {
       const quotation = store.getters['quotationModule/GetterQuotationInit'];
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
@@ -191,6 +201,17 @@ export class LayoutRowColBlock {
     LayoutRowColBlock.SubTotals = subTotalMap;
     LayoutRowColBlock.Summations = null;
     LayoutRowColBlock.TotalMap = totalMap;
+    LayoutRowColBlock.LevelsRowMap = levelsRowMap;
+  }
+
+  /**
+   * Update the cell value
+   * @param {*} row 
+   * @param {*} col 
+   * @param {*} value 
+   */
+  _updateCellValue(row, col, value) {
+    this.Spread.getActiveSheet().setValue(row, col, value);
   }
 
   /**
@@ -238,6 +259,117 @@ export class LayoutRowColBlock {
     }
   }
 
+  /**
+   * Gets and sets all the uppercase amounts for the totals area
+   * @param {*} quotation 
+   */
+  setTotalUppercaseAmounts(quotation) {
+    if (quotation && showTotal(this.Template)) {
+      const totalMap = LayoutRowColBlock.TotalMap;
+      const total = getTemplateCloudSheet().total;
+      const Total = total[CombinationTypeBuild(quotation)];
+      if (Total) {
+        if (Object.keys(Total.bindPath).includes("DXzje")) {
+          const bindFields = {};
+          for (let i = 0; i < totalMap.rowCount; i++) {
+            for (const key in Total.bindPath) {
+              if (Object.prototype.hasOwnProperty.call(Total.bindPath, key)) {
+                bindFields[key] = {
+                  row: totalMap.row + Total.bindPath[key].row,
+                  col: Total.bindPath[key].column
+                }
+              }
+            }
+          }
+
+          const sheet = this.Spread.getActiveSheet();
+          // Get the uppercase amount
+          let value = quotation.sumAmount || 0;
+          if (Object.keys(Total.bindPath).includes("totalBeforeTax")) {
+            const { row, col } = bindFields.totalBeforeTax;
+            value = sheet.getValue(row, col);
+          }
+
+          if (value === 0 || value) {
+            // Update the uppercase value
+            const { row, col } = bindFields.DXzje;
+            store.commit(`quotationModule/${IGNORE_EVENT}`, true);
+            sheet.suspendPaint();
+            this._updateCellValue(row, col, NzhCN.encodeB(value));
+            sheet.resumePaint();
+          }
+        }
+      }
+    }
+
+  }
+
+  /**
+   * Obtain products based on classification IDs and indexes
+   * @param {*} resourceLibraryId 
+   * @param {*} index 
+   * @returns 
+   */
+  getProductByIndex(resourceLibraryId, index) {
+    const resourceViews = getQuotationResource();
+    for (let i = 0; i < resourceViews.length; i++) {
+      if (resourceViews[i].resourceLibraryId === resourceLibraryId) {
+        return resourceViews[i].resources[index];
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get the product it belongs to based on the active cell
+   * @param {*} activeRow 
+   * @param {*} activeCol 
+   * @param {*} tableId 
+   * @returns 
+   */
+  getProductByActiveCell(activeRow, activeCol, tableId) {
+    console.log(tableId);
+    const leMap = LayoutRowColBlock.LevelsRowMap;
+    const classType = LayoutRowColBlock.ClassType;
+    console.log(leMap);
+
+    if (['noLevel', 'Level_1_row'].includes(classType)) {
+      const sortIndex = activeRow - (leMap[tableId] + 1);
+      if (sortIndex >= 0) {
+        return this.getProductByIndex(tableId, sortIndex);
+      } else {
+        console.error('获取产品失败');
+      }
+    }
+    return null;
+  }
+
+  /**
+ * Get Configuration Information (First Data)
+ */
+  getConfigFirstData() {
+    const resourceViews = getQuotationResource();
+    if (resourceViews.length) {
+      const resources = resourceViews[0].resources;
+      if (resources && resources.length) {
+        const firstTable = LayoutRowColBlock.Tables[0];
+        const sheet = this.Spread.getActiveSheet();
+        let tableId = null;
+
+        for (const key in firstTable) {
+          if (Object.prototype.hasOwnProperty.call(firstTable, key)) {
+            tableId = key;
+          }
+        }
+        const table = sheet.tables.findByName(`table${tableId}`);
+        const priceCol = getPriceColumn();
+        if (table && (priceCol === 0 || priceCol)) {
+          return sheet.getFormatter(firstTable[tableId].row, priceCol);
+        }
+      }
+    }
+    return null
+  }
 }
 
 export default LayoutRowColBlock;

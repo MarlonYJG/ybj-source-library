@@ -23,6 +23,7 @@ const KEYS = ['numberOfDays', 'quantity', 'total']
 export class CheckCostPrice {
   static CellEdit = [];
   static ColumnIndex = [];
+  static Formatter = '0.00'
 
   constructor(spread, template, quotation) {
     this.spread = spread;
@@ -42,6 +43,15 @@ export class CheckCostPrice {
     this.sheet = sheet;
     this.sourceSheetColCount = this.template.sheets[sheet.name()].columnCount;
     this._getColIndex();
+    this._getFormatter();
+  }
+
+  _getFormatter() {
+    const layout = new LayoutRowColBlock(this.spread, this.template, this.quotation);
+    const formatter = layout.getConfigFirstData()
+    if (formatter) {
+      CheckCostPrice.Formatter = formatter;
+    }
   }
 
   /**
@@ -130,7 +140,8 @@ export class CheckCostPrice {
         }
       }
     }
-    this.sheet.getRange(row, columnIndex[0], 1, this.colCount).setStyle(this.HeadStyle);
+    this._setRangeStyle(row, columnIndex[0], 1, this.colCount);
+    // this.sheet.getRange(row, columnIndex[0], 1, this.colCount).setStyle(this.HeadStyle);
   }
 
   /**
@@ -182,6 +193,7 @@ export class CheckCostPrice {
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
         if (Object.hasOwnProperty.call(tables[i], key)) {
+
           for (let r = tables[i][key].row; r < tables[i][key].row + tables[i][key].rowCount; r++) {
 
             const costTotalPrice = [];
@@ -197,6 +209,9 @@ export class CheckCostPrice {
             const grossProfitFormula = `${colMap.total}${r + 1} - ${numberToColumn(columnIndex[1] + 1)}${r + 1}`;
             const grossMarginFormula = `${numberToColumn(columnIndex[2] + 1)}${r + 1} / ${colMap.total}${r + 1}`;
 
+            this.sheet.setFormatter(r, columnIndex[1], CheckCostPrice.Formatter)
+            this.sheet.setFormatter(r, columnIndex[2], CheckCostPrice.Formatter)
+            this.sheet.setFormatter(r, columnIndex[3], '#,##0.00%');
             this.sheet.setFormula(r, columnIndex[1], `IFERROR(${costTotalPriceFormula},"")`);
             this.sheet.setFormula(r, columnIndex[2], `IFERROR(${grossProfitFormula},"")`);
             this.sheet.setFormula(r, columnIndex[3], `IFERROR(${grossMarginFormula},"")`);
@@ -204,6 +219,18 @@ export class CheckCostPrice {
         }
       }
     }
+  }
+
+  /**
+   * 
+   * @param {*} r 
+   * @param {*} rc 
+   * @param {*} c 
+   * @param {*} cc 
+   * @param {*} formatter 
+   */
+  _setFormatter(r, rc, c, cc) {
+    this.sheet.getRange(r, rc, c, cc).formatter(CheckCostPrice.Formatter);
   }
 
   /**
@@ -249,6 +276,11 @@ export class CheckCostPrice {
         for (const key in subTotals[j]) {
           if (Object.hasOwnProperty.call(subTotals[j], key)) {
             for (let c = 0; c < columnIndex.length; c++) {
+              if (c === 3) {
+                this.sheet.setFormatter(subTotals[j][key].row, columnIndex[c], '#,##0.00%');
+              } else {
+                this.sheet.setFormatter(subTotals[j][key].row, columnIndex[c], CheckCostPrice.Formatter);
+              }
               this.sheet.setFormula(subTotals[j][key].row, columnIndex[c], `IFERROR(${this.TableSubMap[key][c]},"")`);
             }
           }
@@ -278,6 +310,11 @@ export class CheckCostPrice {
 
     formulas.forEach((formula, index) => {
       const formulaStr = formula.join('+');
+      if (index === 3) {
+        this.sheet.setFormatter(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], '#,##0.00%');
+      } else {
+        this.sheet.setFormatter(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], CheckCostPrice.Formatter);
+      }
       this.sheet.setFormula(totalMap.row + (totalMap.rowCount - 1), columnIndex[index], `IFERROR(${formulaStr},"")`);
     });
   }
@@ -317,6 +354,20 @@ export class CheckCostPrice {
   }
 
   /**
+   * Set the interval style
+   * @param {*} r 
+   * @param {*} rc 
+   * @param {*} c 
+   * @param {*} cc 
+   */
+  _setRangeStyle(r, rc, c, cc) {
+    this.sheet.getRange(r, rc, c, cc).hAlign(1);
+    this.sheet.getRange(r, rc, c, cc).vAlign(1);
+    const lineBorder = GeneratorLineBorder();
+    this.sheet.getRange(r, rc, c, cc).setBorder(lineBorder, { all: true })
+  }
+
+  /**
    * Style the body
    * @param {*} tables 
    * @param {*} subTotals 
@@ -328,7 +379,8 @@ export class CheckCostPrice {
     for (let i = 0; i < tables.length; i++) {
       for (const key in tables[i]) {
         if (Object.hasOwnProperty.call(tables[i], key)) {
-          this.sheet.getRange(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount).setStyle(this._style())
+          this._setRangeStyle(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount);
+          // this.sheet.getRange(tables[i][key].row, columnIndex[0], tables[i][key].rowCount, this.colCount).setStyle(this._style())
         }
       }
     }
@@ -337,7 +389,8 @@ export class CheckCostPrice {
       for (let i = 0; i < subTotals.length; i++) {
         for (const key in subTotals[i]) {
           if (Object.hasOwnProperty.call(subTotals[i], key)) {
-            this.sheet.getRange(subTotals[i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
+            this._setRangeStyle(subTotals[i][key].row, columnIndex[0], 1, this.colCount);
+            // this.sheet.getRange(subTotals[i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
           }
         }
       }
@@ -348,7 +401,8 @@ export class CheckCostPrice {
         for (let i = 0; i < Levels[0].length; i++) {
           for (const key in Levels[0][i]) {
             if (Object.hasOwnProperty.call(Levels[0][i], key)) {
-              this.sheet.getRange(Levels[0][i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
+              this._setRangeStyle(Levels[0][i][key].row, columnIndex[0], 1, this.colCount);
+              // this.sheet.getRange(Levels[0][i][key].row, columnIndex[0], 1, this.colCount).setStyle(this._style())
             }
           }
 
@@ -368,7 +422,8 @@ export class CheckCostPrice {
   _setTotalStyle(totalMap) {
     if (totalMap) {
       const columnIndex = CheckCostPrice.ColumnIndex;
-      this.sheet.getRange(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount).setStyle(this._style());
+      this._setRangeStyle(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount);
+      // this.sheet.getRange(totalMap.row, columnIndex[0], totalMap.rowCount, this.colCount).setStyle(this._style());
     }
   }
 
@@ -441,7 +496,7 @@ export class CheckCostPrice {
     this.sheet.resumePaint()
     this._getHeaderStyle();
 
-    const layout = new LayoutRowColBlock(this.spread);
+    const layout = new LayoutRowColBlock(this.spread, this.template, this.quotation);
     const { Tables, SubTotals, TotalMap, Levels } = layout.getLayout();
     const classType = layout.getClassType();
 

@@ -286,3 +286,24 @@ export class ResDatas {
     }
   }
 }
+
+/**
+ * Whether it is in percentage format
+ * @param {*} value 
+ * @returns 
+ */
+export const isPercentage = (value) => {
+  const pattern = /^\d+(\.\d+)?%$/;
+  return pattern.test(value);
+};
+
+/**
+ * 对数字进行四舍五入到指定的小数位数
+ * @param {number} num - 需要四舍五入的数字
+ * @param {number} decimalPlaces - 保留的小数位数
+ * @returns {number} - 四舍五入后的结果
+ */
+export const roundToDecimal = (num, decimalPlaces = 2) => {
+  const factor = Math.pow(10, decimalPlaces);
+  return Math.round(num * factor) / factor;
+};

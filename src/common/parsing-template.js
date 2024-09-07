@@ -9,6 +9,7 @@ import store from 'store';
 
 import { updateFormula } from './public'
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
+import { PRICE_SET_MAP } from "./constant";
 
 /**
  * Get the template
@@ -28,8 +29,8 @@ export const PubGetTableStartColumnIndex = () => {
  * The total number of columns inserted into the table
  * @returns
  */
-export const PubGetTableColumnCount = () => {
-  const template = getTemplate();
+export const PubGetTableColumnCount = (GetterQuotationWorkBook) => {
+  const template = GetterQuotationWorkBook || getTemplate();
   return template.cloudSheet.center.columnCount;
 };
 
@@ -54,8 +55,8 @@ export const getTemplateTopRowCol = () => {
 /**
  * Template render markers
  */
-export const templateRenderFlag = () => {
-  const template = getTemplate();
+export const templateRenderFlag = (GetterQuotationWorkBook) => {
+  const template = GetterQuotationWorkBook || getTemplate();
   const { mixRender = false, classType = null, isHaveChild = false } = template;
 
   return {
@@ -238,9 +239,9 @@ export const mergeColumn = (sheet, field, row, rowCount, columnCount = 1, column
  * @param {*} allowResize
  * @param {*} isLocked
  */
-export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMove = false, allowResize = true, isLocked = true) => {
+export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMove = false, allowResize = true, isLocked = true, GetterQuotationWorkBook) => {
   const sheet = spread.getActiveSheet();
-  const template = getTemplate();
+  const template = GetterQuotationWorkBook || getTemplate();
   let x = 2;
   let y = 2;
   let curWidth = 100;
@@ -267,8 +268,10 @@ export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMo
  * Show total
  * @param {*} total
  */
-export const showTotal = () => {
-  const template = getTemplate();
+export const showTotal = (GetterQuotationWorkBook) => {
+  console.log(GetterQuotationWorkBook,'===========');
+  
+  const template = GetterQuotationWorkBook || getTemplate();
   const total = template.cloudSheet.total;
   let show = true;
   if (total) {
@@ -293,11 +296,11 @@ export const showTotal = () => {
  * Show subTotal
  * @returns 
  */
-export const showSubTotal = () => {
+export const showSubTotal = (GetterQuotationWorkBook) => {
   let show = true;
-  const template = getTemplate();
+  const template = GetterQuotationWorkBook || getTemplate();
   const subTotal = template.cloudSheet.center.total;
-  if (showTotal()) {
+  if (showTotal(GetterQuotationWorkBook)) {
     if (subTotal) {
       if (_.has(subTotal, ['show'])) {
         show = subTotal.show;
@@ -366,7 +369,7 @@ export const getFormulaFieldRowCol = (field) => {
  * @returns 
  */
 export const getTemplateClassType = () => {
-  const template = getTemplate();
+  const template = getTemplate().cloudSheet;
   if (template.templateClassIdentifier) {
     if (Object.keys(DEFINE_IDENTIFIER_MAP).includes(template.templateClassIdentifier)) {
       return DEFINE_IDENTIFIER_MAP[template.templateClassIdentifier].identifier;
@@ -384,13 +387,26 @@ export const getTemplateClassType = () => {
  * @returns 
  */
 export const isMultiHead = () => {
-  const template = getTemplate();
+  const template = getTemplate().cloudSheet;
   const regex = /title@/;
   if (template.templateClassIdentifier && regex.test(template.templateClassIdentifier)) {
     return true;
   }
   return false;
 }
+
+/**
+ * Whether it is a Level_1_row@Level_2_row type
+ * @returns 
+ */
+export const isL1L2RowMerge = () => {
+  const template = getTemplate().cloudSheet;
+  if (template.templateClassIdentifier === 'Level_1_row@Level_2_row') {
+    return true;
+  }
+  return false;
+}
+
 
 /**
  * Obtain the project name field in the template
@@ -400,4 +416,91 @@ export const getProjectNameField = () => {
   const template = getTemplate();
   const projectNameField = template.cloudSheet.top.bindPath.quotation.name;
   return projectNameField;
+}
+
+/**
+ * Get the field where the discount is calculated
+ * @returns 
+ */
+export const getDiscountField = () => {
+  const template = getTemplate();
+  const discountField = template.cloudSheet.center.equipment.bindPath;
+  if (Object.keys(discountField).includes('discountUnitPrice') || Object.keys(discountField).includes('unitPrice')) {
+    if (Object.keys(discountField).includes('discountUnitPrice') && Object.keys(discountField).includes('unitPrice')) {
+      console.warn('The discount field is ambiguous');
+    }
+    if (Object.keys(discountField).includes('discountUnitPrice')) {
+      return discountField.discountUnitPrice.bindPath || 'discountUnitPrice';
+    } else if (Object.keys(discountField).includes('unitPrice')) {
+      return discountField.unitPrice.bindPath || 'unitPrice';
+    }
+  } else {
+    console.error('The discount field does not exist');
+  }
+  return null;
+}
+
+/**
+ * Whether or not to display discounts
+ * @param {*} template 
+ * @returns 
+ */
+export const showDiscount = (temp) => {
+  const template = temp || getTemplate();
+  if (template) {
+    const discountField = template.cloudSheet.center.equipment.bindPath;
+    if (Object.keys(discountField).includes('discountUnitPrice')) {
+      return discountField.discountUnitPrice || false;
+    }
+  }
+  return false;
+}
+
+/**
+ * Whether or not to display the price settings
+ * @param {*} template 
+ * @returns 
+ */
+export const showPriceSet = (temp) => {
+  const template = temp || getTemplate();
+  if (template) {
+    return !!showDiscount(template);
+  }
+  console.warn('The price setup field does not exist');
+  return false;
+}
+
+/**
+ * Get the Unit Price column in the template
+ * @returns 
+ */
+export const getPriceColumn = () => {
+  const template = getTemplate();
+  let priceFieldCol = null;
+  const binds = template.cloudSheet.center.equipment.bindPath;
+  for (const key in binds) {
+    if (Object.hasOwnProperty.call(binds, key)) {
+      if ([].concat(Object.keys(PRICE_SET_MAP), ['discountUnitPrice']).includes(key)) {
+        priceFieldCol = binds[key].column;
+      }
+    }
+  }
+  return priceFieldCol;
+}
+
+/**
+ * Get paths in the template
+ * @returns 
+ */
+export const getPaths = () => {
+  const topPath = ['cloudSheet', 'top', 'bindPath', 'quotation'];
+  const bottomPath = ['cloudSheet', 'bottom', 'bindPath', 'quotation'];
+  const conferenceHallTopPath = ['cloudSheet', 'top', 'bindPath', 'conferenceHall'];
+  const conferenceHallBottomPath = ['cloudSheet', 'bottom', 'bindPath', 'conferenceHall'];
+  return {
+    topPath,
+    bottomPath,
+    conferenceHallTopPath,
+    conferenceHallBottomPath
+  };
 }

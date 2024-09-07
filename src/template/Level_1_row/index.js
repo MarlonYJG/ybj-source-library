@@ -1,4 +1,9 @@
-export default {
+/*
+ * @Author: Marlon
+ * @Date: 2024-08-01 13:11:10
+ * @Description: template Level_1_row
+ */
+export const sheet = {
   "allowUndo": false,
   "newTabVisible": false,
   "tabEditable": false,
@@ -4898,3 +4903,5 @@ export default {
     }
   }
 }
+
+export default sheet

@@ -4,18 +4,18 @@
  * @Description: 
  */
 import Template from './template/index';
-
+import { initMobileData, startMobileMode } from './parsing-library/mobile'
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
-import { formatterPrice, getShowCostPrice } from './common/parsing-quotation';
-import { getTemplateClassType, getProjectNameField } from './common/parsing-template';
+import { formatterPrice, getShowCostPrice, initDiscountPercentage, initPriceSetField } from './common/parsing-quotation';
+import { getTemplateClassType, getProjectNameField, showDiscount, showPriceSet } from './common/parsing-template';
 import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
 import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
 
 import { spreadExportExcel, spreadExportPDF, spreadStyleLocked } from './parsing-library/public';
-import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal } from './parsing-library/single-table';
+import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal, initSingleTable } from './parsing-library/single-table';
 
 import { MENU_DELETE } from './build-library/config';
 import { menuTotal } from './build-library/menu';
@@ -25,7 +25,7 @@ import {
   Sort, DeleteProduct, HeadDelete, spreadPrint,
   spreadExportExcel as headSpreadExportExcel,
   spreadExportPDF as headSpreadExportPDF,
-  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice
+  zoom, FormComputedRowField, Repaint, FrozenHead, ShowCostPrice, ShowCostPriceStatus, UpdateDiscount, UpdatePriceSet
 } from './build-library/head';
 
 export let store = null;
@@ -44,9 +44,19 @@ export {
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
   Template,
+  initMobileData,
+  startMobileMode,
+  initSingleTable,
+  initPriceSetField,
+  initDiscountPercentage,
+  showPriceSet,
+  showDiscount,
+  UpdateDiscount,
+  UpdatePriceSet,
   getShowCostPrice,
   GetAllTableRange,
   ShowCostPrice,
+  ShowCostPriceStatus,
   setProjectName,
   getProjectNameField,
   singleTableSyncStore,
