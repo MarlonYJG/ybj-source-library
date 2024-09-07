@@ -457,15 +457,17 @@ const initDataSetValue = (sheet, field, source, path, type) => {
 
 /**
  * Set dynamic field value for total
- * @param {*} sheet
- * @param {*} totalField
- * @param {*} row
- * @param {*} totalBinds
+ * @param {*} sheet 
+ * @param {*} totalField 
+ * @param {*} row 
+ * @param {*} totalBinds 
+ * @param {*} template 
+ * @param {*} GetterQuotationInit 
  */
-const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
+const setTotalRowValue = (sheet, totalField, row, totalBinds, template, GetterQuotationInit = null) => {
   console.log(totalField, row, totalBinds);
 
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const resourceViews = quotation.conferenceHall.resourceViews;
   const columnTotal = GetColumnComputedTotal(sheet, template, quotation);
   const columnTotalSum = columnTotalSumFormula(columnTotal);
@@ -674,7 +676,7 @@ const RenderHeaderTotal = (spread, quotation, columnTotal = null, GetterQuotatio
   setCellStyle(spread, mixTopTotal[combined], totalRowIndex, true);
   setTotalRowHeight(sheet, total, mixTopTotal[combined], totalRowIndex);
   // 1setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, columnTotal, initTotal.bindPath, null);
-  setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, initTotal.bindPath, template);
+  setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, initTotal.bindPath, template, quotation);
 
   sheet.resumePaint();
 };
@@ -844,7 +846,7 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
   const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
 
-  console.log(template, 'template', '===== RenderTotal =========');
+  console.log(template, '===== RenderTotal =========');
 
 
   const { total, bottom } = template.cloudSheet;
@@ -868,7 +870,7 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
     setCellStyle(spread, Total, totalRowIndex, true);
     setTotalRowHeight(sheet, total, Total, totalRowIndex);
     // 1setTotalRowValue(sheet, Total, totalRowIndex, columnTotal, null, columnComputed);
-    setTotalRowValue(sheet, Total, totalRowIndex, Total.bindPath, template);
+    setTotalRowValue(sheet, Total, totalRowIndex, Total.bindPath, template, quotation);
 
     sheet.resumePaint();
 
@@ -1139,12 +1141,6 @@ export const initSingleTable = (spread, template, dataSource) => {
     console.error('spread is null');
     return
   }
-  console.log(spread);
-  console.log(template);
-  console.log(dataSource);
-
-
-
   const sheet = spread.getActiveSheet();
   InitWorksheet(sheet, dataSource);
   InitBindPath(spread, template, dataSource)
