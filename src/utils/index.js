@@ -17,20 +17,37 @@ export const regChineseCharacter = /[\u4E00-\u9FFF]/;
  * @param {*} url 
  * @param {*} callback 
  */
-export const imgUrlToBase64 = (url, callback) => {
-  const img = new Image();
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+export const imgUrlToBase64 = (url, callback, isCompress = false) => {
+  if (isCompress) {
+    const imgUrl = `${url}?x-oss-process=image/resize,w_400,h_400/quality,q_50`
+    fetch(imgUrl).then(res => {
+      return res.arrayBuffer()
+    }).then(arrayBuffer => {
+      const base64 = 'data:image/png;base64,' +
+        btoa(
+          new Uint8Array(arrayBuffer).reduce(function (data, byte) {
+            return data + String.fromCharCode(byte)
+          }, '')
+        );
+      callback(base64);
+    }).catch(error => {
+      console.error(error, '图片转base64失败');
+    });
+  } else {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
 
-  img.crossOrigin = 'anonymous';// 也需要后端的支持
-  img.onload = function () {
-    canvas.width = img.width;
-    canvas.height = img.height;
+    img.crossOrigin = 'anonymous';// 也需要后端的支持
+    img.onload = function () {
+      canvas.width = img.width;
+      canvas.height = img.height;
 
-    ctx.drawImage(img, 0, 0);
-    callback(canvas.toDataURL());
-  };
-  img.src = url;
+      ctx.drawImage(img, 0, 0);
+      callback(canvas.toDataURL());
+    };
+    img.src = url;
+  }
 };
 
 /**
