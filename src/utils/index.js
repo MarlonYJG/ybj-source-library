@@ -17,10 +17,10 @@ export const regChineseCharacter = /[\u4E00-\u9FFF]/;
  * @param {*} url 
  * @param {*} callback 
  */
-export const imgUrlToBase64 = (url, callback, isCompress = false) => {
+export const imgUrlToBase64 = async (url, callback, isCompress = false) => {
   if (isCompress) {
-    const imgUrl = `${url}?x-oss-process=image/resize,w_400,h_400/quality,q_50`
-    fetch(imgUrl).then(res => {
+    const imgUrl = `${url}?x-oss-process=image/resize,w_100,h_100/quality,q_50`
+    await fetch(imgUrl).then(res => {
       return res.arrayBuffer()
     }).then(arrayBuffer => {
       const base64 = 'data:image/png;base64,' +

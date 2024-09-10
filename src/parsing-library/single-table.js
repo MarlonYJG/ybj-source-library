@@ -1045,7 +1045,7 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
 
   // Add product images
   if (image) {
-    renderSheetImage(spread, tableStartRowIndex, false, true, true, quotation, template, isCompress = false);
+    renderSheetImage(spread, tableStartRowIndex, false, true, true, quotation, template, isCompress);
   }
 
   // Subtotal assignment
@@ -1134,6 +1134,7 @@ const InitSheetRender = (spread, template, quotation, isCompress = false) => {
  * @param {*} spread 
  * @param {*} template 
  * @param {*} dataSource 
+ * @param {*} isCompress 
  * @returns 
  */
 export const initSingleTable = (spread, template, dataSource, isCompress = false) => {
