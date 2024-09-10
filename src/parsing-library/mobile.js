@@ -189,28 +189,34 @@ const resourceSort = (quotation) => {
  */
 export const initMobileData = (dataSource, template) => {
   if (!template) return;
-  let quotation = _.cloneDeep(dataSource);
+  if (!dataSource) return;
+  // 初始化报价单数据
   if (dataSource) {
     if (dataSource.conferenceHall) {
-      FormaterQuotationInfo(quotation);
+      FormaterQuotationInfo(dataSource);
     }
 
-    DataProcessing(quotation)
-    quotation = singleTableSyncStore(quotation);
-    resourceSort(quotation)
+    DataProcessing(dataSource)
+    dataSource = singleTableSyncStore(dataSource);
+    resourceSort(dataSource)
 
     // 构建resourceViewsMap
-    const { resourceViews = [] } = quotation.conferenceHall;
-    quotation.conferenceHall.resourceViewsMap = {};
+    const { resourceViews = [] } = dataSource.conferenceHall;
+    dataSource.conferenceHall.resourceViewsMap = {};
     resourceViews.forEach(item => {
-      quotation.conferenceHall.resourceViewsMap[item.resourceLibraryId] = item;
+      dataSource.conferenceHall.resourceViewsMap[item.resourceLibraryId] = item;
     });
 
-    CombinationType(quotation, template)
+  }
+
+  // 初始化模板
+  if (template) {
+    CombinationType(dataSource, template)
+    template.sheets = { sheet: _.cloneDeep(template.cloudSheet.sheets['会场']) }
   }
 
   return {
-    quotation,
+    quotation: dataSource,
     template
   }
 }
