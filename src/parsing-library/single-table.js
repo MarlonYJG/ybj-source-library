@@ -885,7 +885,7 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
  * Product Rendering
  * @param {*} spread
  */
-const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
+const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
   const sheet = spread.getActiveSheet();
   const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
@@ -1045,7 +1045,7 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
 
   // Add product images
   if (image) {
-    renderSheetImage(spread, tableStartRowIndex, false, true, true, quotation, template);
+    renderSheetImage(spread, tableStartRowIndex, false, true, true, quotation, template, isCompress);
   }
 
   // Subtotal assignment
@@ -1084,12 +1084,12 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
  * Render styles by template type
  * @param {*} spread
  */
-export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
+export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
   const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
   console.log(quotation, 'quotation');
   console.log(template, 'template');
-  renderSheet(spread, GetterQuotationWorkBook, GetterQuotationInit);
+  renderSheet(spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress);
   renderFinishedAddImage(spread, template, quotation);
   // setLastColumnWidth(spread, template);
   translateSheet(spread);
@@ -1116,14 +1116,14 @@ const InitBindPath = (spread, template, quotation) => {
   FieldBindPath(spread, template, bottomPath);
 };
 
-const InitSheetRender = (spread, template, quotation) => {
+const InitSheetRender = (spread, template, quotation, isCompress = false) => {
   // 逻辑处理
   // LogicalTotalCalculationType(this.spread);
   // render center
   const { conferenceHall } = quotation;
   const resourceViews = conferenceHall.resourceViews;
   if (resourceViews.length) {
-    Render(spread, template, quotation);
+    Render(spread, template, quotation, isCompress);
   } else {
     InitTotal(spread, template, quotation);
   }
@@ -1134,9 +1134,10 @@ const InitSheetRender = (spread, template, quotation) => {
  * @param {*} spread 
  * @param {*} template 
  * @param {*} dataSource 
+ * @param {*} isCompress 
  * @returns 
  */
-export const initSingleTable = (spread, template, dataSource) => {
+export const initSingleTable = (spread, template, dataSource, isCompress = false) => {
   if (!spread) {
     console.error('spread is null');
     return
@@ -1144,5 +1145,5 @@ export const initSingleTable = (spread, template, dataSource) => {
   const sheet = spread.getActiveSheet();
   InitWorksheet(sheet, dataSource);
   InitBindPath(spread, template, dataSource)
-  InitSheetRender(spread, template, dataSource)
+  InitSheetRender(spread, template, dataSource, isCompress)
 };

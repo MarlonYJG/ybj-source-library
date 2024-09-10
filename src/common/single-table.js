@@ -782,7 +782,7 @@ export const SetComputedSubTotal = (sheet, columnTotalMap, bindPath, quotation =
  * @param {*} allowResize
  * @param {*} isLocked
  */
-const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template) => {
+const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template, isCompress = false) => {
   table.forEach((item, index) => {
     let startRow = insertTableIndex + classRow + index;
     if (classIndex !== 0) {
@@ -797,7 +797,7 @@ const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, su
       ((item, imgUrl, startRow) => {
         imgUrlToBase64(imgUrl, (base64) => {
           AddEquipmentImage(spread, item.id, base64, startRow, allowMove, allowResize, isLocked, template);
-        });
+        }, isCompress);
       })(item, imgUrl, startRow);
     }
   });
@@ -811,7 +811,7 @@ const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, su
  * @param {*} allowResize
  * @param {*} isLocked
  */
-export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowResize, isLocked, GetterQuotationInit = null, template = null) => {
+export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowResize, isLocked, GetterQuotationInit = null, template = null, isCompress = false) => {
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const resourceViews = quotation.conferenceHall.resourceViews;
   const { classRow, subTotal } = classificationAlgorithms(quotation, [], template);
@@ -820,10 +820,10 @@ export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowRes
   for (let index = 0; index < resourceViews.length; index++) {
     if (resourceViews[index].resources) {
       if (index === 0) {
-        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template);
+        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template, isCompress);
         insertTableIndex = insertTableIndex + classRow + resourceViews[index].resources.length;
       } else {
-        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template);
+        tableAddImage(spread, resourceViews[index].resources, index, insertTableIndex, classRow, subTotal, allowMove, allowResize, isLocked, template, isCompress);
         insertTableIndex = insertTableIndex + subTotal + classRow + resourceViews[index].resources.length;
       }
     }
