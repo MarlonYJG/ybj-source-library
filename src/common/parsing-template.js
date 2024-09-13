@@ -10,6 +10,8 @@ import store from 'store';
 import { updateFormula } from './public'
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
 import { PRICE_SET_MAP } from "./constant";
+import { LogicalProcessing } from './single-table'
+import { CombinationType } from './combination-type'
 
 /**
  * Get the template
@@ -269,8 +271,6 @@ export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMo
  * @param {*} total
  */
 export const showTotal = (GetterQuotationWorkBook) => {
-  console.log(GetterQuotationWorkBook,'===========');
-  
   const template = GetterQuotationWorkBook || getTemplate();
   const total = template.cloudSheet.total;
   let show = true;
@@ -503,4 +503,38 @@ export const getPaths = () => {
     conferenceHallTopPath,
     conferenceHallBottomPath
   };
+}
+
+/**
+ * Initialize the template data
+ * @param {*} templateJSON 
+ * @param {*} quotation 
+ * @param {*} quaLogos 
+ * @returns 
+ */
+export const initTemplateData = (templateJSON, quotation = null, quaLogos = []) => {
+  const template = templateJSON.excelJson;
+
+  if (templateJSON.excelJson.cloudSheet.quaLogos && templateJSON.excelJson.cloudSheet.quaLogos.length) {
+    const logos = templateJSON.excelJson.cloudSheet.quaLogos;
+    logos.forEach((item, i) => {
+      item.url = quaLogos[i].url;
+      item.id = quaLogos[i].id;
+    })
+    templateJSON.excelJson.cloudSheet.quaLogos = logos;
+  }
+
+  if (quotation && quotation.templateId == templateJSON.id) {
+    LogicalProcessing(quotation, templateJSON.excelJson);
+    if (template.mixRender && !quotation.remark) {
+      quotation.remark = '本表为预估报价，最终结算以实际产生的费用为准。';
+    }
+  }
+
+  CombinationType(quotation, template);
+
+  return {
+    templateJSON,
+    quotation
+  }
 }
