@@ -6,8 +6,7 @@
 import * as GC from '@grapecity/spread-sheets';
 import _ from 'lodash';
 import store from 'store';
-import { getSystemDate, isNumber, ResDatas, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
-import API from 'api';
+import { getSystemDate, isNumber, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 
 import { CreateTable, SetDataSource } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
@@ -265,55 +264,52 @@ const InsertSeal = (spread, template, base64) => {
  * @param {*} quotationImgs
  * @param {*} imgs
  */
-const InsertImages = (spread, quotationImgs, imgs) => {
-  if (imgs && imgs.length) {
-    const sheet = spread.getActiveSheet();
-    sheet.suspendPaint();
-    quotationImgs.forEach((item, index) => {
-      ((item, index) => {
-        if (!imgs[index]) return;
-        const row = sheet.getRowCount();
-        const sealH = item.height;
-        const rowOffsetLeft = item.columnOffsetLeft;
-        const bottomR = item.rows;// 距离底部行数
-        let bottomH = sealH;// 距离底部高度
+const InsertImages = (spread, quotationImgs) => {
+  const sheet = spread.getActiveSheet();
+  sheet.suspendPaint();
+  quotationImgs.forEach((item, index) => {
+    ((item) => {
+      const row = sheet.getRowCount();
+      const sealH = item.height;
+      const rowOffsetLeft = item.columnOffsetLeft;
+      const bottomR = item.rows;// 距离底部行数
+      let bottomH = sealH;// 距离底部高度
 
-        let offsetLeft = 0;// 距离表格左侧距离
-        let offsetTop = 0;// 距离顶部距离
-        // 计算距离左侧距离
-        for (let i = 0; i < rowOffsetLeft; i++) {
-          offsetLeft = offsetLeft + sheet.getColumnWidth(i);
+      let offsetLeft = 0;// 距离表格左侧距离
+      let offsetTop = 0;// 距离顶部距离
+      // 计算距离左侧距离
+      for (let i = 0; i < rowOffsetLeft; i++) {
+        offsetLeft = offsetLeft + sheet.getColumnWidth(i);
+      }
+      if (item.position == 'top') {
+        // 计算距离底部距离
+        for (let i = 0; i < bottomR; i++) {
+          offsetTop = offsetTop + sheet.getRowHeight(i);
         }
-        if (item.position == 'top') {
-          // 计算距离底部距离
-          for (let i = 0; i < bottomR; i++) {
-            offsetTop = offsetTop + sheet.getRowHeight(i);
-          }
-        } else if (item.position == 'bottom') {
-          // 计算距离顶部距离
-          for (let i = 0; i < row; i++) {
-            offsetTop = offsetTop + sheet.getRowHeight(i);
-          }
-          // 计算距离底部距离
-          for (let i = row - bottomR; i < row; i++) {
-            bottomH = bottomH + sheet.getRowHeight(i);
-          }
-          offsetTop = offsetTop - bottomH;
-        } else {
-          console.warn('报价单多Logo字段(position)配置出错');
+      } else if (item.position == 'bottom') {
+        // 计算距离顶部距离
+        for (let i = 0; i < row; i++) {
+          offsetTop = offsetTop + sheet.getRowHeight(i);
         }
-        let picture = sheet.pictures.get(item.name);
-        if (picture) {
-          picture.src(imgs[index].url);
-          sheet.resumePaint();
-          return;
+        // 计算距离底部距离
+        for (let i = row - bottomR; i < row; i++) {
+          bottomH = bottomH + sheet.getRowHeight(i);
         }
-        picture = sheet.pictures.add(item.name, imgs[index].url, offsetLeft, offsetTop, item.width, item.height);
-        picture.isLocked(true);
-      })(item, index);
-    });
-    sheet.resumePaint();
-  }
+        offsetTop = offsetTop - bottomH;
+      } else {
+        console.warn('报价单多Logo字段(position)配置出错');
+      }
+      let picture = sheet.pictures.get(item.name);
+      if (picture) {
+        picture.src(item.url);
+        sheet.resumePaint();
+        return;
+      }
+      picture = sheet.pictures.add(item.name, item.url, offsetLeft, offsetTop, item.width, item.height);
+      picture.isLocked(true);
+    })(item, index);
+  });
+  sheet.resumePaint();
 };
 
 /**
@@ -383,21 +379,17 @@ const renderFinishedAddImage = (spread, template, quotation) => {
       });
     }
   }
+
   if (quaLogos && quaLogos.length) {
-    API.qtLogoImages().then(res => {
-      const Res = new ResDatas({ res }).init();
-      if (Res) {
-        Res.forEach(item => {
-          ((item) => {
-            if (item.url) {
-              imgUrlToBase64(item.url, (base64) => {
-                item.url = base64;
-                InsertImages(spread, quaLogos, Res);
-              });
-            }
-          })(item);
-        });
-      }
+    quaLogos.forEach(item => {
+      ((item) => {
+        if (item.url) {
+          imgUrlToBase64(item.url, (base64) => {
+            item.url = base64;
+            InsertImages(spread, quaLogos, quaLogos);
+          });
+        }
+      })(item);
     });
   }
 
@@ -1087,10 +1079,11 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
 export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
   const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
+  console.log('------------解析库--------------');
+
   console.log(quotation, 'quotation');
   console.log(template, 'template');
   renderSheet(spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress);
-  renderFinishedAddImage(spread, template, quotation);
   // setLastColumnWidth(spread, template);
   translateSheet(spread);
   initShowCostPrice(spread);
@@ -1127,6 +1120,7 @@ const InitSheetRender = (spread, template, quotation, isCompress = false) => {
   } else {
     InitTotal(spread, template, quotation);
   }
+  renderFinishedAddImage(spread, template, quotation);
 };
 
 /**
