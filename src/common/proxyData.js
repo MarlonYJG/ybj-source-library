@@ -3,7 +3,7 @@
  * @Date: 2024-09-14 10:04:18
  * @Description: Define the proxy object
  */
-import { depLimitDiscountInput, depLimitDiscountInputType, depSortObject, depExportError } from './dep.js';
+import { depLimitDiscountInput, depLimitDiscountInputType, depSortObject, depExportError } from './dep';
 
 // The object to be proxied
 const limitDiscountInput = {
