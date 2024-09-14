@@ -3,9 +3,9 @@
  * @Date: 2024-03-27 22:35:21
  * @Description:single - public
  */
-import Decimal from 'decimal.js';
+import Decimal from '../lib/decimal/decimal';
 import * as GC from '@grapecity/spread-sheets';
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 import { GetUserCompany, imgUrlToBase64, regChineseCharacter } from '../utils/index';
 import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR, ASSOCIATED_FIELDS_FORMULA_MAP } from './constant';
@@ -29,7 +29,7 @@ import { formatterPrice, getShowCostPrice } from './parsing-quotation';
 
 import { SHOW_COST_PRICE_HEAD, UPDATE_QUOTATION_PATH } from "store/quotation/mutation-types";
 
-const NzhCN = require('nzh/cn');
+const NzhCN = require('../lib/nzh/cn');
 
 /**
  * Row computed fields

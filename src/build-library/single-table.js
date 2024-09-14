@@ -3,9 +3,8 @@
  * @Date: 2024-05-16 14:20:35
  * @Description:single-build
  */
-import { Message } from 'element-ui';
-import Decimal from 'decimal.js';
-import _ from 'lodash';
+import Decimal from '../lib/decimal/decimal';
+import _ from '../lib/lodash/lodash.min.js';
 import * as GC from '@grapecity/spread-sheets';
 import store from 'store';
 import { isNumber, FormatDate, regChineseCharacter } from '../utils/index';
@@ -18,6 +17,7 @@ import {
 import { commandRegister, onOpenMenu } from './contextMenu';
 import { ShowCostPrice, ShowCostPriceStatus } from './head';
 
+import { limitDiscountInputProxy, limitDiscountInputTypeProxy } from '../common/proxyData';
 import { CreateTable } from '../common/sheetWorkBook';
 import IdentifierTemplate from '../common/identifier-template';
 
@@ -67,7 +67,7 @@ import { CheckCostPrice } from '../common/cost-price';
 
 import { UpdateSort } from './public';
 
-const NzhCN = require('nzh/cn');
+const NzhCN = require('../lib/nzh/cn');
 
 let RangeChangedTimer = null;
 let UpdateUppercaseTimer = null;
@@ -194,21 +194,13 @@ const limitDiscountInput = (spread, args) => {
         sheet.suspendPaint();
         if (isNumber(newVal)) {
           if (newVal < minVal) {
-            Message({
-              showClose: true,
-              message: '单价超出修改范围，请重新输入',
-              type: 'error'
-            });
+            limitDiscountInputProxy.value = minVal;
             console.error('折扣价不能小于最低价');
             sheet.setValue(args.row, args.col, Number(CellValue.oldValue));
           }
         } else {
           sheet.setValue(args.row, args.col, Number(CellValue.oldValue));
-          Message({
-            showClose: true,
-            message: '请输入数值类型的值',
-            type: 'error'
-          });
+          limitDiscountInputTypeProxy.value = args.editingText;
           console.error('请输入数值类型的值');
         }
         sheet.resumePaint();

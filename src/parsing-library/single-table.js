@@ -4,7 +4,7 @@
  * @Description: 单表 - 逻辑处理
  */
 import * as GC from '@grapecity/spread-sheets';
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 import { getSystemDate, isNumber, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 
@@ -56,7 +56,7 @@ import {
   setLastColumnWidth
 } from './public';
 
-const NzhCN = require('nzh/cn');
+const NzhCN = require('../lib/nzh/cn');
 
 let SumAmount = null;
 

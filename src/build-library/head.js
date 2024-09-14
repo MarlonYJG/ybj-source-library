@@ -3,15 +3,15 @@
  * @Date: 2024-06-19 13:29:25
  * @Description:
  */
-import Decimal from 'decimal.js';
+import Decimal from '../lib/decimal/decimal';
 import * as GC from '@grapecity/spread-sheets';
 import * as ExcelIO from '@grapecity/spread-excelio';
-import _ from 'lodash';
-import { Message } from 'element-ui';
+import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 import { SHOW_DELETE, UPDATE_QUOTATION_PATH, IGNORE_EVENT, FROZEN_HEAD_TEMPLATE } from 'store/quotation/mutation-types';
 import { PRICE_SET_MAP } from '../common/constant'
 import { SetDataSource } from '../common/sheetWorkBook';
+import { exportErrorProxy } from '../common/proxyData'
 
 import { Reset } from './public';
 import { MENU_TOTAL } from './config';
@@ -97,9 +97,7 @@ export const spreadExportExcel = (spread, fileName = '报价单') => {
     saveAs('xlsx', blob, fileName);
   }, (err) => {
     console.log(err);
-    Message.error({
-      message: '导出失败!'
-    });
+    exportErrorProxy.value = err;
   }, option);
 };
 
