@@ -4,7 +4,7 @@
  * @Description:Spread generator
  */
 import * as GC from '@grapecity/spread-sheets';
-const NzhCN = require('../lib/nzh/cn');
+const NzhCN = require('../lib/nzh/cn.min.js');
 
 /**
  * Style Generator of cell style

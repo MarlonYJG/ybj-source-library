@@ -3,7 +3,7 @@
  * @Date: 2024-06-19 13:29:25
  * @Description:
  */
-import Decimal from '../lib/decimal/decimal';
+import Decimal from '../lib/decimal/decimal.min.js';
 import * as GC from '@grapecity/spread-sheets';
 import * as ExcelIO from '@grapecity/spread-excelio';
 import _ from '../lib/lodash/lodash.min.js';
