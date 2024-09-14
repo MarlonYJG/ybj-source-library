@@ -11,7 +11,7 @@ import { CombinationTypeBuild } from './combination-type'
 import { getTemplateClassType } from './single-table';
 import { showTotal, getPriceColumn } from './parsing-template';
 
-const NzhCN = require('nzh/cn');
+const NzhCN = require('../lib/nzh/cn');
 
 /**
  * Get quote data 

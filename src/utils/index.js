@@ -3,7 +3,7 @@
  * @Date: 2024-07-11 17:37:38
  * @Description: Utils
  */
-import moment from 'moment';
+import moment from '../lib/dayjs/dayjs.min.js';
 
 /**
  * Chinese

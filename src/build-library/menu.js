@@ -3,7 +3,7 @@
  * @Date: 2024-05-15 21:16:41
  * @Description:
  */
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 import { isNumber } from '../utils/index';
 
 import { MENU_TOTAL } from './config';

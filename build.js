@@ -14,17 +14,21 @@ if (shell.test('-d', 'dist')) {
   shell.mkdir('-p', 'dist');
 }
 
-console.log(colors.yellow('Copying files from src to dist...'));
-shell.cp('-R', 'src/*', 'dist/');
-console.log(colors.green('Files copied successfully.'));
+console.log(colors.yellow('Copying lib folder to dist...'));
+shell.cp('-R', 'src/lib', 'dist/');
+console.log(colors.green('Lib folder copied successfully.'));
+
+console.log(colors.yellow('Copying other files from src to dist...'));
+shell.cp('-R', ['src/*', '!src/lib'], 'dist/');
+console.log(colors.green('Other files copied successfully.'));
 
 console.log(colors.yellow('Modifying import paths in .js files...'));
 shell.find('dist').forEach(file => {
-  if (file.endsWith('.js')) {
+  if (file.endsWith('.js') && !file.includes('dist/lib')) {
     let content = fs.readFileSync(file, 'utf8');
 
     content = content.replace(/import\s+(\w+|\{[^{}]*\})\s+from\s+(['"])(\.{1,2}\/[^'"]+)\2/g, (match, importName, quote, path) => {
-      if (!path.endsWith('.min.js')) {
+      if (!path.endsWith('.min.js') && !path.endsWith('.min')) {
         return match.replace(path, `${path}.min.js`);
       } else {
         return match;
@@ -37,7 +41,7 @@ console.log(colors.green('Import paths modified successfully.'));
 
 console.log(colors.yellow('Minifying .js files...'));
 shell.ls('dist/**/*.js').forEach(file => {
-  if (!file.endsWith('.min.js')) {
+  if (!file.endsWith('.min.js') && !file.includes('dist/lib')) {
     const dir = path.dirname(file);
     const baseName = path.basename(file, '.js');
     const minFile = path.join(dir, `${baseName}.min.js`);
@@ -56,7 +60,7 @@ console.log(colors.green('Minification completed.'));
 
 console.log(colors.yellow('Deleting non-minified .js files...'));
 shell.ls('dist/**/*').forEach(file => {
-  if (file.endsWith('.js') && !file.endsWith('.min.js')) {
+  if (file.endsWith('.js') && !file.endsWith('.min.js') && !file.includes('dist/lib')) {
     shell.rm(file);
   }
 });

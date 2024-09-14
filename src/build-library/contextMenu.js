@@ -4,11 +4,11 @@
  * @Description:
  */
 import * as GC from '@grapecity/spread-sheets';
-import { Message } from 'element-ui';
 import store from 'store';
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 import { imgUrlToBase64 } from '../utils/index';
 import { SHOW_DRAWER, UPDATE_QUOTATION_PATH, SHOW_SORT, SORT_TYPE_ID, SHOW_DELETE, IGNORE_EVENT } from 'store/quotation/mutation-types';
+import { sortObjectProxy } from '../common/proxyData'
 import { LayoutRowColBlock } from '../common/core';
 import { REGULAR } from '../common/constant';
 import { SetDataSource } from '../common/sheetWorkBook';
@@ -439,11 +439,7 @@ export const commandRegister = (spread) => {
           store.commit(`quotationModule/${SHOW_SORT}`, true);
           return true;
         } else {
-          Message({
-            showClose: true,
-            message: '请选择需要排序的分类或产品!',
-            type: 'warning'
-          });
+          sortObjectProxy.value = null;
         }
         return true;
       }

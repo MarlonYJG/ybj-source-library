@@ -5,9 +5,9 @@
  */
 import * as GC from '@grapecity/spread-sheets';
 import * as ExcelIO from '@grapecity/spread-excelio';
-import { Message } from 'element-ui';
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 
+import { exportErrorProxy } from '../common/proxyData'
 // eslint-disable-next-line no-unused-vars
 import { columnToNumber, PubGetRandomNumber } from '../common/public';
 // eslint-disable-next-line no-unused-vars
@@ -74,9 +74,7 @@ export const spreadExportExcel = (spread, fileName = '报价单') => {
     saveAs('xlsx', blob, fileName);
   }, (err) => {
     console.log(err);
-    Message.error({
-      message: '导出失败!'
-    });
+    exportErrorProxy.value = err;
   }, option);
 };
 

@@ -3,7 +3,7 @@
  * @Date: 2024-09-05 10:49:19
  * @Description: mobile
  */
-import _ from 'lodash'
+import _ from '../lib/lodash/lodash.min.js'
 import * as GC from '@grapecity/spread-sheets'
 import { FormatDate } from '../utils/index'
 import { CombinationType } from '../common/combination-type'

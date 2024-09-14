@@ -3,7 +3,7 @@
  * @Date: 2024-07-09 17:01:22
  * @Description: Template identifier
  */
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 
 import { PubGetTableStartRowIndex, PubGetTableRowCount, GetColumnComputedTotal } from './single-table';

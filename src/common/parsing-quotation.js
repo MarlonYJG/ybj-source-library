@@ -4,7 +4,7 @@
  * @Description:
  */
 import { v4 as uuidv4 } from 'uuid';
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 
 import { flattenArray } from '../utils/index'

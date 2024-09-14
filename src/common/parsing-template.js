@@ -4,7 +4,7 @@
  * @Description:parsing template
  */
 import * as GC from '@grapecity/spread-sheets';
-import _ from 'lodash';
+import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 
 import { updateFormula } from './public'
