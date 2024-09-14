@@ -56,7 +56,7 @@ import {
   setLastColumnWidth
 } from './public';
 
-const NzhCN = require('../lib/nzh/cn');
+const NzhCN = require('../lib/nzh/cn.min.js');
 
 let SumAmount = null;
 

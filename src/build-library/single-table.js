@@ -3,7 +3,7 @@
  * @Date: 2024-05-16 14:20:35
  * @Description:single-build
  */
-import Decimal from '../lib/decimal/decimal';
+import Decimal from '../lib/decimal/decimal.min.js';
 import _ from '../lib/lodash/lodash.min.js';
 import * as GC from '@grapecity/spread-sheets';
 import store from 'store';
@@ -67,7 +67,7 @@ import { CheckCostPrice } from '../common/cost-price';
 
 import { UpdateSort } from './public';
 
-const NzhCN = require('../lib/nzh/cn');
+const NzhCN = require('../lib/nzh/cn.min.js');
 
 let RangeChangedTimer = null;
 let UpdateUppercaseTimer = null;

@@ -3,7 +3,7 @@
  * @Date: 2024-03-27 22:35:21
  * @Description:single - public
  */
-import Decimal from '../lib/decimal/decimal';
+import Decimal from '../lib/decimal/decimal.min.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
@@ -29,7 +29,7 @@ import { formatterPrice, getShowCostPrice } from './parsing-quotation';
 
 import { SHOW_COST_PRICE_HEAD, UPDATE_QUOTATION_PATH } from "store/quotation/mutation-types";
 
-const NzhCN = require('../lib/nzh/cn');
+const NzhCN = require('../lib/nzh/cn.min.js');
 
 /**
  * Row computed fields
