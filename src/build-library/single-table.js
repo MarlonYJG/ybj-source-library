@@ -180,32 +180,34 @@ const limitDiscountInput = (spread, args) => {
     if (discount.column === args.col) {
       const sheet = spread.getActiveSheet();
       const table = sheet.tables.find(args.row, args.col);
-      const tableId = table.name().split('table')[1]
-      const layout = new LayoutRowColBlock(spread);
-      const proItem = layout.getProductByActiveCell(args.row, args.col, tableId);
-      console.log(proItem, '----------------- 获取得产品');
+      if (table) {
+        const tableId = table.name().split('table')[1]
+        const layout = new LayoutRowColBlock(spread);
+        const proItem = layout.getProductByActiveCell(args.row, args.col, tableId);
+        console.log(proItem, '----------------- 获取得产品');
 
-      // const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
-      const PriceStatus = 0;
-      // resetDiscountRatio();
-      if (proItem && _.has(proItem, PRICE_SET_MAP[PriceStatus])) {
-        const discount = store.getters['GetterDiscount'];
-        const Price = Number(proItem[PRICE_SET_MAP[PriceStatus]]);
-        const minVal = new Decimal(discount).dividedBy(new Decimal(10)).times(new Decimal(Number(Price))).toNumber();
-        const newVal = Number(args.editingText);
-        sheet.suspendPaint();
-        if (isNumber(newVal)) {
-          if (newVal < minVal) {
-            limitDiscountInputProxy.value = minVal;
-            console.error('折扣价不能小于最低价');
+        // const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
+        const PriceStatus = 0;
+        // resetDiscountRatio();
+        if (proItem && _.has(proItem, PRICE_SET_MAP[PriceStatus])) {
+          const discount = store.getters['GetterDiscount'];
+          const Price = Number(proItem[PRICE_SET_MAP[PriceStatus]]);
+          const minVal = new Decimal(discount).dividedBy(new Decimal(10)).times(new Decimal(Number(Price))).toNumber();
+          const newVal = Number(args.editingText);
+          sheet.suspendPaint();
+          if (isNumber(newVal)) {
+            if (newVal < minVal) {
+              limitDiscountInputProxy.value = minVal;
+              console.error('折扣价不能小于最低价');
+              sheet.setValue(args.row, args.col, Number(CellValue.oldValue));
+            }
+          } else {
             sheet.setValue(args.row, args.col, Number(CellValue.oldValue));
+            limitDiscountInputTypeProxy.value = args.editingText;
+            console.error('请输入数值类型的值');
           }
-        } else {
-          sheet.setValue(args.row, args.col, Number(CellValue.oldValue));
-          limitDiscountInputTypeProxy.value = args.editingText;
-          console.error('请输入数值类型的值');
+          sheet.resumePaint();
         }
-        sheet.resumePaint();
       }
     }
   }
