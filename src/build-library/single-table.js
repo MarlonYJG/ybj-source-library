@@ -183,6 +183,8 @@ const limitDiscountInput = (spread, args) => {
       const tableId = table.name().split('table')[1]
       const layout = new LayoutRowColBlock(spread);
       const proItem = layout.getProductByActiveCell(args.row, args.col, tableId);
+      console.log(proItem, '----------------- 获取得产品');
+
       // const PriceStatus = store.getters['quotationModule/GetterQuotationPriceStatus'];
       const PriceStatus = 0;
       // resetDiscountRatio();
@@ -395,6 +397,8 @@ const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
 
             sheet.setFormula(row + rows.row, rows.column, fieldFormula);
             const val = sheet.getValue(row + rows.row, rows.column);
+            console.log(val, '最终价');
+
             if (val === 0 || val) {
               synchronousStoreSumAmount(val);
             }
@@ -1041,11 +1045,7 @@ export const Render = (spread, isInit) => {
     const computedColumnFormula = getComputedColumnFormula(equipment.bindPath);
     const resources = resourceViews[i].resources;
     for (let index = 0; index < resources.length; index++) {
-
-      console.log(rowClassIndex, classRow, tableHeaderRow, headerRow, index);
-
       const startRow = rowClassIndex + classRow + tableHeaderRow + headerRow + index;
-
       const { image = null } = template.cloudSheet;
 
       mergeSpan(sheet, equipment.spans, startRow);
@@ -1066,10 +1066,6 @@ export const Render = (spread, isInit) => {
     if (!noClass) {
       if (showSubTotal()) {
         const rowClassTotal = rowClassIndex + classRow + tableHeaderRow + PubGetTableRowCount(i) + headerRow;
-
-        console.log(rowClassIndex, classRow, tableHeaderRow, PubGetTableRowCount(i), headerRow);
-        console.log(rowClassTotal, subTotal);
-
         sheet.addRows(rowClassTotal, subTotal, GC.Spread.Sheets.SheetArea.viewport);
         if (total) {
           mergeSpan(sheet, total.spans, rowClassTotal);

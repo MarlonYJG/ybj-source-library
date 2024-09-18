@@ -69,8 +69,8 @@ export class LayoutRowColBlock {
         case 'Level_1_row':
           this._Level_1_row();
           break;
-        case '':
-          // TODO
+        case 'Level_1_col':
+          this._Level_1_col();
           break;
         default:
           break;
@@ -84,6 +84,7 @@ export class LayoutRowColBlock {
     const sheet = this.Spread.getActiveSheet();
     let tableMap = {};
     let totalMap = null;
+    let levelsRowMap = {};
 
     const { top, bottom, total } = getTemplateCloudSheet();
 
@@ -92,6 +93,7 @@ export class LayoutRowColBlock {
       const item = resourceViews[i];
       const resourceLibraryId = item.resourceLibraryId;
       if (i === 0) {
+        levelsRowMap[resourceLibraryId] = top.rowCount;
         tableMap[resourceLibraryId] = {
           row: top.rowCount,
           rowCount: item.resources.length,
@@ -121,7 +123,7 @@ export class LayoutRowColBlock {
     LayoutRowColBlock.SubTotals = null;
     LayoutRowColBlock.Summations = null;
     LayoutRowColBlock.TotalMap = totalMap;
-    LayoutRowColBlock.LevelsRowMap = null;
+    LayoutRowColBlock.LevelsRowMap = levelsRowMap;
   }
 
   _Level_1_row() {
@@ -166,6 +168,89 @@ export class LayoutRowColBlock {
 
         tableMap[resourceLibraryId] = {
           row: level_1[resourceLibraryId].row + level_1[resourceLibraryId].rowCount,
+          rowCount: item.resources.length,
+        }
+
+        subTotalMap[resourceLibraryId] = {
+          row: tableMap[resourceLibraryId].row + tableMap[resourceLibraryId].rowCount,
+          rowCount: 1,
+        }
+
+      }
+    }
+
+    level_1 = sortObjectByRow(level_1)
+    tableMap = sortObjectByRow(tableMap)
+    subTotalMap = sortObjectByRow(subTotalMap)
+
+    if (showTotal(this.Template)) {
+      const quotation = store.getters['quotationModule/GetterQuotationInit'];
+      const Total = total[CombinationTypeBuild(quotation)];
+      if (Total) {
+        const rowCount = sheet.getRowCount();
+        const bottomCount = bottom.rowCount;
+        totalMap = {
+          row: rowCount - bottomCount - Total.rowCount,
+          rowCount: Total.rowCount,
+        }
+      } else {
+        console.error('The total does not exist [the corresponding value of the permutation and combination has not been calculated]');
+      }
+    }
+
+    LayoutRowColBlock.Levels = [level_1];
+    LayoutRowColBlock.Tables = tableMap;
+    LayoutRowColBlock.SubTotals = subTotalMap;
+    LayoutRowColBlock.Summations = null;
+    LayoutRowColBlock.TotalMap = totalMap;
+    LayoutRowColBlock.LevelsRowMap = levelsRowMap;
+  }
+
+  _Level_1_col() {
+    const sheet = this.Spread.getActiveSheet();
+    let level_1 = {};
+    let tableMap = {};
+    let subTotalMap = {};
+    let totalMap = null;
+    let levelsRowMap = {};
+
+    const { top, bottom, total } = getTemplateCloudSheet();
+
+    const resourceViews = getQuotationResource();
+    for (let i = 0; i < resourceViews.length; i++) {
+      const item = resourceViews[i];
+      const resourceLibraryId = item.resourceLibraryId;
+
+      if (i === 0) {
+
+        levelsRowMap[resourceLibraryId] = top.rowCount;
+
+        level_1[resourceLibraryId] = {
+          row: top.rowCount,
+          rowCount: item.resources.length,
+        }
+
+        tableMap[resourceLibraryId] = {
+          row: top.rowCount,
+          rowCount: item.resources.length,
+        }
+
+        subTotalMap[resourceLibraryId] = {
+          row: item.resources.length + 1,
+          rowCount: 1,
+        }
+      } else {
+        const row = subTotalMap[resourceViews[i - 1].resourceLibraryId].row + subTotalMap[resourceViews[i - 1].resourceLibraryId].rowCount;
+
+        levelsRowMap[resourceLibraryId] = row;
+
+        level_1[resourceLibraryId] = {
+          row: row,
+          rowCount: item.resources.length,
+        }
+
+        tableMap[resourceLibraryId] = {
+          row: row,
           rowCount: item.resources.length,
         }
 
@@ -268,6 +353,8 @@ export class LayoutRowColBlock {
       const totalMap = LayoutRowColBlock.TotalMap;
       const total = getTemplateCloudSheet().total;
       const Total = total[CombinationTypeBuild(quotation)];
+      console.log('------------更新大写--------');
+
       if (Total) {
         if (Object.keys(Total.bindPath).includes("DXzje")) {
           const bindFields = {};
@@ -283,13 +370,16 @@ export class LayoutRowColBlock {
           }
 
           const sheet = this.Spread.getActiveSheet();
-          // Get the uppercase amount
+          // Get the uppercase amount (totalAfterTax > totalBeforeTax > sumAmount )
           let value = quotation.sumAmount || 0;
-          if (Object.keys(Total.bindPath).includes("totalBeforeTax")) {
+          if (Object.keys(Total.bindPath).includes("totalAfterTax")) {
+            const { row, col } = bindFields.totalAfterTax;
+            value = sheet.getValue(row, col);
+          } else if (Object.keys(Total.bindPath).includes("totalBeforeTax")) {
             const { row, col } = bindFields.totalBeforeTax;
             value = sheet.getValue(row, col);
           }
-
+          console.log(value, '----------');
           if (value === 0 || value) {
             // Update the uppercase value
             const { row, col } = bindFields.DXzje;
@@ -331,9 +421,14 @@ export class LayoutRowColBlock {
     console.log(tableId);
     const leMap = LayoutRowColBlock.LevelsRowMap;
     const classType = LayoutRowColBlock.ClassType;
-    console.log(leMap);
-
-    if (['noLevel', 'Level_1_row'].includes(classType)) {
+    if (['noLevel', 'Level_1_col'].includes(classType)) {
+      const sortIndex = activeRow - (leMap[tableId]);
+      if (sortIndex >= 0) {
+        return this.getProductByIndex(tableId, sortIndex);
+      } else {
+        console.error('获取产品失败');
+      }
+    } else if (['Level_1_row'].includes(classType)) {
       const sortIndex = activeRow - (leMap[tableId] + 1);
       if (sortIndex >= 0) {
         return this.getProductByIndex(tableId, sortIndex);
@@ -341,6 +436,7 @@ export class LayoutRowColBlock {
         console.error('获取产品失败');
       }
     }
+    console.error('获取产品失败');
     return null;
   }
 

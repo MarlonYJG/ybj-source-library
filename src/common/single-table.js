@@ -919,6 +919,13 @@ export const getTemplateClassType = () => {
       console.error('模板分类标识符不存在,无法确定模板分类类型【模板错误】');
     }
   } else {
+    // TODO 兼容旧版标识符
+    if (template.classType) {
+      if (template.classType === 'mergeClass') {
+        return 'Level_1_col'
+      }
+    }
+
     if (resourceViews.length) {
       if (resourceViews.length === 1 && resourceViews[0].name === '无分类') {
         return 'noLevel'
@@ -1119,11 +1126,7 @@ export const rowComputedField = (sheet, field, rowIndex, fixedBindValueMap, fixe
       serviceChargeFeeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
       console.error('该总计的组合类型字段(serviceChargeFee)已废弃，建议修改模板总计规则(不符合标准规则)!');
     } else if (fieldName === 'DXzje') {
-      console.log(fixedBindCellMap, columnTotalSum);
-
       const fieldFormula = sumAmountFormula(fieldName, fixedBindCellMap, columnTotalSum);
-      console.log(fieldFormula);
-
       sheet.setFormatter(rowIndex + fieldInfo.row, fieldInfo.column, GeneratorUpperCaseFormatter());
       sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
     } else {
