@@ -3,7 +3,7 @@
  * @Date: 2024-09-14 10:04:18
  * @Description: Define the proxy object
  */
-import { depLimitDiscountInput, depLimitDiscountInputType, depSortObject, depExportError } from './dep';
+import { depLimitDiscountInput, depLimitDiscountInputType, depSortObject, depExportError, depSelectEquipmentImage } from './dep';
 
 // The object to be proxied
 const limitDiscountInput = {
@@ -16,6 +16,9 @@ const sortObject = {
   value: null
 };
 const exportError = {
+  value: null
+}
+const selectEquipmentImage = {
   value: null
 }
 
@@ -46,6 +49,13 @@ export const exportErrorProxy = new Proxy(exportError, {
   set(target, key, value) {
     target[key] = value;
     depExportError.notify(value);
+    return true;
+  },
+});
+export const selectEquipmentImageProxy = new Proxy(selectEquipmentImage, {
+  set(target, key, value) {
+    target[key] = value;
+    depSelectEquipmentImage.notify(value);
     return true;
   },
 });

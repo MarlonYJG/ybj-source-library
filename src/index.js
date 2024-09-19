@@ -6,7 +6,7 @@
 import Template from './template/index';
 import { initMobileData, startMobileMode } from './parsing-library/mobile'
 
-import { addSubLimitDiscountInput, addSubLimitDiscountInputType, addSubSortObject, addSubExportError } from './common/dep';
+import { addSubLimitDiscountInput, addSubLimitDiscountInputType, addSubSortObject, addSubExportError, addSubSelectEquipmentImage } from './common/dep';
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
@@ -102,7 +102,8 @@ export {
   addSubLimitDiscountInput,
   addSubLimitDiscountInputType,
   addSubSortObject,
-  addSubExportError
+  addSubExportError,
+  addSubSelectEquipmentImage
 }
 
 export default YBJSourceLibrary

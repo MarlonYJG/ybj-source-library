@@ -15,7 +15,8 @@ import { SetDataSource } from '../common/sheetWorkBook';
 import { uniqAndSortBy, GetAllTableRange } from '../common/public';
 
 import { buildData, getPositionBlock } from '../common/parsing-quotation';
-import { setRowStyle, AddEquipmentImage, getComputedColumnFormula } from '../common/parsing-template';
+import { setRowStyle, AddEquipmentImage, getComputedColumnFormula, getImageField } from '../common/parsing-template';
+import { updateEquipmentImage } from '../common/update-quotation'
 
 import { mergeSpan, columnComputedValue } from '../common/single-table';
 
@@ -23,6 +24,9 @@ import { Reset, UpdateSort } from './public';
 
 // eslint-disable-next-line no-unused-vars
 import { Render, positionBlock, OperationWorkBookSync, UpdateTotalBlock } from './single-table';
+
+let pickRow = null;
+let pickCol = null;
 
 /**
  * repaint table style
@@ -292,10 +296,19 @@ export const onOpenMenu = (spread) => {
     ];
     const delRow = [
       {
-        text: '删除',
+        text: '删除行',
         name: 'delRow',
         iconClass: 'gc-spread-tableDeleteRows',
         command: 'delRow',
+        workArea: 'viewportcolHeaderrowHeaderslicercornertable'
+      }
+    ];
+    const removeRowImg = [
+      {
+        text: '删除图片',
+        name: 'removeRowImg',
+        iconClass: '',
+        command: 'removeRowImg',
         workArea: 'viewportcolHeaderrowHeaderslicercornertable'
       }
     ];
@@ -332,10 +345,24 @@ export const onOpenMenu = (spread) => {
         workArea: 'viewportcolHeaderrowHeaderslicercornertable'
       }
     ];
+    const insertImg = [
+      {
+        type: 'separator'
+      },
+      {
+        text: '插入图片',
+        name: 'insertImg',
+        iconClass: '',
+        command: 'insertImg',
+        workArea: 'viewportcolHeaderrowHeaderslicercornertable'
+      }
+    ]
 
     if (hitInfo && hitInfo.worksheetHitInfo) {
       const { leavel1Area, leavel2Area, subTotalArea } = getPositionBlock();
       const { row, col } = hitInfo.worksheetHitInfo;
+      pickRow = row;
+      pickCol = col;
       const rowCount = sheet.getRowCount();
       const colCount = sheet.getColumnCount();
       const ranges = sheet.getSelections();
@@ -350,17 +377,19 @@ export const onOpenMenu = (spread) => {
               rangeIndexs.push(range.row + index);
             }
 
-            console.log(rangeIndexs);
+            console.log(rangeIndexs, '框选的行号', row);
 
             if (rangeIndexs.includes(row)) {
               itemsDataForShown.push(...pubMenu);
               const table = sheet.tables.find(row, col);
+              console.log(table, 'table');
+
               if (table) {
                 if (table.range().containsRange(range)) {
-                  itemsDataForShown.push(...delRow, ...insertRow, ...addRowPro, ...insertRowPro, ...sortPro);
+                  itemsDataForShown.push(...delRow, ...insertRow, ...addRowPro, ...insertRowPro, ...sortPro, ...insertImg);
                   console.log('点击区域：table');
                 } else {
-                  itemsDataForShown.push(...delRow, ...addRowPro, ...sortPro);
+                  itemsDataForShown.push(...delRow, ...addRowPro, ...sortPro, ...insertImg);
                 }
               } else if (leavel1Area.includes(row)) {
                 itemsDataForShown.push(...delRow, ...addRowPro, ...sortPro);
@@ -376,11 +405,39 @@ export const onOpenMenu = (spread) => {
           } else {
             itemsDataForShown.push(...pubMenu, ...delRow);
           }
+        } else {
+          const table = sheet.tables.find(row, col);
+          if (table) {
+            itemsDataForShown.push(...removeRowImg, ...insertImg);
+          }
         }
       }
     }
     designerOnOpenMenu.apply(this, arguments);
   };
+};
+
+/**
+ * Device picture editing
+ * @param {*} spread 
+ * @param {*} context 
+ * @param {*} options 
+ * @param {*} type 
+ */
+const equipmentImageEdit = (spread, context, options, type) => {
+  const sheet = context.getSheetFromName(options.sheetName);
+  const table = sheet.tables.find(pickRow, pickCol);
+  if (table) {
+    const tableId = table.name().split('table')[1];
+    const layout = new LayoutRowColBlock(spread);
+    const proItem = layout.getProductByActiveCell(pickRow, pickCol, tableId);
+    if (proItem) {
+      const imgField = getImageField();
+      updateEquipmentImage(spread, tableId, proItem, imgField.fieldName, type, pickRow);
+    } else {
+      console.error('Product not found');
+    }
+  }
 };
 
 /**
@@ -610,6 +667,34 @@ export const commandRegister = (spread) => {
         }
         store.commit(`quotationModule/${IGNORE_EVENT}`, false);
         return true;
+      }
+    },
+    insertImg: {
+      canUndo: true,
+      name: 'insertImg',
+      execute: (context, options, isUndo) => {
+        const Commands = GC.Spread.Sheets.Commands;
+        if (isUndo) {
+          Commands.undoTransaction(context, options);
+        } else {
+          Commands.startTransaction(context, options);
+          equipmentImageEdit(spread, context, options, 'insert')
+          Commands.endTransaction(context, options);
+        }
+      }
+    },
+    removeRowImg: {
+      canUndo: true,
+      name: 'removeRowImg',
+      execute: (context, options, isUndo) => {
+        const Commands = GC.Spread.Sheets.Commands;
+        if (isUndo) {
+          Commands.undoTransaction(context, options);
+        } else {
+          Commands.startTransaction(context, options);
+          equipmentImageEdit(spread, context, options, 'del');
+          Commands.endTransaction(context, options);
+        }
       }
     }
   };
