@@ -538,3 +538,24 @@ export const initTemplateData = (templateJSON, quotation = null, quaLogos = []) 
     quotation
   }
 }
+
+/**
+ * Obtain the field name of the corresponding image in the template
+ * @param {*} template 
+ * @returns 
+ */
+export const getImageField = (template) => {
+  if (!template) {
+    template = getTemplate();
+  }
+  const imageField = template.cloudSheet.center.equipment.bindPath.imageId;
+  if (imageField) {
+    return {
+      ...imageField,
+      fieldName: 'imageId'
+    }
+  } else {
+    console.error('The image field(imageId) does not exist');
+  }
+  return null;
+}

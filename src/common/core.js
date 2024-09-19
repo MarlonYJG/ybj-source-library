@@ -48,6 +48,12 @@ export class LayoutRowColBlock {
     this.Template = template;
     this.Quotation = quotation;
     this.Spread = spread;
+    if (!template && store && store.getters) {
+      this.Template = store.getters['quotationModule/GetterQuotationWorkBook'];
+    }
+    if (!quotation && store && store.getters) {
+      this.Quotation = store.getters['quotationModule/GetterQuotationInit'];
+    }
     this._init();
   }
 
@@ -353,7 +359,7 @@ export class LayoutRowColBlock {
       const totalMap = LayoutRowColBlock.TotalMap;
       const total = getTemplateCloudSheet().total;
       const Total = total[CombinationTypeBuild(quotation)];
-      console.log('------------更新大写--------');
+      console.log('------------Update capitalization--------');
 
       if (Total) {
         if (Object.keys(Total.bindPath).includes("DXzje")) {

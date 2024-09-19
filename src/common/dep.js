@@ -49,6 +49,12 @@ export const addSubExportError = function (subscriber) {
   depExportError.addSub(subscriber);
 };
 
+// Select equipment image
+export const depSelectEquipmentImage = new Dep();
+export const addSubSelectEquipmentImage = function (subscriber) {
+  depSelectEquipmentImage.addSub(subscriber);
+};
+
 
 
 
