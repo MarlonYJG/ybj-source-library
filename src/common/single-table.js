@@ -1126,9 +1126,13 @@ export const rowComputedField = (sheet, field, rowIndex, fixedBindValueMap, fixe
       serviceChargeFeeAssignment(fieldName, fixedBindCellMap, columnTotalSum, totalBinds, fixedBindValueMap);
       console.error('该总计的组合类型字段(serviceChargeFee)已废弃，建议修改模板总计规则(不符合标准规则)!');
     } else if (fieldName === 'DXzje') {
-      const fieldFormula = sumAmountFormula(fieldName, fixedBindCellMap, columnTotalSum);
       sheet.setFormatter(rowIndex + fieldInfo.row, fieldInfo.column, GeneratorUpperCaseFormatter());
-      sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      if (fixedBindCellMap.concessional) {
+        sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fixedBindCellMap.concessional);
+      } else {
+        const fieldFormula = sumAmountFormula(fieldName, fixedBindCellMap, columnTotalSum);
+        sheet.setFormula(rowIndex + fieldInfo.row, fieldInfo.column, fieldFormula);
+      }
     } else {
       console.warn('在ASSOCIATED_FIELDS_FORMULA_MAP定义,但未存在过相关逻辑的字段', fieldName);
     }
@@ -1392,4 +1396,17 @@ const addTaxRateBeforeAssignment = (fieldName, fixedBindCellMap, columnTotalSum,
     return `(${sum1Formula}) + ${formula.join('+')}`;
   }
   return '';
+};
+
+/**
+ * The final price is based on the preferential price
+ * @param {*} fixedBindCellMap 
+ * @param {*} fixedBindValueMap 
+ * @returns 
+ */
+export const finalPriceByConcessional = (fixedBindCellMap, fixedBindValueMap) => {
+  if (fixedBindCellMap.concessional) {
+    return fixedBindValueMap.concessionalRate;
+  }
+  return null;
 };

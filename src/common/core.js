@@ -376,16 +376,18 @@ export class LayoutRowColBlock {
           }
 
           const sheet = this.Spread.getActiveSheet();
-          // Get the uppercase amount (totalAfterTax > totalBeforeTax > sumAmount )
+          // Get the uppercase amount (concessional > totalAfterTax > totalBeforeTax > sumAmount )
           let value = quotation.sumAmount || 0;
-          if (Object.keys(Total.bindPath).includes("totalAfterTax")) {
+          if (Object.keys(Total.bindPath).includes("concessional")) {
+            const { row, col } = bindFields.concessional;
+            value = sheet.getValue(row, col);
+          } else if (Object.keys(Total.bindPath).includes("totalAfterTax")) {
             const { row, col } = bindFields.totalAfterTax;
             value = sheet.getValue(row, col);
           } else if (Object.keys(Total.bindPath).includes("totalBeforeTax")) {
             const { row, col } = bindFields.totalBeforeTax;
             value = sheet.getValue(row, col);
           }
-          console.log(value, '----------');
           if (value === 0 || value) {
             // Update the uppercase value
             const { row, col } = bindFields.DXzje;

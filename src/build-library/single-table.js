@@ -59,7 +59,8 @@ import {
   sumAmountFormula,
   GetColumnComputedTotal,
   clearTotalNoData,
-  rowComputedField
+  rowComputedField,
+  finalPriceByConcessional
 } from '../common/single-table';
 
 import { LayoutRowColBlock } from '../common/core';
@@ -392,15 +393,15 @@ const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
         if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
           const rows = totalField.bindPath[key];
           if (rows.bindPath === 'sumAmount') {
-            // TODO 最终价以优惠价为主
             const fieldFormula = sumAmountFormula(key, fixedBindCellMap, columnTotalSum);
-
-            console.log(fieldFormula, 'sumAmount');
-
             sheet.setFormula(row + rows.row, rows.column, fieldFormula);
-            const val = sheet.getValue(row + rows.row, rows.column);
-            console.log(val, '最终价');
 
+            let val = sheet.getValue(row + rows.row, rows.column);
+            const finalPrice = finalPriceByConcessional(fixedBindCellMap, fixedBindValueMap);
+            if (finalPrice === 0 || finalPrice) {
+              val = finalPrice;
+            }
+            console.log(val, '最终价');
             if (val === 0 || val) {
               synchronousStoreSumAmount(val);
             }
