@@ -237,6 +237,23 @@ const isInnerTableList = (tablesRange, targetRange) => {
 };
 
 /**
+ * Menu Name Modification (Image)
+ * @param {*} spread 
+ * @param {*} row 
+ * @param {*} col 
+ * @param {*} table 
+ * @param {*} insertImg 
+ */
+const menuItemImgName = (spread, row, col, table, insertImg) => {
+  const tableId = table.name().split('table')[1];
+  const layout = new LayoutRowColBlock(spread);
+  const proItem = layout.getProductByActiveCell(row, col, tableId);
+  if (proItem && proItem.images) {
+    insertImg[1].text = '替换图片';
+  }
+};
+
+/**
  * on open menu
  * @param {*} spread
  */
@@ -385,6 +402,7 @@ export const onOpenMenu = (spread) => {
               console.log(table, 'table');
 
               if (table) {
+                menuItemImgName(spread, row, col, table, insertImg);
                 if (table.range().containsRange(range)) {
                   itemsDataForShown.push(...delRow, ...insertRow, ...addRowPro, ...insertRowPro, ...sortPro, ...insertImg);
                   console.log('点击区域：table');
@@ -408,6 +426,7 @@ export const onOpenMenu = (spread) => {
         } else {
           const table = sheet.tables.find(row, col);
           if (table) {
+            menuItemImgName(spread, row, col, table, insertImg);
             itemsDataForShown.push(...removeRowImg, ...insertImg);
           }
         }
