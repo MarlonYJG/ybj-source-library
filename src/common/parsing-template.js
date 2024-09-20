@@ -7,11 +7,12 @@ import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 
-import { updateFormula } from './public'
-import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
+import { updateFormula } from './public';
+import { DEFINE_IDENTIFIER_MAP } from './identifier-template';
 import { PRICE_SET_MAP } from "./constant";
-import { LogicalProcessing } from './single-table'
-import { CombinationType } from './combination-type'
+import { LogicalProcessing } from './single-table';
+import { CombinationType } from './combination-type';
+import { startAutoFitRow } from './parsing-quotation';
 
 /**
  * Get the template
@@ -163,13 +164,14 @@ export const PubSetCellHeight = (sheet, field, row) => {
 
 /**
  * Style the rows
- * @param {*} sheet
- * @param {*} rowsField
- * @param {*} startRow
- * @param {*} image
- * @param {*} locked
+ * @param {*} sheet 
+ * @param {*} rowsField 
+ * @param {*} startRow 
+ * @param {*} image 
+ * @param {*} locked 
+ * @param {*} quotation 
  */
-export const setRowStyle = (sheet, rowsField, startRow, image, locked = false) => {
+export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, quotation = null) => {
   if (rowsField.dataTable) {
     for (const i in rowsField.dataTable) {
       if (Object.hasOwnProperty.call(rowsField.dataTable, i)) {
@@ -190,14 +192,50 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false) =
           }
         }
 
-        if (image && image.height && rowsField.height) {
-          const maxH = Math.max(image.height, rowsField.height);
-          sheet.setRowHeight(startRow + Number(i), maxH);
-        } else if (image) {
-          image.height && sheet.setRowHeight(startRow + Number(i), image.height);
-        } else {
-          rowsField.height && sheet.setRowHeight(startRow + Number(i), rowsField.height);
+        console.log('--------------------------------行高配置');
+        console.log(image);
+        console.log(rowsField);
+
+
+
+        console.log(sheet.getRowHeight(startRow + Number(i)));
+        if (image && image.height) {
+          if (sheet.getRowHeight(startRow + Number(i)) <= image.height) {
+            sheet.setRowHeight(startRow + Number(i), image.height);
+          }
         }
+        if (startAutoFitRow(quotation)) {
+          sheet.getCell(startRow + Number(i), -1).wordWrap(true);
+          sheet.autoFitRow(startRow + Number(i));
+
+          
+
+          if (image && image.height && rowsField.height) {
+            const maxH = Math.max(image.height, rowsField.height);
+            sheet.setRowHeight(startRow + Number(i), maxH);
+          } else if (image && image.height) {
+            sheet.setRowHeight(startRow + Number(i), image.height);
+          } else {
+            sheet.getCell(startRow + Number(i), -1).wordWrap(true);
+            sheet.autoFitRow(startRow + Number(i))
+          }
+        }
+
+
+        // if (image && image.height && rowsField.height) {
+        //   const maxH = Math.max(image.height, rowsField.height);
+        //   sheet.setRowHeight(startRow + Number(i), maxH);
+        // } else if (image && image.height) {
+        //   sheet.setRowHeight(startRow + Number(i), image.height);
+        // } else if (startAutoFitRow(quotation)) {
+        //   sheet.getCell(startRow + Number(i), -1).wordWrap(true);
+        //   sheet.autoFitRow(startRow + Number(i))
+        // } else if (rowsField && rowsField.height) {
+        //   sheet.setRowHeight(startRow + Number(i), rowsField.height);
+        // } else {
+        //   sheet.getCell(startRow + Number(i), -1).wordWrap(true);
+        //   sheet.autoFitRow(startRow + Number(i))
+        // }
       }
     }
   }
@@ -355,6 +393,9 @@ export const getFormulaFieldRowCol = (field) => {
       ...field.formula,
     }
     if (field.column !== field.formula.column) {
+      console.error('当前字段行列数据不统一【模板错误】', field);
+    }
+    if (field.columnHeader !== field.formula.columnHeader) {
       console.error('当前字段行列数据不统一【模板错误】', field);
     }
   } else {

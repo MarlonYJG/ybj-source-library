@@ -192,3 +192,16 @@ export const initPriceSetField = (quo) => {
   }
   return 0;
 }
+
+/**
+ * Enable adaptive row height
+ * @returns 
+ */
+export const startAutoFitRow = (quotation) => {
+  console.log(quotation);
+  if (!quotation) {
+    quotation = getQuotation();
+  }
+  console.log('============================ startAutoFitRow ============================');
+  return true;
+}
