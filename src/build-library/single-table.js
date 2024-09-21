@@ -26,7 +26,7 @@ import { DESCRIPTION_MAP, TOTAL_COMBINED_MAP, PRICE_SET_MAP } from '../common/co
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { numberToColumn } from '../common/public'
 
-import { getPositionBlock, startAutoFitRow } from '../common/parsing-quotation';
+import { getPositionBlock, getConfig } from '../common/parsing-quotation';
 import {
   PubGetTableStartColumnIndex,
   PubGetTableColumnCount,
@@ -90,7 +90,7 @@ const OnEventBind = (spread) => {
   sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
     console.log('EditEnded事件');
     // 
-    if (startAutoFitRow()) {
+    if (getConfig().startAutoFitRow) {
       // sheet.autoFitRow(args.row);
     }
     limitDiscountInput(spread, args);

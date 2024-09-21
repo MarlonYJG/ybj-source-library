@@ -12,7 +12,7 @@ import { DEFINE_IDENTIFIER_MAP } from './identifier-template';
 import { PRICE_SET_MAP } from "./constant";
 import { LogicalProcessing } from './single-table';
 import { CombinationType } from './combination-type';
-import { startAutoFitRow } from './parsing-quotation';
+import { getConfig } from './parsing-quotation';
 
 /**
  * Get the template
@@ -204,11 +204,11 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
             sheet.setRowHeight(startRow + Number(i), image.height);
           }
         }
-        if (startAutoFitRow(quotation)) {
+        if (getConfig(quotation).startAutoFitRow) {
           sheet.getCell(startRow + Number(i), -1).wordWrap(true);
           sheet.autoFitRow(startRow + Number(i));
 
-          
+
 
           if (image && image.height && rowsField.height) {
             const maxH = Math.max(image.height, rowsField.height);
@@ -227,7 +227,7 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
         //   sheet.setRowHeight(startRow + Number(i), maxH);
         // } else if (image && image.height) {
         //   sheet.setRowHeight(startRow + Number(i), image.height);
-        // } else if (startAutoFitRow(quotation)) {
+        // } else if (getConfig(quotation).startAutoFitRow) {
         //   sheet.getCell(startRow + Number(i), -1).wordWrap(true);
         //   sheet.autoFitRow(startRow + Number(i))
         // } else if (rowsField && rowsField.height) {

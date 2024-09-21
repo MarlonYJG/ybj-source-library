@@ -197,11 +197,15 @@ export const initPriceSetField = (quo) => {
  * Enable adaptive row height
  * @returns 
  */
-export const startAutoFitRow = (quotation) => {
+// 获取配置信息
+export const getConfig = (quotation) => {
   console.log(quotation);
   if (!quotation) {
     quotation = getQuotation();
   }
-  console.log('============================ startAutoFitRow ============================');
-  return true;
+  if (quotation.config) {
+    return quotation.config;
+  }
+  console.warn('quotation.config is null');
+  return null;
 }

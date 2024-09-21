@@ -113,6 +113,7 @@ export const singleTableSyncStore = (Res) => {
       industry: company.industry, // 行业
       state: company.state
     },
+
     conferenceHall: Res.conferenceHall, // 报价单的会场信息
     parallelSessions: [], // 分会场信息
     preferentialWay: Res.preferentialWay,
@@ -161,7 +162,10 @@ export const singleTableSyncStore = (Res) => {
     // 特殊标识
     haveExport: Res.haveExport, // 决定能否导出:未审核通过
     quotationExcel: Res.quotationExcel, // 导出excel报价单的URL
-    quotationPdf: Res.quotationPdf// 导出pdf报价单的URL
+    quotationPdf: Res.quotationPdf,// 导出pdf报价单的URL
+
+    // 配置相关信息
+    config: Res.config || {},
 
   };
 
