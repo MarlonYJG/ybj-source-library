@@ -10,7 +10,7 @@ import store from 'store';
 import { updateFormula } from './public';
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template';
 import { PRICE_SET_MAP } from "./constant";
-import { LogicalProcessing } from './single-table';
+import { LogicalProcessing, setAutoFitRow } from './single-table';
 import { CombinationType } from './combination-type';
 import { getConfig } from './parsing-quotation';
 
@@ -192,50 +192,21 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
           }
         }
 
-        console.log('--------------------------------行高配置');
-        console.log(image);
-        console.log(rowsField);
-
-
-
-        console.log(sheet.getRowHeight(startRow + Number(i)));
-        if (image && image.height) {
-          if (sheet.getRowHeight(startRow + Number(i)) <= image.height) {
-            sheet.setRowHeight(startRow + Number(i), image.height);
-          }
-        }
         if (getConfig(quotation).startAutoFitRow) {
           sheet.getCell(startRow + Number(i), -1).wordWrap(true);
-          sheet.autoFitRow(startRow + Number(i));
-
-
-
-          if (image && image.height && rowsField.height) {
-            const maxH = Math.max(image.height, rowsField.height);
+          sheet.autoFitRow(startRow + Number(i))
+          setAutoFitRow(sheet, startRow + Number(i), rowsField, image)
+        } else {
+          if (image && image.height) {
+            const maxH = Math.max(image.height, rowsField.height || 0);
             sheet.setRowHeight(startRow + Number(i), maxH);
-          } else if (image && image.height) {
-            sheet.setRowHeight(startRow + Number(i), image.height);
+          } else if (rowsField && rowsField.height) {
+            sheet.setRowHeight(startRow + Number(i), rowsField.height);
           } else {
             sheet.getCell(startRow + Number(i), -1).wordWrap(true);
             sheet.autoFitRow(startRow + Number(i))
           }
         }
-
-
-        // if (image && image.height && rowsField.height) {
-        //   const maxH = Math.max(image.height, rowsField.height);
-        //   sheet.setRowHeight(startRow + Number(i), maxH);
-        // } else if (image && image.height) {
-        //   sheet.setRowHeight(startRow + Number(i), image.height);
-        // } else if (getConfig(quotation).startAutoFitRow) {
-        //   sheet.getCell(startRow + Number(i), -1).wordWrap(true);
-        //   sheet.autoFitRow(startRow + Number(i))
-        // } else if (rowsField && rowsField.height) {
-        //   sheet.setRowHeight(startRow + Number(i), rowsField.height);
-        // } else {
-        //   sheet.getCell(startRow + Number(i), -1).wordWrap(true);
-        //   sheet.autoFitRow(startRow + Number(i))
-        // }
       }
     }
   }
@@ -599,4 +570,37 @@ export const getImageField = (template) => {
     console.error('The image field(imageId) does not exist');
   }
   return null;
+}
+
+/**
+ * Obtain the image configuration in the template
+ * @param {*} template 
+ * @returns 
+ */
+export const getImageConfig = (template) => {
+  if (!template) {
+    template = getTemplate();
+  }
+  if (getImageField(template)) {
+    const imageConfig = template.cloudSheet.image;
+    if (imageConfig) {
+      return imageConfig;
+    }
+  }
+  console.error('The image config does not exist');
+
+  return null;
+}
+
+/**
+ * Obtain device configuration information
+ * @param {*} template 
+ * @returns 
+ */
+export const getEquipmentConfig = (template) => {
+  if (!template) {
+    template = getTemplate();
+  }
+  const equipmentConfig = template.cloudSheet.center.equipment;
+  return equipmentConfig;
 }

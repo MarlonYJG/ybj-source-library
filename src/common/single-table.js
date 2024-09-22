@@ -1414,3 +1414,24 @@ export const finalPriceByConcessional = (fixedBindCellMap, fixedBindValueMap) =>
   }
   return null;
 };
+
+/**
+ * Adaptive row height settings
+ * @param {*} sheet 
+ * @param {*} row 
+ * @param {*} rowsField 
+ * @param {*} image 
+ */
+export const setAutoFitRow = (sheet, row, rowsField, image) => {
+  const h = sheet.getRowHeight(row);
+  if (image && image.height) {
+    const maxH = Math.max(image.height, rowsField.height || 0);
+    if (h < maxH) {
+      sheet.setRowHeight(row, maxH);
+    }
+  } else {
+    if (h < (rowsField.height || 0)) {
+      sheet.setRowHeight(row, rowsField.height);
+    }
+  }
+};

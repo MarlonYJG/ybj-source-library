@@ -41,7 +41,9 @@ import {
   showSubTotal,
   getComputedColumnFormula,
   showDiscount,
-  getFormulaFieldRowCol
+  getFormulaFieldRowCol,
+  getImageConfig,
+  getEquipmentConfig
 } from '../common/parsing-template';
 
 import {
@@ -61,7 +63,8 @@ import {
   GetColumnComputedTotal,
   clearTotalNoData,
   rowComputedField,
-  finalPriceByConcessional
+  finalPriceByConcessional,
+  setAutoFitRow
 } from '../common/single-table';
 
 import { LayoutRowColBlock } from '../common/core';
@@ -89,10 +92,13 @@ const OnEventBind = (spread) => {
   // });
   sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
     console.log('EditEnded事件');
-    // 
+
     if (getConfig().startAutoFitRow) {
-      // sheet.autoFitRow(args.row);
+      sheet.autoFitRow(args.row);
+      const image = getImageConfig();
+      setAutoFitRow(sheet, args.row, getEquipmentConfig(), image)
     }
+
     limitDiscountInput(spread, args);
   });
   // sheet.bind(GC.Spread.Sheets.Events.EditEnding, (sender, args) => {
