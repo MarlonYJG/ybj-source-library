@@ -97,7 +97,8 @@ const OnEventBind = (spread) => {
 
     const image = getImageConfig();
     const rowsField = getEquipmentConfig();
-    if (getConfig().startAutoFitRow) {
+    const config = getConfig();
+    if (config && config.startAutoFitRow) {
       const tableRows = getTableRowIndex(spread);
       if (tableRows.includes(args.row)) {
         sheet.autoFitRow(args.row);

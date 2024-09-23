@@ -191,8 +191,8 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
             }
           }
         }
-
-        if (getConfig(quotation).startAutoFitRow) {
+        const config = getConfig(quotation);
+        if (config && config.startAutoFitRow) {
           sheet.getCell(startRow + Number(i), -1).wordWrap(true);
           sheet.autoFitRow(startRow + Number(i))
           setAutoFitRow(sheet, startRow + Number(i), rowsField, image)

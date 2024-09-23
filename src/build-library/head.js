@@ -489,8 +489,9 @@ export const StartAutoFitRow = (spread) => {
   const image = getImageConfig();
   const rowsField = getEquipmentConfig();
   const tableRows = getTableRowIndex(spread);
+  const config = getConfig()
 
-  if (getConfig().startAutoFitRow) {
+  if (config && config.startAutoFitRow) {
     tableRows.forEach(row => {
       sheet.autoFitRow(row);
       setAutoFitRow(sheet, row, rowsField, image);
