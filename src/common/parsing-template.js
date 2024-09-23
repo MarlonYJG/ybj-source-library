@@ -7,11 +7,12 @@ import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 
-import { updateFormula } from './public'
-import { DEFINE_IDENTIFIER_MAP } from './identifier-template'
+import { updateFormula } from './public';
+import { DEFINE_IDENTIFIER_MAP } from './identifier-template';
 import { PRICE_SET_MAP } from "./constant";
-import { LogicalProcessing } from './single-table'
-import { CombinationType } from './combination-type'
+import { LogicalProcessing, setAutoFitRow, defaultAutoFitRow } from './single-table';
+import { CombinationType } from './combination-type';
+import { getConfig } from './parsing-quotation';
 
 /**
  * Get the template
@@ -163,13 +164,14 @@ export const PubSetCellHeight = (sheet, field, row) => {
 
 /**
  * Style the rows
- * @param {*} sheet
- * @param {*} rowsField
- * @param {*} startRow
- * @param {*} image
- * @param {*} locked
+ * @param {*} sheet 
+ * @param {*} rowsField 
+ * @param {*} startRow 
+ * @param {*} image 
+ * @param {*} locked 
+ * @param {*} quotation 
  */
-export const setRowStyle = (sheet, rowsField, startRow, image, locked = false) => {
+export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, quotation = null) => {
   if (rowsField.dataTable) {
     for (const i in rowsField.dataTable) {
       if (Object.hasOwnProperty.call(rowsField.dataTable, i)) {
@@ -190,13 +192,12 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false) =
           }
         }
 
-        if (image && image.height && rowsField.height) {
-          const maxH = Math.max(image.height, rowsField.height);
-          sheet.setRowHeight(startRow + Number(i), maxH);
-        } else if (image) {
-          image.height && sheet.setRowHeight(startRow + Number(i), image.height);
+        if (getConfig(quotation).startAutoFitRow) {
+          sheet.getCell(startRow + Number(i), -1).wordWrap(true);
+          sheet.autoFitRow(startRow + Number(i))
+          setAutoFitRow(sheet, startRow + Number(i), rowsField, image)
         } else {
-          rowsField.height && sheet.setRowHeight(startRow + Number(i), rowsField.height);
+          defaultAutoFitRow(sheet, startRow + Number(i), rowsField, image);
         }
       }
     }
@@ -355,6 +356,9 @@ export const getFormulaFieldRowCol = (field) => {
       ...field.formula,
     }
     if (field.column !== field.formula.column) {
+      console.error('当前字段行列数据不统一【模板错误】', field);
+    }
+    if (field.columnHeader !== field.formula.columnHeader) {
       console.error('当前字段行列数据不统一【模板错误】', field);
     }
   } else {
@@ -558,4 +562,37 @@ export const getImageField = (template) => {
     console.error('The image field(imageId) does not exist');
   }
   return null;
+}
+
+/**
+ * Obtain the image configuration in the template
+ * @param {*} template 
+ * @returns 
+ */
+export const getImageConfig = (template) => {
+  if (!template) {
+    template = getTemplate();
+  }
+  if (getImageField(template)) {
+    const imageConfig = template.cloudSheet.image;
+    if (imageConfig) {
+      return imageConfig;
+    }
+  }
+  console.warn('The image config does not exist');
+
+  return null;
+}
+
+/**
+ * Obtain device configuration information
+ * @param {*} template 
+ * @returns 
+ */
+export const getEquipmentConfig = (template) => {
+  if (!template) {
+    template = getTemplate();
+  }
+  const equipmentConfig = template.cloudSheet.center.equipment;
+  return equipmentConfig;
 }

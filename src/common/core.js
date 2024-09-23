@@ -351,6 +351,29 @@ export class LayoutRowColBlock {
   }
 
   /**
+   * Get the row data in the table
+   * @param {*} tables 
+   * @returns 
+   */
+  getTableMapRows(tables = []) {
+    const tableMapRows = {};
+    tables.forEach(item => {
+      for (const key in item) {
+        tableMapRows[key] = [];
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
+          for (let i = item[key].row; i < (item[key].rowCount + item[key].row); i++) {
+            tableMapRows[key].push(i);
+          }
+        }
+      }
+    });
+    if (!Object.keys(tableMapRows).length) {
+      return null;
+    }
+    return tableMapRows;
+  }
+
+  /**
    * Gets and sets all the uppercase amounts for the totals area
    * @param {*} quotation 
    */

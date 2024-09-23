@@ -59,7 +59,7 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
       const table = resourceViews[index].resources;
       for (let i = 0; i < table.length; i++) {
         mergeSpan(sheet, equipment.spans, row + i);
-        setRowStyle(sheet, equipment, row + i, imageObj);
+        setRowStyle(sheet, equipment, row + i, imageObj, false);
         columnComputedValue(sheet, equipment, row + i, computedColumnFormula);
         sheet.getCell(row + i, 0).locked(true);
         ((item, startRow) => {

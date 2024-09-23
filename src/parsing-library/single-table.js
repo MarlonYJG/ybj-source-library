@@ -997,7 +997,7 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
       const { image = null } = template.cloudSheet;
 
       mergeSpan(sheet, equipment.spans, startRow);
-      setRowStyle(sheet, equipment, startRow, image);
+      setRowStyle(sheet, equipment, startRow, image, false, quotation);
       columnComputedValue(sheet, equipment, startRow, computedColumnFormula);
     }
 

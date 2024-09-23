@@ -8,6 +8,9 @@ import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 import { GetUserCompany, imgUrlToBase64, regChineseCharacter } from '../utils/index';
+
+import { LayoutRowColBlock } from './core';
+
 import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR, ASSOCIATED_FIELDS_FORMULA_MAP } from './constant';
 import { columnToNumber, PubGetRandomNumber, replacePlaceholders } from './public';
 import { GeneratorUpperCaseFormatter } from './generator';
@@ -113,6 +116,7 @@ export const singleTableSyncStore = (Res) => {
       industry: company.industry, // 行业
       state: company.state
     },
+
     conferenceHall: Res.conferenceHall, // 报价单的会场信息
     parallelSessions: [], // 分会场信息
     preferentialWay: Res.preferentialWay,
@@ -161,7 +165,10 @@ export const singleTableSyncStore = (Res) => {
     // 特殊标识
     haveExport: Res.haveExport, // 决定能否导出:未审核通过
     quotationExcel: Res.quotationExcel, // 导出excel报价单的URL
-    quotationPdf: Res.quotationPdf// 导出pdf报价单的URL
+    quotationPdf: Res.quotationPdf,// 导出pdf报价单的URL
+
+    // 配置相关信息
+    config: Res.config || {},
 
   };
 
@@ -1409,4 +1416,64 @@ export const finalPriceByConcessional = (fixedBindCellMap, fixedBindValueMap) =>
     return fixedBindValueMap.concessionalRate;
   }
   return null;
+};
+
+/**
+ * Adaptive row height settings
+ * @param {*} sheet 
+ * @param {*} row 
+ * @param {*} rowsField 
+ * @param {*} image 
+ */
+export const setAutoFitRow = (sheet, row, rowsField, image) => {
+  const h = sheet.getRowHeight(row);
+  if (image && image.height) {
+    const maxH = Math.max(image.height, rowsField.height || 0);
+    if (h < maxH) {
+      sheet.setRowHeight(row, maxH);
+    }
+  } else {
+    if (h < (rowsField.height || 0)) {
+      sheet.setRowHeight(row, rowsField.height);
+    }
+  }
+};
+
+/**
+ * Default row height settings
+ * @param {*} sheet 
+ * @param {*} row 
+ * @param {*} rowsField 
+ * @param {*} image 
+ */
+export const defaultAutoFitRow = (sheet, row, rowsField, image) => {
+  if (image && image.height) {
+    const maxH = Math.max(image.height, rowsField.height || 0);
+    sheet.setRowHeight(row, maxH);
+  } else if (rowsField && rowsField.height) {
+    sheet.setRowHeight(row, rowsField.height);
+  } else {
+    sheet.getCell(row, -1).wordWrap(true);
+    sheet.autoFitRow(row)
+  }
+};
+
+/**
+ * Obtain the row index in the table
+ * @param {*} spread 
+ * @returns 
+ */
+export const getTableRowIndex = (spread) => {
+  const layout = new LayoutRowColBlock(spread);
+  const { Tables } = layout.getLayout();
+  const tableMapRows = layout.getTableMapRows(Tables);
+  const rows = [];
+  if (tableMapRows) {
+    for (const key in tableMapRows) {
+      if (Object.prototype.hasOwnProperty.call(tableMapRows, key)) {
+        rows.push(...tableMapRows[key]);
+      }
+    }
+  }
+  return rows;
 };

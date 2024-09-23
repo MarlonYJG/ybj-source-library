@@ -26,7 +26,7 @@ import { DESCRIPTION_MAP, TOTAL_COMBINED_MAP, PRICE_SET_MAP } from '../common/co
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { numberToColumn } from '../common/public'
 
-import { getPositionBlock } from '../common/parsing-quotation';
+import { getPositionBlock, getConfig } from '../common/parsing-quotation';
 import {
   PubGetTableStartColumnIndex,
   PubGetTableColumnCount,
@@ -40,7 +40,10 @@ import {
   showTotal,
   showSubTotal,
   getComputedColumnFormula,
-  showDiscount
+  showDiscount,
+  getFormulaFieldRowCol,
+  getImageConfig,
+  getEquipmentConfig
 } from '../common/parsing-template';
 
 import {
@@ -60,7 +63,10 @@ import {
   GetColumnComputedTotal,
   clearTotalNoData,
   rowComputedField,
-  finalPriceByConcessional
+  finalPriceByConcessional,
+  setAutoFitRow,
+  defaultAutoFitRow,
+  getTableRowIndex
 } from '../common/single-table';
 
 import { LayoutRowColBlock } from '../common/core';
@@ -88,6 +94,19 @@ const OnEventBind = (spread) => {
   // });
   sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
     console.log('EditEnded事件');
+
+    const image = getImageConfig();
+    const rowsField = getEquipmentConfig();
+    if (getConfig().startAutoFitRow) {
+      const tableRows = getTableRowIndex(spread);
+      if (tableRows.includes(args.row)) {
+        sheet.autoFitRow(args.row);
+        setAutoFitRow(sheet, args.row, rowsField, image);
+      }
+    } else {
+      defaultAutoFitRow(sheet, args.row, rowsField, image);
+    }
+
     limitDiscountInput(spread, args);
   });
   // sheet.bind(GC.Spread.Sheets.Events.EditEnding, (sender, args) => {
@@ -965,20 +984,6 @@ export const Render = (spread, isInit) => {
   console.log(' classRow, subTotal, classRow1, tableHeaderRow ');
   console.log(classRow, subTotal, classRow1, tableHeaderRow);
 
-  // 判断当前模板是否需要在分类下渲染表头
-  const identifier = new IdentifierTemplate()
-  console.log(identifier.builtInIdsIdentifier());
-  if (identifier.builtInIdsIdentifier() === 'BH') {
-    // 在分类下添加表头
-    // if (type && type.dataTable) {
-    //   // 分类下如果存在表头，则展示表头
-    //   console.log('分类下的表头');
-    //   console.log(rowClassIndex);
-
-    //   // sheet.addRows(rowClassIndex + classRow + tableHeaderRow, 1, GC.Spread.Sheets.SheetArea.viewport);
-    // }
-  }
-
   // Render classification
   for (let i = 0; i < resourceViews.length; i++) {
     const headerRow = 1;
@@ -1052,7 +1057,7 @@ export const Render = (spread, isInit) => {
       const { image = null } = template.cloudSheet;
 
       mergeSpan(sheet, equipment.spans, startRow);
-      setRowStyle(sheet, equipment, startRow, image);
+      setRowStyle(sheet, equipment, startRow, image, false);
       columnComputedValue(sheet, equipment, startRow, computedColumnFormula);
       sheet.getCell(startRow, 0).locked(true);
     }
@@ -1079,7 +1084,8 @@ export const Render = (spread, isInit) => {
               const field = total.bindPath[key];
               if (field.bindPath) {
                 // setCellFormatter(sheet, rowClassTotal + field.row, field.column);
-                sheet.setBindingPath(rowClassTotal + field.row, field.column, field.bindPath);
+                const fieldInfo = getFormulaFieldRowCol(field);
+                sheet.setBindingPath(rowClassTotal + fieldInfo.row, fieldInfo.column, fieldInfo.bindPath);
                 // sheet.autoFitColumn(field.column);
               }
             }
