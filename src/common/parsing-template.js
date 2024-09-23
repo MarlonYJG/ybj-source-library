@@ -10,7 +10,7 @@ import store from 'store';
 import { updateFormula } from './public';
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template';
 import { PRICE_SET_MAP } from "./constant";
-import { LogicalProcessing, setAutoFitRow } from './single-table';
+import { LogicalProcessing, setAutoFitRow, defaultAutoFitRow } from './single-table';
 import { CombinationType } from './combination-type';
 import { getConfig } from './parsing-quotation';
 
@@ -197,15 +197,7 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
           sheet.autoFitRow(startRow + Number(i))
           setAutoFitRow(sheet, startRow + Number(i), rowsField, image)
         } else {
-          if (image && image.height) {
-            const maxH = Math.max(image.height, rowsField.height || 0);
-            sheet.setRowHeight(startRow + Number(i), maxH);
-          } else if (rowsField && rowsField.height) {
-            sheet.setRowHeight(startRow + Number(i), rowsField.height);
-          } else {
-            sheet.getCell(startRow + Number(i), -1).wordWrap(true);
-            sheet.autoFitRow(startRow + Number(i))
-          }
+          defaultAutoFitRow(sheet, startRow + Number(i), rowsField, image);
         }
       }
     }
@@ -587,7 +579,7 @@ export const getImageConfig = (template) => {
       return imageConfig;
     }
   }
-  console.error('The image config does not exist');
+  console.warn('The image config does not exist');
 
   return null;
 }

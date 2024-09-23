@@ -8,6 +8,9 @@ import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 import { GetUserCompany, imgUrlToBase64, regChineseCharacter } from '../utils/index';
+
+import { LayoutRowColBlock } from './core';
+
 import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR, ASSOCIATED_FIELDS_FORMULA_MAP } from './constant';
 import { columnToNumber, PubGetRandomNumber, replacePlaceholders } from './public';
 import { GeneratorUpperCaseFormatter } from './generator';
@@ -1434,4 +1437,43 @@ export const setAutoFitRow = (sheet, row, rowsField, image) => {
       sheet.setRowHeight(row, rowsField.height);
     }
   }
+};
+
+/**
+ * Default row height settings
+ * @param {*} sheet 
+ * @param {*} row 
+ * @param {*} rowsField 
+ * @param {*} image 
+ */
+export const defaultAutoFitRow = (sheet, row, rowsField, image) => {
+  if (image && image.height) {
+    const maxH = Math.max(image.height, rowsField.height || 0);
+    sheet.setRowHeight(row, maxH);
+  } else if (rowsField && rowsField.height) {
+    sheet.setRowHeight(row, rowsField.height);
+  } else {
+    sheet.getCell(row, -1).wordWrap(true);
+    sheet.autoFitRow(row)
+  }
+};
+
+/**
+ * Obtain the row index in the table
+ * @param {*} spread 
+ * @returns 
+ */
+export const getTableRowIndex = (spread) => {
+  const layout = new LayoutRowColBlock(spread);
+  const { Tables } = layout.getLayout();
+  const tableMapRows = layout.getTableMapRows(Tables);
+  const rows = [];
+  if (tableMapRows) {
+    for (const key in tableMapRows) {
+      if (Object.prototype.hasOwnProperty.call(tableMapRows, key)) {
+        rows.push(...tableMapRows[key]);
+      }
+    }
+  }
+  return rows;
 };

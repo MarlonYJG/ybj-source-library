@@ -9,19 +9,31 @@ import * as ExcelIO from '@grapecity/spread-excelio';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 import { SHOW_DELETE, UPDATE_QUOTATION_PATH, IGNORE_EVENT, FROZEN_HEAD_TEMPLATE } from 'store/quotation/mutation-types';
+
 import { PRICE_SET_MAP } from '../common/constant'
 import { SetDataSource } from '../common/sheetWorkBook';
-import { exportErrorProxy } from '../common/proxyData'
+import { exportErrorProxy } from '../common/proxyData';
+
+import {
+  getTemplateTopRowCol, getDiscountField, showPriceSet,
+  getImageConfig,
+  getEquipmentConfig
+} from '../common/parsing-template';
+import { getConfig } from '../common/parsing-quotation';
+
+import {
+  getTableRowIndex,
+  setAutoFitRow,
+  defaultAutoFitRow,
+} from '../common/single-table';
+
+import { CheckCostPrice } from '../common/cost-price';
 
 import { Reset } from './public';
 import { MENU_TOTAL } from './config';
 
 // eslint-disable-next-line no-unused-vars
 import { Render, insertField, removeAllTable, UpdateTotalBlock, resetDiscountRatio } from './single-table';
-
-import { getTemplateTopRowCol, getDiscountField, showPriceSet } from '../common/parsing-template';
-
-import { CheckCostPrice } from '../common/cost-price';
 
 /**
  * Download feature
@@ -122,8 +134,8 @@ export const spreadExportPDF = (spread, fileName = '报价单', author = 'yunbao
 
 /**
  * Print
- * @param {*} spread
- * @param {*} sheetIndex
+ * @param {*} spread 
+ * @param {*} domId 
  */
 export const spreadPrint = (spread, domId = 'spreadsheet-quotation') => {
   const workbook = GC.Spread.Sheets.findControl(document.getElementById(domId));
@@ -149,7 +161,9 @@ export const spreadPrint = (spread, domId = 'spreadsheet-quotation') => {
 
 /**
  * zoom
- * @param {*} type
+ * @param {*} spread 
+ * @param {*} type 
+ * @returns 
  */
 export const zoom = (spread, type) => {
   const sheet = spread.getActiveSheet();
@@ -172,10 +186,8 @@ export const zoom = (spread, type) => {
 
 /**
  * Create a modal for the TotalModel
- * @param {*} quotation
- * @param {*} template
- * @param {*} field
- * @param {*} cb
+ * @param {*} field 
+ * @param {*} cb 
  */
 export const FormComputedRowField = (field, cb) => {
   const data = {};
@@ -326,6 +338,8 @@ export const FrozenHead = (spread) => {
 
 /**
  * Show the cost price
+ * @param {*} spread 
+ * @param {*} locked 
  */
 export const ShowCostPrice = (spread, locked = false) => {
   const template = store.getters['quotationModule/GetterQuotationWorkBook'];
@@ -354,6 +368,7 @@ export const ShowCostPriceStatus = () => {
 /**
  * Update the discount value
  * @param {*} spread 
+ * @param {*} percentage 
  */
 export const UpdateDiscount = (spread, percentage) => {
   const discountField = getDiscountField();
@@ -402,7 +417,11 @@ export const UpdateDiscount = (spread, percentage) => {
   }
 }
 
-// Update top price settings
+/**
+ * Update top price settings
+ * @param {*} spread 
+ * @param {*} priceSet 
+ */
 export const UpdatePriceSet = (spread, priceSet) => {
   if (showPriceSet()) {
     store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
@@ -458,5 +477,27 @@ export const UpdatePriceSet = (spread, priceSet) => {
     SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
 
     ShowCostPrice(spread, ShowCostPriceStatus());
+  }
+}
+
+/**
+ * Start adaptive line height
+ * @param {*} spread 
+ */
+export const StartAutoFitRow = (spread) => {
+  const sheet = spread.getActiveSheet();
+  const image = getImageConfig();
+  const rowsField = getEquipmentConfig();
+  const tableRows = getTableRowIndex(spread);
+
+  if (getConfig().startAutoFitRow) {
+    tableRows.forEach(row => {
+      sheet.autoFitRow(row);
+      setAutoFitRow(sheet, row, rowsField, image);
+    });
+  } else {
+    tableRows.forEach(row => {
+      defaultAutoFitRow(sheet, row, rowsField, image);
+    });
   }
 }

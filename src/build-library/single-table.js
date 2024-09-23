@@ -64,7 +64,9 @@ import {
   clearTotalNoData,
   rowComputedField,
   finalPriceByConcessional,
-  setAutoFitRow
+  setAutoFitRow,
+  defaultAutoFitRow,
+  getTableRowIndex
 } from '../common/single-table';
 
 import { LayoutRowColBlock } from '../common/core';
@@ -93,10 +95,16 @@ const OnEventBind = (spread) => {
   sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
     console.log('EditEnded事件');
 
+    const image = getImageConfig();
+    const rowsField = getEquipmentConfig();
     if (getConfig().startAutoFitRow) {
-      sheet.autoFitRow(args.row);
-      const image = getImageConfig();
-      setAutoFitRow(sheet, args.row, getEquipmentConfig(), image)
+      const tableRows = getTableRowIndex(spread);
+      if (tableRows.includes(args.row)) {
+        sheet.autoFitRow(args.row);
+        setAutoFitRow(sheet, args.row, rowsField, image);
+      }
+    } else {
+      defaultAutoFitRow(sheet, args.row, rowsField, image);
     }
 
     limitDiscountInput(spread, args);
