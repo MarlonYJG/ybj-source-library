@@ -552,15 +552,21 @@ export const getImageField = (template) => {
   if (!template) {
     template = getTemplate();
   }
+  const imgField = template.cloudSheet.center.equipment.bindPath.img;
   const imageField = template.cloudSheet.center.equipment.bindPath.imageId;
+  if (imgField) {
+    return {
+      ...imgField,
+      fieldName: 'img'
+    }
+  }
   if (imageField) {
     return {
       ...imageField,
       fieldName: 'imageId'
     }
-  } else {
-    console.error('The image field(imageId) does not exist');
   }
+  console.warn('The image field(img||imageId) does not exist');
   return null;
 }
 
