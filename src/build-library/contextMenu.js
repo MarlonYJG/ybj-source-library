@@ -404,10 +404,10 @@ export const onOpenMenu = (spread) => {
               if (table) {
                 menuItemImgName(spread, row, col, table, insertImg);
                 if (table.range().containsRange(range)) {
-                  itemsDataForShown.push(...delRow, ...insertRow, ...addRowPro, ...insertRowPro, ...sortPro, ...insertImg);
+                  itemsDataForShown.push(...delRow, ...insertRow, ...addRowPro, ...insertRowPro, ...sortPro, ...insertImg, ...removeRowImg);
                   console.log('点击区域：table');
                 } else {
-                  itemsDataForShown.push(...delRow, ...addRowPro, ...sortPro, ...insertImg);
+                  itemsDataForShown.push(...delRow, ...addRowPro, ...sortPro, ...insertImg, ...removeRowImg);
                 }
               } else if (leavel1Area.includes(row)) {
                 itemsDataForShown.push(...delRow, ...addRowPro, ...sortPro);
@@ -419,6 +419,10 @@ export const onOpenMenu = (spread) => {
                 itemsDataForShown.push(...addRowPro, ...sortPro);
                 console.log('点击区域：小计');
               }
+            } else {
+              const table = sheet.tables.find(row, col);
+              menuItemImgName(spread, row, col, table, insertImg);
+              itemsDataForShown.push(...removeRowImg, ...insertImg);
             }
           } else {
             itemsDataForShown.push(...pubMenu, ...delRow);
