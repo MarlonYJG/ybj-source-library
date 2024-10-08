@@ -911,11 +911,13 @@ export const initShowCostPrice = (spread) => {
 
 /**
  * Obtain the classification type of the template
+ * @param {*} GetterQuotationInit 
+ * @param {*} GetterQuotationWorkBook 
  * @returns 
  */
-export const getTemplateClassType = () => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+export const getTemplateClassType = (GetterQuotationInit, GetterQuotationWorkBook) => {
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const templateClassIdentifier = template.cloudSheet.templateClassIdentifier;
   const resourceViews = quotation.conferenceHall.resourceViews;
 
@@ -1445,10 +1447,13 @@ export const setAutoFitRow = (sheet, row, rowsField, image) => {
  * @param {*} row 
  * @param {*} rowsField 
  * @param {*} image 
+ * @param {*} quotation 
+ * @param {*} template 
  */
-export const defaultAutoFitRow = (sheet, row, rowsField, image) => {
-  const tableRows = getTableRowIndex(sheet.getParent());
-  if (tableRows.includes(row)) {
+export const defaultAutoFitRow = (sheet, row, rowsField, image, quotation = null, template = null) => {
+  const spread = sheet.getParent();
+  const tableRows = getTableRowIndex(spread, quotation, template);
+  if (tableRows.includes(row - 1)) {
     if (image && image.height) {
       const maxH = Math.max(image.height, rowsField.height || 0);
       sheet.setRowHeight(row, maxH);
@@ -1464,10 +1469,12 @@ export const defaultAutoFitRow = (sheet, row, rowsField, image) => {
 /**
  * Obtain the row index in the table
  * @param {*} spread 
+ * @param {*} quotation 
+ * @param {*} template 
  * @returns 
  */
-export const getTableRowIndex = (spread) => {
-  const layout = new LayoutRowColBlock(spread);
+export const getTableRowIndex = (spread, quotation, template) => {
+  const layout = new LayoutRowColBlock(spread, template, quotation);
   const { Tables } = layout.getLayout();
   const tableMapRows = layout.getTableMapRows(Tables);
   const rows = [];

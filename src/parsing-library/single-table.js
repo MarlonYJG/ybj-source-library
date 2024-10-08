@@ -890,6 +890,8 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
   const resourceViews = quotation.conferenceHall.resourceViews;
 
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
+  console.log(noClass,'-----------');
+  
 
   if (!noClass) {
     if (type) {
@@ -917,9 +919,6 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
       }
     }
   }
-
-  console.log(quotation, '============');
-  console.log(template, '============');
 
   const { classRow, subTotal, classRow1, tableHeaderRow } = classificationAlgorithms(quotation, header, template);
 
@@ -997,7 +996,7 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
       const { image = null } = template.cloudSheet;
 
       mergeSpan(sheet, equipment.spans, startRow);
-      setRowStyle(sheet, equipment, startRow, image, false, quotation);
+      setRowStyle(sheet, equipment, startRow, image, false, quotation, template);
       columnComputedValue(sheet, equipment, startRow, computedColumnFormula);
     }
 
@@ -1082,7 +1081,7 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
 export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
   const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
-  console.log('------------解析库--------------');
+  console.log('------------解析库1--------------');
 
   console.log(quotation, 'quotation');
   console.log(template, 'template');

@@ -17,17 +17,18 @@ const NzhCN = require('../lib/nzh/cn.min.js');
  * Get quote data 
  * @returns 
  */
-const getQuotationResource = () => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+const getQuotationResource = (GetterQuotationInit = null) => {
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   return quotation.conferenceHall.resourceViews;
 }
 
 /**
  * Get template data
+ * @param {*} GetterQuotationWorkBook 
  * @returns 
  */
-const getTemplateCloudSheet = () => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+const getTemplateCloudSheet = (GetterQuotationWorkBook = null) => {
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   return template.cloudSheet;
 }
 
@@ -58,7 +59,9 @@ export class LayoutRowColBlock {
   }
 
   _init() {
-    const classType = getTemplateClassType();
+    const classType = getTemplateClassType(this.Quotation, this.Template);
+    console.log(classType, '============');
+
     LayoutRowColBlock.ClassType = classType;
     this._initLayout(classType)
   }
@@ -92,9 +95,9 @@ export class LayoutRowColBlock {
     let totalMap = null;
     let levelsRowMap = {};
 
-    const { top, bottom, total } = getTemplateCloudSheet();
+    const { top, bottom, total } = getTemplateCloudSheet(this.Template);
 
-    const resourceViews = getQuotationResource();
+    const resourceViews = getQuotationResource(this.Quotation);
     for (let i = 0; i < resourceViews.length; i++) {
       const item = resourceViews[i];
       const resourceLibraryId = item.resourceLibraryId;
@@ -110,7 +113,7 @@ export class LayoutRowColBlock {
     tableMap = sortObjectByRow(tableMap)
 
     if (showTotal(this.Template)) {
-      const quotation = store.getters['quotationModule/GetterQuotationInit'];
+      const quotation = this.Quotation || store.getters['quotationModule/GetterQuotationInit'];
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
         const rowCount = sheet.getRowCount();
@@ -140,9 +143,9 @@ export class LayoutRowColBlock {
     let totalMap = null;
     let levelsRowMap = {};
 
-    const { top, bottom, total } = getTemplateCloudSheet();
+    const { top, bottom, total } = getTemplateCloudSheet(this.Template);
 
-    const resourceViews = getQuotationResource();
+    const resourceViews = getQuotationResource(this.Quotation);
     for (let i = 0; i < resourceViews.length; i++) {
       const item = resourceViews[i];
       const resourceLibraryId = item.resourceLibraryId;
@@ -190,7 +193,7 @@ export class LayoutRowColBlock {
     subTotalMap = sortObjectByRow(subTotalMap)
 
     if (showTotal(this.Template)) {
-      const quotation = store.getters['quotationModule/GetterQuotationInit'];
+      const quotation = this.Quotation || store.getters['quotationModule/GetterQuotationInit'];
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
         const rowCount = sheet.getRowCount();
@@ -220,9 +223,9 @@ export class LayoutRowColBlock {
     let totalMap = null;
     let levelsRowMap = {};
 
-    const { top, bottom, total } = getTemplateCloudSheet();
+    const { top, bottom, total } = getTemplateCloudSheet(this.Template);
 
-    const resourceViews = getQuotationResource();
+    const resourceViews = getQuotationResource(this.Quotation);
     for (let i = 0; i < resourceViews.length; i++) {
       const item = resourceViews[i];
       const resourceLibraryId = item.resourceLibraryId;
@@ -273,7 +276,7 @@ export class LayoutRowColBlock {
     subTotalMap = sortObjectByRow(subTotalMap)
 
     if (showTotal(this.Template)) {
-      const quotation = store.getters['quotationModule/GetterQuotationInit'];
+      const quotation = this.Quotation || store.getters['quotationModule/GetterQuotationInit'];
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
         const rowCount = sheet.getRowCount();
