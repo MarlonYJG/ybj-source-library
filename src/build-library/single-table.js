@@ -929,7 +929,7 @@ const rendering = (spread, type, template) => {
 
   if (template.truckage) {
     const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage');
-    TruckageIdentifier.truckageRenderTotal(quotation);
+    TruckageIdentifier.init(quotation);
   }
 };
 

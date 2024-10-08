@@ -670,7 +670,6 @@ const RenderHeaderTotal = (spread, quotation, columnTotal = null, GetterQuotatio
   }
   setCellStyle(spread, mixTopTotal[combined], totalRowIndex, true);
   setTotalRowHeight(sheet, total, mixTopTotal[combined], totalRowIndex);
-  // 1setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, columnTotal, initTotal.bindPath, null);
   setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, initTotal.bindPath, template, quotation);
 
   sheet.resumePaint();
@@ -864,14 +863,13 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
     mergeSpan(sheet, Total.spans, totalRowIndex);
     setCellStyle(spread, Total, totalRowIndex, true);
     setTotalRowHeight(sheet, total, Total, totalRowIndex);
-    // 1setTotalRowValue(sheet, Total, totalRowIndex, columnTotal, null, columnComputed);
     setTotalRowValue(sheet, Total, totalRowIndex, Total.bindPath, template, quotation);
 
     sheet.resumePaint();
 
     if (template.truckage) {
       const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage', template, quotation);
-      TruckageIdentifier.truckageRenderTotal(quotation);
+      TruckageIdentifier.init(quotation);
     }
   }
 };
@@ -890,8 +888,8 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
   const resourceViews = quotation.conferenceHall.resourceViews;
 
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
-  console.log(noClass,'-----------');
-  
+  console.log(noClass, '-----------');
+
 
   if (!noClass) {
     if (type) {

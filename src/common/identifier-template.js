@@ -81,6 +81,20 @@ export class IdentifierTemplate {
   }
 
   /**
+   * 
+   * @param {*} quotation 
+   * @param {*} template 
+   */
+  init(quotation = null, template = null) {
+    console.log('quotation', quotation);
+    console.log(template, 'template');
+
+    if (this.instanceName === 'truckage') {
+      this._truckageRenderTotal(quotation);
+    }
+  }
+
+  /**
    * Identifier:truckage
    * @param {*} totalField
    * @param {*} row
@@ -97,8 +111,10 @@ export class IdentifierTemplate {
     }
   }
 
-  truckageRenderTotal(quotation) {
+  _truckageRenderTotal(quotation) {
     const columnTotal = GetColumnComputedTotal(this.sheet, this.template, this.quotation);
+    console.log(columnTotal, '==============');
+
     if (columnTotal.length) {
       const columnTotalMap = columnTotal[0];
       const subRow = PubGetTableStartRowIndex() + PubGetTableRowCount();
