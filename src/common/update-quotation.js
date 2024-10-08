@@ -104,6 +104,11 @@ export const updateEquipmentImage = (spread, tableId, data, imageName, type, row
   const conferenceHall = quotation.conferenceHall;
   const resourceViews = conferenceHall.resourceViews;
   const resourceViewsMap = {};
+  const findMap = {
+    i: null,
+    j: null,
+    id: null
+  }
 
   if (resourceViews && resourceViews.length) {
     for (let i = 0; i < resourceViews.length; i++) {
@@ -112,19 +117,30 @@ export const updateEquipmentImage = (spread, tableId, data, imageName, type, row
 
         for (let j = 0; j < resources.length; j++) {
           if (resources[j].id === data.id) {
-            if (type === 'del') {
-              delEquipmentImage(spread, resources[j].id)
-              resources[j][imageName] = null;
-              resources[j].images = null;
-            } else if (type === 'insert') {
-              insertEquipmentImage(spread, resources[j].id, row);
-              return;
-            }
+            findMap.i = i;
+            findMap.j = j;
+            findMap.id = resources[j].id;
           }
         }
       }
     }
   }
+
+  console.log('待替换的产品id', findMap);
+  if (findMap.id) {
+    const resources = resourceViews[findMap.i].resources;
+    if (type === 'del') {
+      delEquipmentImage(spread, resources[findMap.j].id)
+      resources[findMap.j][imageName] = null;
+      resources[findMap.j].images = null;
+    } else if (type === 'insert') {
+      insertEquipmentImage(spread, resources[findMap.j].id, row);
+    }
+  } else {
+    console.error('找不到对应资源');
+    return;
+  }
+
   resourceViews.forEach(item => {
     resourceViewsMap[item.resourceLibraryId] = item;
   });

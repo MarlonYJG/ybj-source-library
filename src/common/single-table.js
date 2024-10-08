@@ -1447,14 +1447,17 @@ export const setAutoFitRow = (sheet, row, rowsField, image) => {
  * @param {*} image 
  */
 export const defaultAutoFitRow = (sheet, row, rowsField, image) => {
-  if (image && image.height) {
-    const maxH = Math.max(image.height, rowsField.height || 0);
-    sheet.setRowHeight(row, maxH);
-  } else if (rowsField && rowsField.height) {
-    sheet.setRowHeight(row, rowsField.height);
-  } else {
-    sheet.getCell(row, -1).wordWrap(true);
-    sheet.autoFitRow(row)
+  const tableRows = getTableRowIndex(sheet.getParent());
+  if (tableRows.includes(row)) {
+    if (image && image.height) {
+      const maxH = Math.max(image.height, rowsField.height || 0);
+      sheet.setRowHeight(row, maxH);
+    } else if (rowsField && rowsField.height) {
+      sheet.setRowHeight(row, rowsField.height);
+    } else {
+      sheet.getCell(row, -1).wordWrap(true);
+      sheet.autoFitRow(row)
+    }
   }
 };
 
