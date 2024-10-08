@@ -452,7 +452,9 @@ const equipmentImageEdit = (spread, context, options, type) => {
     const proItem = layout.getProductByActiveCell(pickRow, pickCol, tableId);
     if (proItem) {
       const imgField = getImageField();
-      updateEquipmentImage(spread, tableId, proItem, imgField.fieldName, type, pickRow);
+      if (imgField) {
+        updateEquipmentImage(spread, tableId, proItem, imgField.fieldName, type, pickRow);
+      }
     } else {
       console.error('Product not found');
     }

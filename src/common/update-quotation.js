@@ -111,7 +111,7 @@ export const updateEquipmentImage = (spread, tableId, data, imageName, type, row
         const resources = resourceViews[i].resources;
 
         for (let j = 0; j < resources.length; j++) {
-          if (resources[j][imageName] === data[imageName]) {
+          if (resources[j].id === data.id) {
             if (type === 'del') {
               delEquipmentImage(spread, resources[j].id)
               resources[j][imageName] = null;
