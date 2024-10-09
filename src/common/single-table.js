@@ -803,7 +803,7 @@ const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, su
       }
       ((item, imgUrl, startRow) => {
         imgUrlToBase64(imgUrl, (base64) => {
-          AddEquipmentImage(spread, item.id, base64, startRow, allowMove, allowResize, isLocked, template);
+          AddEquipmentImage(spread, item.imageId, base64, startRow, allowMove, allowResize, isLocked, template);
         }, isCompress);
       })(item, imgUrl, startRow);
     }

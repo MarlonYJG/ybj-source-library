@@ -22,10 +22,20 @@ let isProcessing = null;// 加锁防止重复执行
  */
 const delEquipmentImage = (spread, pictureId) => {
   const sheet = spread.getActiveSheet();
+  const allPictures = sheet.pictures.all()
+  allPictures.forEach(item => {
+    console.log(item.name());
+
+  });
   const picture = sheet.pictures.get(pictureId);
   if (picture) {
     sheet.resumePaint();
     sheet.pictures.remove(pictureId);
+    sheet.repaint();
+  }
+  if (picture.name()) {
+    sheet.resumePaint();
+    sheet.pictures.remove(picture.name());
     sheet.repaint();
   }
 }
@@ -35,8 +45,9 @@ const delEquipmentImage = (spread, pictureId) => {
  * @param {*} spread 
  * @param {*} pictureId 
  * @param {*} row 
+ * @param {*} id 
  */
-const insertEquipmentImage = (spread, pictureId, row) => {
+const insertEquipmentImage = (spread, pictureId, row, id) => {
   const sheet = spread.getActiveSheet();
   selectEquipmentImageProxy.value = (base64, file) => {
     if (base64) {
@@ -47,7 +58,7 @@ const insertEquipmentImage = (spread, pictureId, row) => {
           delEquipmentImage(spread, pictureId);
         }
         AddEquipmentImage(spread, pictureId, base64, row);
-        uploadEquipmentImageByPath(sheet, pictureId, file)
+        uploadEquipmentImageByPath(sheet, id, file)
         isProcessing = null;
       }, 0);
     }
@@ -130,11 +141,10 @@ export const updateEquipmentImage = (spread, tableId, data, imageName, type, row
   if (findMap.id) {
     const resources = resourceViews[findMap.i].resources;
     if (type === 'del') {
-      delEquipmentImage(spread, resources[findMap.j].id)
-      resources[findMap.j][imageName] = null;
       resources[findMap.j].images = null;
+      delEquipmentImage(spread, resources[findMap.j].imageId)
     } else if (type === 'insert') {
-      insertEquipmentImage(spread, resources[findMap.j].id, row);
+      insertEquipmentImage(spread, resources[findMap.j].imageId, row, resources[findMap.j].id);
     }
   } else {
     console.error('找不到对应资源');

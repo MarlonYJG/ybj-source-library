@@ -86,7 +86,7 @@ const repaintImage = (spread, rowData, rowIndex) => {
       imgUrl = encodeURI(imgUrl);
     }
     imgUrlToBase64(imgUrl, (base64) => {
-      AddEquipmentImage(spread, rowData.id, base64, rowIndex, true, false, false);
+      AddEquipmentImage(spread, rowData.imageId, base64, rowIndex, true, false, false);
     });
     sheet.repaint();
   }
