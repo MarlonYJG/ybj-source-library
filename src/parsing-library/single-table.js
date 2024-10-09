@@ -5,6 +5,8 @@
  */
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
+import VERSION from "../lib/version/version.min.js";
+
 import store from 'store';
 import { getSystemDate, isNumber, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 
@@ -12,9 +14,10 @@ import { CreateTable, SetDataSource } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { TOTAL_COMBINED_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
 
-import { numberToColumn } from '../common/public'
+import { LOG_STYLE_1, LOG_STYLE_3 } from '../common/log-style';
+import { numberToColumn } from '../common/public';
 
-import IdentifierTemplate from '../common/identifier-template'
+import IdentifierTemplate from '../common/identifier-template';
 
 import {
   PubGetTableStartColumnIndex,
@@ -670,7 +673,6 @@ const RenderHeaderTotal = (spread, quotation, columnTotal = null, GetterQuotatio
   }
   setCellStyle(spread, mixTopTotal[combined], totalRowIndex, true);
   setTotalRowHeight(sheet, total, mixTopTotal[combined], totalRowIndex);
-  // 1setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, columnTotal, initTotal.bindPath, null);
   setTotalRowValue(sheet, mixTopTotal[combined], totalRowIndex, initTotal.bindPath, template, quotation);
 
   sheet.resumePaint();
@@ -853,9 +855,6 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
     const bottomRowCount = bottom.rowCount;
     const totalRowIndex = sheet.getRowCount() - bottomRowCount;
 
-    console.log(total);
-
-
     const Total = total[templateTotalMap(total.select)];
     sheet.addRows(totalRowIndex, Total.rowCount);
 
@@ -864,14 +863,13 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
     mergeSpan(sheet, Total.spans, totalRowIndex);
     setCellStyle(spread, Total, totalRowIndex, true);
     setTotalRowHeight(sheet, total, Total, totalRowIndex);
-    // 1setTotalRowValue(sheet, Total, totalRowIndex, columnTotal, null, columnComputed);
     setTotalRowValue(sheet, Total, totalRowIndex, Total.bindPath, template, quotation);
 
     sheet.resumePaint();
 
     if (template.truckage) {
       const TruckageIdentifier = new IdentifierTemplate(sheet, 'truckage', template, quotation);
-      TruckageIdentifier.truckageRenderTotal(quotation);
+      TruckageIdentifier.init(quotation);
     }
   }
 };
@@ -890,6 +888,8 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
   const resourceViews = quotation.conferenceHall.resourceViews;
 
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
+  console.log(noClass, '-----------');
+
 
   if (!noClass) {
     if (type) {
@@ -917,9 +917,6 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
       }
     }
   }
-
-  console.log(quotation, '============');
-  console.log(template, '============');
 
   const { classRow, subTotal, classRow1, tableHeaderRow } = classificationAlgorithms(quotation, header, template);
 
@@ -997,7 +994,7 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
       const { image = null } = template.cloudSheet;
 
       mergeSpan(sheet, equipment.spans, startRow);
-      setRowStyle(sheet, equipment, startRow, image, false, quotation);
+      setRowStyle(sheet, equipment, startRow, image, false, quotation, template);
       columnComputedValue(sheet, equipment, startRow, computedColumnFormula);
     }
 
@@ -1082,7 +1079,8 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
 export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
   const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
-  console.log('------------解析库--------------');
+
+  console.log(`%c parsing-library %c version： ${VERSION}`, LOG_STYLE_1, LOG_STYLE_3);
 
   console.log(quotation, 'quotation');
   console.log(template, 'template');

@@ -71,12 +71,22 @@ export const DEFINE_IDENTIFIER_MAP = {
  */
 export class IdentifierTemplate {
   constructor(sheet, name, template, quotation) {
-    this.template = template;
-    this.quotation = quotation;
     this.sheet = sheet;
     this.instanceName = name;
-    this.builtInIdMap = {
-      '2c91e6548b931749018b93bac6fb001e': 'BH'
+    this.template = template || store.getters['quotationModule/GetterQuotationWorkBook'];
+    this.quotation = quotation || store.getters['quotationModule/GetterQuotationInit'];
+  }
+
+  /**
+   * 
+   * @param {*} quotation 
+   * @param {*} template 
+   */
+  init(quotation = null, template = null) {
+    const quo = quotation || this.quotation;
+    const temp = template || this.template;
+    if (this.instanceName === 'truckage') {
+      this._truckageRenderTotal(quo, temp);
     }
   }
 
@@ -97,12 +107,17 @@ export class IdentifierTemplate {
     }
   }
 
-  truckageRenderTotal(quotation) {
-    const columnTotal = GetColumnComputedTotal(this.sheet, this.template, this.quotation);
+  /**
+   * Built-in method: Calculate subtotals and grand totals
+   * @param {*} quotation 
+   */
+  _truckageRenderTotal(quotation) {
+    const columnTotal = GetColumnComputedTotal(this.sheet, this.template, quotation);
     if (columnTotal.length) {
       const columnTotalMap = columnTotal[0];
-      const subRow = PubGetTableStartRowIndex() + PubGetTableRowCount();
+      const subRow = PubGetTableStartRowIndex(this.template) + PubGetTableRowCount(0, quotation);
       this.sheet.suspendPaint();
+
       if (Object.keys(columnTotalMap).includes('quantity') && columnTotalMap.quantity.formula) {
         this.sheet.setFormula(subRow, columnTotalMap.quantity.column, columnTotalMap.quantity.formula);
         // this.sheet.autoFitColumn(columnTotalMap.quantity.column);
@@ -151,15 +166,6 @@ export class IdentifierTemplate {
     }
   }
 
-  /**
-   * 内置的模板标识符(id)，目的是为了解决兼容旧的模板
-   */
-  builtInIdsIdentifier() {
-    const templateId = store.getters['quotationModule/GetterTemplateId'];
-    if (this.builtInIdMap[templateId]) {
-      return this.builtInIdMap[templateId];
-    }
-  }
 }
 
 

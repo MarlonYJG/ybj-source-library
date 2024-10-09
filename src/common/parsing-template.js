@@ -170,8 +170,9 @@ export const PubSetCellHeight = (sheet, field, row) => {
  * @param {*} image 
  * @param {*} locked 
  * @param {*} quotation 
+ * @param {*} template 
  */
-export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, quotation = null) => {
+export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, quotation = null, template = null) => {
   if (rowsField.dataTable) {
     for (const i in rowsField.dataTable) {
       if (Object.hasOwnProperty.call(rowsField.dataTable, i)) {
@@ -197,7 +198,7 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
           sheet.autoFitRow(startRow + Number(i))
           setAutoFitRow(sheet, startRow + Number(i), rowsField, image)
         } else {
-          defaultAutoFitRow(sheet, startRow + Number(i), rowsField, image);
+          defaultAutoFitRow(sheet, startRow + Number(i), rowsField, image, quotation, template);
         }
       }
     }
