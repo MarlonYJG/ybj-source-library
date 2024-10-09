@@ -5,6 +5,8 @@
  */
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
+import VERSION from "../lib/version/version.min.js";
+
 import store from 'store';
 import { getSystemDate, isNumber, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 
@@ -12,9 +14,10 @@ import { CreateTable, SetDataSource } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { TOTAL_COMBINED_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
 
-import { numberToColumn } from '../common/public'
+import { LOG_STYLE_1, LOG_STYLE_3 } from '../common/log-style';
+import { numberToColumn } from '../common/public';
 
-import IdentifierTemplate from '../common/identifier-template'
+import IdentifierTemplate from '../common/identifier-template';
 
 import {
   PubGetTableStartColumnIndex,
@@ -852,9 +855,6 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
     const bottomRowCount = bottom.rowCount;
     const totalRowIndex = sheet.getRowCount() - bottomRowCount;
 
-    console.log(total);
-
-
     const Total = total[templateTotalMap(total.select)];
     sheet.addRows(totalRowIndex, Total.rowCount);
 
@@ -1079,7 +1079,8 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
 export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
   const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
-  console.log('------------解析库1--------------');
+
+  console.log(`%c parsing-library %c version： ${VERSION}`, LOG_STYLE_1, LOG_STYLE_3);
 
   console.log(quotation, 'quotation');
   console.log(template, 'template');

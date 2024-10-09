@@ -7,7 +7,8 @@ import store from 'store';
 import { IGNORE_EVENT } from 'store/quotation/mutation-types';
 import { sortObjectByRow } from '../utils/index'
 
-import { CombinationTypeBuild } from './combination-type'
+import { LOG_STYLE_1 } from './log-style';
+import { CombinationTypeBuild } from './combination-type';
 import { getTemplateClassType } from './single-table';
 import { showTotal, getPriceColumn } from './parsing-template';
 
@@ -60,7 +61,7 @@ export class LayoutRowColBlock {
 
   _init() {
     const classType = getTemplateClassType(this.Quotation, this.Template);
-    console.log(classType, '============');
+    console.log(`%c 报价单分类类型：${classType}`, LOG_STYLE_1);
 
     LayoutRowColBlock.ClassType = classType;
     this._initLayout(classType)
