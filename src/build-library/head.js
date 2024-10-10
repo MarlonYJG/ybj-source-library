@@ -13,13 +13,11 @@ import { SHOW_DELETE, UPDATE_QUOTATION_PATH, IGNORE_EVENT, FROZEN_HEAD_TEMPLATE 
 import { PRICE_SET_MAP } from '../common/constant'
 import { SetDataSource } from '../common/sheetWorkBook';
 import { exportErrorProxy } from '../common/proxyData';
-import { LayoutRowColBlock } from '../common/core';
 
 import {
   getTemplateTopRowCol, getDiscountField, showPriceSet,
   getImageConfig,
-  getEquipmentConfig,
-  getImageField
+  getEquipmentConfig
 } from '../common/parsing-template';
 import { getConfig } from '../common/parsing-quotation';
 
@@ -35,7 +33,7 @@ import { Reset } from './public';
 import { MENU_TOTAL } from './config';
 
 // eslint-disable-next-line no-unused-vars
-import { Render, insertField, removeAllTable, UpdateTotalBlock, resetDiscountRatio } from './single-table';
+import { Render, insertField, removeAllTable, UpdateTotalBlock, resetDiscountRatio, setRowImageHeight } from './single-table';
 
 
 /**
@@ -506,7 +504,7 @@ export const StartAutoFitRow = (spread) => {
       ((row) => {
         sheet.autoFitRow(row);
         setAutoFitRow(sheet, row, rowsField, image, (height) => {
-          setRowImageHeight(sheet, i, row, height);
+          setRowImageHeight(sheet, row, height, i);
         });
       })(row)
     });
@@ -520,31 +518,4 @@ export const StartAutoFitRow = (spread) => {
   sheet.resumePaint();
 }
 
-/**
- * Update the image height
- * @param {*} sheet 
- * @param {*} i 
- * @param {*} row 
- * @param {*} height 
- */
-const setRowImageHeight = (sheet, i, row, height) => {
-  const imageField = getImageField();
-  if (imageField) {
 
-    console.log(imageField, 'imageField');
-
-    const table = sheet.tables.find(row, imageField.column)
-    if (table) {
-      const tableId = table.name().split('table')[1];
-      const layout = new LayoutRowColBlock(sheet.getParent());
-      const productItem = layout.getProductByIndex(tableId, i);
-
-      console.log(productItem, 'productItem');
-
-      if (productItem && productItem.imageId) {
-        const picture = sheet.pictures.get(productItem.imageId);
-        picture.height(height - 5);
-      }
-    }
-  }
-}
