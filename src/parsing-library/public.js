@@ -265,7 +265,7 @@ export const addImageOfTable = (spread, tableId, image, pictureName, base64, end
       curHeight = image.height || 100;
     }
     sheet.suspendPaint();
-    const picture = sheet.pictures.add(pictureName + new Date().getTime(), base64, imgX, imgY, 2, 2);
+    const picture = sheet.pictures.add(pictureName, base64, imgX, imgY, 2, 2);
     picture.startRow(startRow);
     picture.endRow(startRow + endRow);
     picture.startColumn(startColumn);

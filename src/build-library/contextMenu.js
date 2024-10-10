@@ -79,14 +79,14 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
  */
 const repaintImage = (spread, rowData, rowIndex) => {
   const sheet = spread.getActiveSheet();
-  sheet.pictures.remove(rowData.id);
+  sheet.pictures.remove(rowData.imageId);
   if (rowData.images) {
     let imgUrl = rowData.images;
     if (REGULAR.chineseCharacters.test(imgUrl)) {
       imgUrl = encodeURI(imgUrl);
     }
     imgUrlToBase64(imgUrl, (base64) => {
-      AddEquipmentImage(spread, rowData.id, base64, rowIndex, true, false, false);
+      AddEquipmentImage(spread, rowData.imageId, base64, rowIndex, true, false, false);
     });
     sheet.repaint();
   }

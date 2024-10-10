@@ -107,7 +107,8 @@ export const buildData = (tableId, insertIndex, count, classType) => {
       classification: tableId,
       classificationName: cname.length ? cname[0].classificationName : '',
       parentClassification: tableId,
-      parentClassificationName: cname.length ? cname[0].classificationName : ''
+      parentClassificationName: cname.length ? cname[0].classificationName : '',
+      imageId: uuidv4()
     }
     if (!['noLevel', 'Level_1_row'].includes(classType)) {
       // TODO 如果是二级分类,修改二级分类名称以及parentClassification
@@ -194,12 +195,11 @@ export const initPriceSetField = (quo) => {
 }
 
 /**
- * Enable adaptive row height
+ * Obtain configuration information
+ * @param {*} quotation 
  * @returns 
  */
-// 获取配置信息
 export const getConfig = (quotation) => {
-  console.log(quotation);
   if (!quotation) {
     quotation = getQuotation();
   }
@@ -209,3 +209,4 @@ export const getConfig = (quotation) => {
   console.warn('quotation.config is null');
   return null;
 }
+
