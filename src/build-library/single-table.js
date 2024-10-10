@@ -105,7 +105,7 @@ const OnEventBind = (spread) => {
         setAutoFitRow(sheet, args.row, rowsField, image);
       }
     } else {
-      defaultAutoFitRow(sheet, args.row, rowsField, image);
+      defaultAutoFitRow(sheet, args.row, rowsField, image, 0);
     }
 
     limitDiscountInput(spread, args);

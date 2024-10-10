@@ -486,24 +486,31 @@ export const UpdatePriceSet = (spread, priceSet) => {
  */
 export const StartAutoFitRow = (spread) => {
   const sheet = spread.getActiveSheet();
+
   const image = getImageConfig();
   const rowsField = getEquipmentConfig();
   const tableRows = getTableRowIndex(spread);
   const config = getConfig()
 
   console.log(config);
-  
-  console.log(image);
-  
 
+  console.log(image);
+
+
+  sheet.suspendPaint();
   if (config && config.startAutoFitRow) {
     tableRows.forEach(row => {
-      sheet.autoFitRow(row);
-      setAutoFitRow(sheet, row, rowsField, image);
+      ((row) => {
+        sheet.autoFitRow(row);
+        setAutoFitRow(sheet, row, rowsField, image);
+      })(row)
     });
   } else {
     tableRows.forEach(row => {
-      defaultAutoFitRow(sheet, row, rowsField, image);
+      ((row) => {
+        defaultAutoFitRow(sheet, row, rowsField, image, 0);
+      })(row);
     });
   }
+  sheet.resumePaint();
 }

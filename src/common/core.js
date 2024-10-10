@@ -7,7 +7,7 @@ import store from 'store';
 import { IGNORE_EVENT } from 'store/quotation/mutation-types';
 import { sortObjectByRow } from '../utils/index'
 
-import { LOG_STYLE_1 } from './log-style';
+// import { LOG_STYLE_1 } from './log-style';
 import { CombinationTypeBuild } from './combination-type';
 import { getTemplateClassType } from './single-table';
 import { showTotal, getPriceColumn } from './parsing-template';
@@ -61,8 +61,6 @@ export class LayoutRowColBlock {
 
   _init() {
     const classType = getTemplateClassType(this.Quotation, this.Template);
-    console.log(`%c 报价单分类类型：${classType}`, LOG_STYLE_1);
-
     LayoutRowColBlock.ClassType = classType;
     this._initLayout(classType)
   }
@@ -314,16 +312,16 @@ export class LayoutRowColBlock {
    * @returns 
    */
   getClassType() {
-    console.log(LayoutRowColBlock.ClassType, '模板分类类型');
+    // console.log(LayoutRowColBlock.ClassType, '模板分类类型');
     return LayoutRowColBlock.ClassType;
   }
 
   getLayout() {
-    console.log(LayoutRowColBlock.Levels, '层级');
-    console.log(LayoutRowColBlock.Tables, '布局');
-    console.log(LayoutRowColBlock.SubTotals, '子表');
-    console.log(LayoutRowColBlock.Summations, '子表合计');
-    console.log(LayoutRowColBlock.TotalMap, '合计');
+    // console.log(LayoutRowColBlock.Levels, '层级');
+    // console.log(LayoutRowColBlock.Tables, '布局');
+    // console.log(LayoutRowColBlock.SubTotals, '子表');
+    // console.log(LayoutRowColBlock.Summations, '子表合计');
+    // console.log(LayoutRowColBlock.TotalMap, '合计');
 
     return {
       Levels: LayoutRowColBlock.Levels,
@@ -453,7 +451,6 @@ export class LayoutRowColBlock {
    * @returns 
    */
   getProductByActiveCell(activeRow, activeCol, tableId) {
-    console.log(tableId);
     const leMap = LayoutRowColBlock.LevelsRowMap;
     const classType = LayoutRowColBlock.ClassType;
     if (['noLevel', 'Level_1_col'].includes(classType)) {

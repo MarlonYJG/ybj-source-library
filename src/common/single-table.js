@@ -1433,10 +1433,10 @@ export const setAutoFitRow = (sheet, row, rowsField, image) => {
   const h = sheet.getRowHeight(row);
   if (image && image.height) {
     const maxH = Math.max(image.height, rowsField.height || 0);
-    console.log(h,'实际高度');
-    console.log(maxH,'最大高度');
-    
-    
+    console.log(h, '实际高度');
+    console.log(maxH, '最大高度');
+
+
     if (h < maxH) {
       sheet.setRowHeight(row, maxH);
     }
@@ -1453,13 +1453,19 @@ export const setAutoFitRow = (sheet, row, rowsField, image) => {
  * @param {*} row 
  * @param {*} rowsField 
  * @param {*} image 
+ * @param {*} i 
  * @param {*} quotation 
  * @param {*} template 
  */
-export const defaultAutoFitRow = (sheet, row, rowsField, image, quotation = null, template = null) => {
+export const defaultAutoFitRow = (sheet, row, rowsField, image, i, quotation = null, template = null) => {
   const spread = sheet.getParent();
   const tableRows = getTableRowIndex(spread, quotation, template);
-  if (tableRows.includes(row - 1)) {
+
+  console.log(tableRows);
+
+  console.log(row);
+
+  if (tableRows.includes(row - i)) {
     if (image && image.height) {
       const maxH = Math.max(image.height, rowsField.height || 0);
       sheet.setRowHeight(row, maxH);
