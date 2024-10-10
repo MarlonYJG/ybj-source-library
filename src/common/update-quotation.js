@@ -22,11 +22,6 @@ let isProcessing = null;// 加锁防止重复执行
  */
 const delEquipmentImage = (spread, pictureId) => {
   const sheet = spread.getActiveSheet();
-  const allPictures = sheet.pictures.all()
-  allPictures.forEach(item => {
-    console.log(item.name());
-
-  });
   const picture = sheet.pictures.get(pictureId);
   if (picture) {
     sheet.resumePaint();
