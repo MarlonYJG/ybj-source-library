@@ -6,7 +6,7 @@
 import * as GC from '@grapecity/spread-sheets';
 import store from 'store';
 import _ from '../lib/lodash/lodash.min.js';
-import { imgUrlToBase64 } from '../utils/index';
+import { imgUrlToBase64, BlobToBase64 } from '../utils/index';
 import { SHOW_DRAWER, UPDATE_QUOTATION_PATH, SHOW_SORT, SORT_TYPE_ID, SHOW_DELETE, IGNORE_EVENT } from 'store/quotation/mutation-types';
 import { sortObjectProxy } from '../common/proxyData'
 import { LayoutRowColBlock } from '../common/core';
@@ -80,6 +80,7 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
 const repaintImage = (spread, rowData, rowIndex) => {
   const sheet = spread.getActiveSheet();
   sheet.pictures.remove(rowData.imageId);
+
   if (rowData.images) {
     let imgUrl = rowData.images;
     if (REGULAR.chineseCharacters.test(imgUrl)) {
@@ -89,6 +90,10 @@ const repaintImage = (spread, rowData, rowIndex) => {
       AddEquipmentImage(spread, rowData.imageId, base64, rowIndex, true, false, false);
     });
     sheet.repaint();
+  } else if (rowData.imageFile) {
+    BlobToBase64(rowData.imageFile, (base64) => {
+      AddEquipmentImage(spread, rowData.imageId, base64, rowIndex, true, false, false);
+    })
   }
 };
 
@@ -120,6 +125,11 @@ const tableInsert = (context, options, buildDataConfig, classType) => {
     });
     SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
   }
+
+  console.log('00000000000000');
+
+  console.log(store.getters['quotationModule/GetterQuotationInit']);
+
   if (tableRange) {
     repaintTableStyle(sheet, tableId, tableRange.row, rowH);
   }

@@ -1433,6 +1433,10 @@ export const setAutoFitRow = (sheet, row, rowsField, image) => {
   const h = sheet.getRowHeight(row);
   if (image && image.height) {
     const maxH = Math.max(image.height, rowsField.height || 0);
+    console.log(h,'实际高度');
+    console.log(maxH,'最大高度');
+    
+    
     if (h < maxH) {
       sheet.setRowHeight(row, maxH);
     }
