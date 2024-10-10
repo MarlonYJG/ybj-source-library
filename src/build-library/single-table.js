@@ -1268,7 +1268,9 @@ export const setRowImageHeight = (sheet, row, height, i = null) => {
 
       if (productItem && productItem.imageId) {
         const picture = sheet.pictures.get(productItem.imageId);
-        picture.height(height - 5);
+        if (picture) {
+          picture.height(height - 5);
+        }
       }
     }
   }
