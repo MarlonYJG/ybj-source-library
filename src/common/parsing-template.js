@@ -198,7 +198,9 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
           sheet.autoFitRow(startRow + Number(i))
           setAutoFitRow(sheet, startRow + Number(i), rowsField, image)
         } else {
-          defaultAutoFitRow(sheet, startRow + Number(i), rowsField, image, quotation, template);
+          ((n) => {
+            defaultAutoFitRow(sheet, startRow + Number(n), rowsField, image, 1, quotation, template);
+          })(i)
         }
       }
     }
