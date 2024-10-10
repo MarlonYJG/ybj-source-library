@@ -50,6 +50,19 @@ export const imgUrlToBase64 = async (url, callback, isCompress = false) => {
 };
 
 /**
+* file或blob转base64
+* @param {*} blob file或者blob
+* @param {*} callback function (data)通过参数获得base64
+*/
+export const BlobToBase64 = (blob, callback) => {
+  const reader = new FileReader();
+  reader.addEventListener('load', () => {
+    callback(reader.result);
+  });
+  reader.readAsDataURL(blob);
+};
+
+/**
  * Whether the value is a number or not
  * @param {*} value 
  * @returns 

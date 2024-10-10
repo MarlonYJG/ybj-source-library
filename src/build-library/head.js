@@ -491,6 +491,11 @@ export const StartAutoFitRow = (spread) => {
   const tableRows = getTableRowIndex(spread);
   const config = getConfig()
 
+  console.log(config);
+  
+  console.log(image);
+  
+
   if (config && config.startAutoFitRow) {
     tableRows.forEach(row => {
       sheet.autoFitRow(row);
