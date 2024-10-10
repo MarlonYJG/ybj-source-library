@@ -357,10 +357,10 @@ export const getFormulaFieldRowCol = (field) => {
       ...field.formula,
     }
     if (field.column !== field.formula.column) {
-      console.error('当前字段行列数据不统一【模板错误】', field);
+      console.error('【模板错误】当前字段行列数据不统一', field);
     }
     if (field.columnHeader !== field.formula.columnHeader) {
-      console.error('当前字段行列数据不统一【模板错误】', field);
+      console.error('【模板错误】当前字段行列数据不统一', field);
     }
   } else {
     console.warn('当前字段不是公式字段', field);

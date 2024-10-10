@@ -756,9 +756,10 @@ export const setCellFormatter = (sheet, row, column, quotation) => {
 
 /**
  * Set the calculated value for the row Total (subtotal).
- * @param {*} sheet
- * @param {*} columnTotalMap
- * @param {*} bindPath
+ * @param {*} sheet 
+ * @param {*} columnTotalMap 
+ * @param {*} bindPath 
+ * @param {*} quotation 
  */
 export const SetComputedSubTotal = (sheet, columnTotalMap, bindPath, quotation = null) => {
   for (const key in columnTotalMap) {
@@ -767,7 +768,8 @@ export const SetComputedSubTotal = (sheet, columnTotalMap, bindPath, quotation =
         const formula = columnTotalMap[key].formula.split('+');
         const subTotalRowIndex = formula[formula.length - 1].substring(1);
         if (bindPath && bindPath[key]) {
-          const columnIndex = bindPath[key].columnHeader;
+          const field = getFormulaFieldRowCol(bindPath[key]);
+          const columnIndex = field.columnHeader;
           setCellFormatter(sheet, Number(subTotalRowIndex), columnToNumber(columnIndex) - 1, quotation);
           sheet.setFormula(Number(subTotalRowIndex), columnToNumber(columnIndex) - 1, columnTotalMap[key].formula);
           // sheet.autoFitColumn(columnToNumber(columnIndex) - 1);

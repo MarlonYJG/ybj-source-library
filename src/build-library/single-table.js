@@ -516,11 +516,11 @@ export const updateSubTotalRowValue = (sheet) => {
       for (let index = 0; index < resourceViews.length; index++) {
         if (index === 0) {
           const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, columnComputed, subTotalBindPath);
-          !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+          !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath, quotation);
           insertTableIndex = insertTableIndex + classRow + tableHeaderRow + resourceViews[index].resources.length;
         } else {
           const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null, subTotalBindPath);
-          !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+          !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath, quotation);
 
           insertTableIndex = insertTableIndex + subTotal + classRow + tableHeaderRow + resourceViews[index].resources.length;
         }
@@ -1116,12 +1116,12 @@ export const Render = (spread, isInit) => {
   for (let index = 0; index < resourceViews.length; index++) {
     if (index === 0) {
       const columnTotalMap = columnsTotal(sheet, insertTableIndex + classRow + tableHeaderRow + 1, index, true, columnComputed, subTotalBindPath);
-      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath, quotation);
       columnTotal.push(columnTotalMap);
       insertTableIndex = insertTableIndex + classRow + tableHeaderRow + resourceViews[index].resources.length;
     } else {
       const columnTotalMap = columnsTotal(sheet, insertTableIndex + subTotal + classRow + tableHeaderRow + 1, index, true, null, subTotalBindPath);
-      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath);
+      !noClass && SetComputedSubTotal(sheet, columnTotalMap, subTotalBindPath, quotation);
       columnTotal.push(columnTotalMap);
 
       insertTableIndex = insertTableIndex + subTotal + classRow + tableHeaderRow + resourceViews[index].resources.length;
