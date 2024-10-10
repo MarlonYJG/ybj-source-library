@@ -33,11 +33,6 @@ const delEquipmentImage = (spread, pictureId) => {
     sheet.pictures.remove(pictureId);
     sheet.repaint();
   }
-  if (picture.name()) {
-    sheet.resumePaint();
-    sheet.pictures.remove(picture.name());
-    sheet.repaint();
-  }
 }
 
 /**
@@ -118,16 +113,17 @@ export const updateEquipmentImage = (spread, tableId, data, imageName, type, row
   const findMap = {
     i: null,
     j: null,
-    id: null
+    id: null,
+    imageId: null
   }
 
   if (resourceViews && resourceViews.length) {
     for (let i = 0; i < resourceViews.length; i++) {
       if (resourceViews[i].resourceLibraryId === tableId) {
         const resources = resourceViews[i].resources;
-
         for (let j = 0; j < resources.length; j++) {
           if (resources[j].id === data.id) {
+            findMap.imageId = resources[j].imageId;
             findMap.i = i;
             findMap.j = j;
             findMap.id = resources[j].id;
@@ -138,17 +134,21 @@ export const updateEquipmentImage = (spread, tableId, data, imageName, type, row
   }
 
   console.log('待替换的产品id', findMap);
-  if (findMap.id) {
-    const resources = resourceViews[findMap.i].resources;
-    if (type === 'del') {
-      resources[findMap.j].images = null;
-      delEquipmentImage(spread, resources[findMap.j].imageId)
-    } else if (type === 'insert') {
-      insertEquipmentImage(spread, resources[findMap.j].imageId, row, resources[findMap.j].id);
-    }
-  } else {
-    console.error('找不到对应资源');
+
+  if (!findMap.id) {
+    console.error('找不到对应资源id');
     return;
+  }
+  if (!findMap.imageId) {
+    console.error('找不到对应图片名称字段(imageId)');
+    return;
+  }
+  const resources = resourceViews[findMap.i].resources;
+  if (type === 'del') {
+    resources[findMap.j].images = null;
+    delEquipmentImage(spread, resources[findMap.j].imageId)
+  } else if (type === 'insert') {
+    insertEquipmentImage(spread, resources[findMap.j].imageId, row, resources[findMap.j].id);
   }
 
   resourceViews.forEach(item => {

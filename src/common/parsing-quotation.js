@@ -195,12 +195,11 @@ export const initPriceSetField = (quo) => {
 }
 
 /**
- * Enable adaptive row height
+ * Obtain configuration information
+ * @param {*} quotation 
  * @returns 
  */
-// 获取配置信息
 export const getConfig = (quotation) => {
-  console.log(quotation);
   if (!quotation) {
     quotation = getQuotation();
   }
@@ -210,3 +209,4 @@ export const getConfig = (quotation) => {
   console.warn('quotation.config is null');
   return null;
 }
+

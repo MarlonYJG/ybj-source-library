@@ -79,7 +79,7 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
  */
 const repaintImage = (spread, rowData, rowIndex) => {
   const sheet = spread.getActiveSheet();
-  sheet.pictures.remove(rowData.id);
+  sheet.pictures.remove(rowData.imageId);
   if (rowData.images) {
     let imgUrl = rowData.images;
     if (REGULAR.chineseCharacters.test(imgUrl)) {
