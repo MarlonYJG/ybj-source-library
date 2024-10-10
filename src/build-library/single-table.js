@@ -43,7 +43,8 @@ import {
   showDiscount,
   getFormulaFieldRowCol,
   getImageConfig,
-  getEquipmentConfig
+  getEquipmentConfig,
+  getImageField
 } from '../common/parsing-template';
 
 import {
@@ -102,7 +103,9 @@ const OnEventBind = (spread) => {
       const tableRows = getTableRowIndex(spread);
       if (tableRows.includes(args.row)) {
         sheet.autoFitRow(args.row);
-        setAutoFitRow(sheet, args.row, rowsField, image);
+        setAutoFitRow(sheet, args.row, rowsField, image, (height) => {
+          setRowImageHeight(sheet, args.row, height);
+        });
       }
     } else {
       defaultAutoFitRow(sheet, args.row, rowsField, image, 0);
@@ -1236,3 +1239,37 @@ export const setProjectName = (spread, projectName, projectNameField) => {
   sheet.setValue(projectNameField.row, projectNameField.column, projectName);
   sheet.resumePaint()
 };
+
+/**
+ * Update the image height
+ * @param {*} sheet 
+ * @param {*} row 
+ * @param {*} height 
+ * @param {*} i 
+ */
+export const setRowImageHeight = (sheet, row, height, i = null) => {
+  const imageField = getImageField();
+  if (imageField) {
+
+    console.log(imageField, 'imageField');
+
+    const table = sheet.tables.find(row, imageField.column)
+    if (table) {
+      const tableId = table.name().split('table')[1];
+      const layout = new LayoutRowColBlock(sheet.getParent());
+      let productItem = null;
+      if (i === 0 || i) {
+        productItem = layout.getProductByIndex(tableId, i);
+      } else {
+        productItem = layout.getProductByActiveCell(row, imageField.column, tableId);
+      }
+
+      console.log(productItem, 'productItem');
+
+      if (productItem && productItem.imageId) {
+        const picture = sheet.pictures.get(productItem.imageId);
+        picture.height(height - 5);
+      }
+    }
+  }
+}
