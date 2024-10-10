@@ -1428,8 +1428,9 @@ export const finalPriceByConcessional = (fixedBindCellMap, fixedBindValueMap) =>
  * @param {*} row 
  * @param {*} rowsField 
  * @param {*} image 
+ * @param {*} cb 
  */
-export const setAutoFitRow = (sheet, row, rowsField, image) => {
+export const setAutoFitRow = (sheet, row, rowsField, image, cb) => {
   const h = sheet.getRowHeight(row);
   if (image && image.height) {
     const maxH = Math.max(image.height, rowsField.height || 0);
@@ -1439,6 +1440,7 @@ export const setAutoFitRow = (sheet, row, rowsField, image) => {
 
     if (h < maxH) {
       sheet.setRowHeight(row, maxH);
+      cb && cb(maxH);
     }
   } else {
     if (h < (rowsField.height || 0)) {
