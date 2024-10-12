@@ -107,13 +107,16 @@ export const buildData = (tableId, insertIndex, count, classType) => {
       classification: tableId,
       classificationName: cname.length ? cname[0].classificationName : '',
       parentClassification: tableId,
-      parentClassificationName: cname.length ? cname[0].classificationName : '',
-      imageId: uuidv4()
+      parentClassificationName: cname.length ? cname[0].classificationName : ''
     }
     if (!['noLevel', 'Level_1_row'].includes(classType)) {
       // TODO 如果是二级分类,修改二级分类名称以及parentClassification
     }
-    resourceCount.push(Object.assign(item, resource, { id: uuidv4() }));
+    const initDataItem = {
+      id: uuidv4(),
+      imageId: uuidv4()
+    }
+    resourceCount.push(Object.assign(item, resource, initDataItem));
   }
 
   const resourceViews = conferenceHall.resourceViews;
@@ -134,7 +137,6 @@ export const buildData = (tableId, insertIndex, count, classType) => {
   resourceViews.forEach(item => {
     resourceViewsMap[item.resourceLibraryId] = item;
   });
-
   return conferenceHall;
 };
 

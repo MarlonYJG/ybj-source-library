@@ -96,11 +96,10 @@ const uploadEquipmentImageByPath = (sheet, id, file) => {
  * @param {*} row 
  * @param {*} quotation 
  */
-export const updateEquipmentImage = (spread, tableId, data, imageName, type, row, quotation) => {
+export const updateEquipmentImage = (spread, tableId, data, imageName, type, row, quotation = null) => {
   if (!quotation) {
     quotation = store.getters['quotationModule/GetterQuotationInit'];
   }
-
   const sheet = spread.getActiveSheet();
   const conferenceHall = quotation.conferenceHall;
   const resourceViews = conferenceHall.resourceViews;

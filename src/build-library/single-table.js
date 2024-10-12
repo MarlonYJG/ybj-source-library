@@ -44,7 +44,8 @@ import {
   getFormulaFieldRowCol,
   getImageConfig,
   getEquipmentConfig,
-  getImageField
+  getImageField,
+  checkTemplate
 } from '../common/parsing-template';
 
 import {
@@ -947,6 +948,7 @@ export const Render = (spread, isInit) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   console.log(quotation, 'quotation');
   console.log(template, 'template');
+  checkTemplate(template);
   const sheet = spread.getActiveSheet();
 
   const { equipment, type = null, total = null, columnCount } = template.cloudSheet.center;

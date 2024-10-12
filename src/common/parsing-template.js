@@ -605,3 +605,14 @@ export const getEquipmentConfig = (template) => {
   const equipmentConfig = template.cloudSheet.center.equipment;
   return equipmentConfig;
 }
+
+/**
+ * Check whether the template is standardized.
+ * @param {*} template 
+ */
+export const checkTemplate = (template) => {
+  if (!template) {
+    template = getTemplate();
+  }
+  getImageField(template);
+}

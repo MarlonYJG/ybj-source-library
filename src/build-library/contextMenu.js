@@ -81,7 +81,11 @@ const repaintImage = (spread, rowData, rowIndex) => {
   const sheet = spread.getActiveSheet();
   sheet.pictures.remove(rowData.imageId);
 
-  if (rowData.images) {
+  if (rowData.imageFile) {
+    BlobToBase64(rowData.imageFile, (base64) => {
+      AddEquipmentImage(spread, rowData.imageId, base64, rowIndex, true, false, false);
+    })
+  } else if (rowData.images) {
     let imgUrl = rowData.images;
     if (REGULAR.chineseCharacters.test(imgUrl)) {
       imgUrl = encodeURI(imgUrl);
@@ -90,10 +94,8 @@ const repaintImage = (spread, rowData, rowIndex) => {
       AddEquipmentImage(spread, rowData.imageId, base64, rowIndex, true, false, false);
     });
     sheet.repaint();
-  } else if (rowData.imageFile) {
-    BlobToBase64(rowData.imageFile, (base64) => {
-      AddEquipmentImage(spread, rowData.imageId, base64, rowIndex, true, false, false);
-    })
+  } else {
+    console.warn('no image field(imageFile/images)', rowData);
   }
 };
 
