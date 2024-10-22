@@ -66,8 +66,9 @@ export const AssociatedFieldsColumn = () => {
 export const singleTableSyncStore = (Res) => {
   const customer = Res.customer;
   const company = GetUserCompany();
-  const { projectNumber = '', belongs = '', name } = store.getters['projectModule/GetterProjectInit'];
+  const { projectNumber = '', belongs = '', name, id } = store.getters['projectModule/GetterProjectInit'];
   const quotationDefault = {
+    ...Res,
     id: Res.id, // 报价单id
     title: Res.title, // 报价单标题
     logo: Res.logo, // 绑定公司的logo
@@ -86,6 +87,7 @@ export const singleTableSyncStore = (Res) => {
     storePhone: Res.storePhone,
 
     // 项目
+    projectId: Res.projectId || id,
     name: Res.name || name, // 项目名称
     projectName: Res.projectName, // 项目名称
     projectType: Res.projectType,
