@@ -3,11 +3,12 @@
  * @Date: 2024-03-27 22:35:21
  * @Description:single - public
  */
+import { v4 as uuidv4 } from 'uuid';
 import Decimal from '../lib/decimal/decimal.min.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
-import { GetUserCompany, imgUrlToBase64, regChineseCharacter } from '../utils/index';
+import { GetUserCompany, imgUrlToBase64, regChineseCharacter, FormatDate } from '../utils/index';
 
 import { LayoutRowColBlock } from './core';
 
@@ -63,10 +64,35 @@ export const AssociatedFieldsColumn = () => {
  * @param {*} Res
  * @returns
  */
-export const singleTableSyncStore = (Res) => {
+export const singleTableSyncStore = (Res, type) => {
+  let company = {
+    name: '',
+    createUserId: '',
+    address: '',
+    website: '',
+    fax: '',
+    tel: '',
+    industry: '',
+    state: '',
+    logoURL: ''
+  }
+  let projectNumber = '';
+  let belongs = '';
+  let projectName = '';
+  let projectId = '';
+  if (type !== 'mobile') {
+    if (GetUserCompany()) {
+      company = GetUserCompany();
+    }
+    if (store && store.getters && store.getters['projectModule/GetterProjectInit']) {
+      const projectInit = store.getters['projectModule/GetterProjectInit'];
+      projectNumber = projectInit.projectNumber;
+      projectName = projectInit.name;
+      projectId = projectInit.id;
+      belongs = projectInit.belongs;
+    }
+  }
   const customer = Res.customer;
-  const company = GetUserCompany();
-  const { projectNumber = '', belongs = '', name, id } = store.getters['projectModule/GetterProjectInit'];
   const quotationDefault = {
     ...Res,
     id: Res.id, // 报价单id
@@ -87,8 +113,8 @@ export const singleTableSyncStore = (Res) => {
     storePhone: Res.storePhone,
 
     // 项目
-    projectId: Res.projectId || id,
-    name: Res.name || name, // 项目名称
+    projectId: Res.projectId || projectId,
+    name: Res.name || projectName, // 项目名称
     projectName: Res.projectName, // 项目名称
     projectType: Res.projectType,
     projectNumber: Res.projectNumber || projectNumber,
@@ -173,6 +199,50 @@ export const singleTableSyncStore = (Res) => {
     config: Res.config || {},
 
   };
+
+  // 时间格式化
+  const { approachDate = '', approachTime = '', fieldWithdrawalDate = '', fieldWithdrawalTime = '', startDate = '', startTime = '' } = quotationDefault.conferenceHall;
+  if (approachDate) {
+    quotationDefault.conferenceHall.approachDate = FormatDate(approachDate, 'YYYY-MM-DD');
+  }
+  if (approachTime) {
+    quotationDefault.conferenceHall.approachTime = FormatDate(approachTime, 'YYYY-MM-DD');
+  }
+  if (fieldWithdrawalDate) {
+    quotationDefault.conferenceHall.fieldWithdrawalDate = FormatDate(fieldWithdrawalDate, 'YYYY-MM-DD');
+  }
+  if (fieldWithdrawalTime) {
+    quotationDefault.conferenceHall.fieldWithdrawalTime = FormatDate(fieldWithdrawalTime, 'YYYY-MM-DD');
+  }
+  if (startDate) {
+    quotationDefault.conferenceHall.startDate = FormatDate(startDate, 'YYYY-MM-DD');
+  }
+  if (startTime) {
+    quotationDefault.conferenceHall.startTime = FormatDate(startTime, 'YYYY-MM-DD');
+  }
+
+  // 报价单中的项目名称字段不统一问题
+  quotationDefault.name = quotationDefault.name || quotationDefault.projectName;
+  // 扩展字段特殊处理
+  if (quotationDefault.extFields) {
+    if (typeof quotationDefault.extFields === 'string') {
+      quotationDefault.extFields = JSON.parse(quotationDefault.extFields);
+    }
+  }
+  // 去除空数据
+  let resourceViews = _.cloneDeep(quotationDefault.conferenceHall.resourceViews);
+  resourceViews = resourceViews.filter((item) => { return item.resources && item.resources.length; });
+  resourceViews.forEach((item, i) => {
+    item.sort = i + 1;
+    item.resources.forEach((resource) => {
+      if (!resource.imageId) {
+        resource.imageId = uuidv4();
+      }
+    });
+  });
+  quotationDefault.conferenceHall.resourceViews = resourceViews;
+
+  resourceSort(quotationDefault)
 
   console.log(quotationDefault, '====响应数据处理-并同步至store');
   return quotationDefault;
@@ -289,10 +359,11 @@ export const templateTotalMap = (key) => {
 };
 
 /**
- * Product list added sorting
+ * Product list added sorting and init resourceViewsMap
  * @param {*} quotation
  */
 export const resourceSort = (quotation) => {
+  const resourceViewsMap = {};
   const resourceViews = quotation.conferenceHall.resourceViews;
   for (let index = 0; index < resourceViews.length; index++) {
     resourceViews[index].sort = index + 1;
@@ -302,6 +373,10 @@ export const resourceSort = (quotation) => {
       });
     }
   }
+  resourceViews.forEach(item => {
+    resourceViewsMap[item.resourceLibraryId] = item;
+  });
+  quotation.conferenceHall.resourceViewsMap = resourceViewsMap;
 };
 
 /**

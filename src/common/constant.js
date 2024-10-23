@@ -19,7 +19,9 @@ export const PROJECT_INIT_DATA = {
   projectNumber: '', // 项目编号
   startDate: new Date(),
   approachDate: new Date(),
-  projectRequirements: ''
+  projectRequirements: '',
+  approvelState: '', // 审批状态
+  participants: []// 项目中的成员
 };
 
 /**
