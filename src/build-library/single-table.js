@@ -11,7 +11,7 @@ import { isNumber, FormatDate, regChineseCharacter } from '../utils/index';
 
 import {
   UPDATE_QUOTATION_PATH, DELETE_QUOTATION_PATH, UPDATE_HEAD_TOTAL,
-  SET_WORK_SHEET_QUOTATION, SET_SHEET_LEAVEL_POSITION, IGNORE_EVENT
+  SET_WORK_SHEET_QUOTATION, SET_SHEET_LEAVEL_POSITION, IGNORE_EVENT, UPDATE_QUOTATION
 } from 'store/quotation/mutation-types';
 
 import { commandRegister, onOpenMenu } from './contextMenu';
@@ -621,8 +621,9 @@ export const insertField = (spread, fileName, value) => {
           });
           break;
         case 'concessional':
-          store.commit(`quotationModule/${DELETE_QUOTATION_PATH}`, {
-            path: ['concessionalRate'] // TODO 待优化 新旧版字段问题
+          store.commit(`quotationModule/${UPDATE_QUOTATION}`, {
+            concessionalRate: '',
+            concessionalDiscount: ''
           });
           break;
         case 'freight':

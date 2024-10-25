@@ -175,6 +175,8 @@ export const singleTableSyncStore = (Res, type) => {
     tax: Res.tax, // 税率(新)
     discount: Res.discount, // 折扣
     concessionalRate: Res.concessionalRate, // 优惠价
+    concessionalType: (Res.concessionalType === 0 || Res.concessionalType) ? Res.concessionalType.toString() : '0', // 优惠类型
+    concessionalDiscount: Res.concessionalDiscount, // 优惠折扣
 
     excelJson: Res.excelJson,
     templateType: Res.templateType,
