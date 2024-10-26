@@ -1,7 +1,7 @@
 /*
  * @Author: Marlon
  * @Date: 2024-04-07 18:29:42
- * @Description: 单表 - 逻辑处理
+ * @Description: singleTable
  */
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';

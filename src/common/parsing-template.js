@@ -517,22 +517,23 @@ export const getPaths = () => {
  * @param {*} templateJSON 
  * @param {*} quotation 
  * @param {*} quaLogos 
+ * @param {*} fieldName 
  * @returns 
  */
-export const initTemplateData = (templateJSON, quotation = null, quaLogos = []) => {
-  const template = templateJSON.excelJson;
+export const initTemplateData = (templateJSON, quotation = null, quaLogos = [], fieldName = 'excelJson') => {
+  const template = templateJSON[fieldName];
 
-  if (templateJSON.excelJson.cloudSheet.quaLogos && templateJSON.excelJson.cloudSheet.quaLogos.length) {
-    const logos = templateJSON.excelJson.cloudSheet.quaLogos;
+  if (templateJSON[fieldName].cloudSheet.quaLogos && templateJSON[fieldName].cloudSheet.quaLogos.length) {
+    const logos = templateJSON[fieldName].cloudSheet.quaLogos;
     logos.forEach((item, i) => {
       item.url = quaLogos[i].url;
       item.id = quaLogos[i].id;
     })
-    templateJSON.excelJson.cloudSheet.quaLogos = logos;
+    templateJSON[fieldName].cloudSheet.quaLogos = logos;
   }
 
   if (quotation && quotation.templateId == templateJSON.id) {
-    LogicalProcessing(quotation, templateJSON.excelJson);
+    LogicalProcessing(quotation, templateJSON[fieldName]);
     if (template.mixRender && !quotation.remark) {
       quotation.remark = '本表为预估报价，最终结算以实际产生的费用为准。';
     }

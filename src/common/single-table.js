@@ -95,36 +95,36 @@ export const singleTableSyncStore = (Res, type) => {
   const customer = Res.customer;
   const quotationDefault = {
     ...Res,
-    id: Res.id, // 报价单id
-    title: Res.title, // 报价单标题
-    logo: Res.logo, // 绑定公司的logo
-    seal: Res.seal, // 绑定公司的印章
-    quotationImage: Res.quotationImage, // 报价单的图片(旧版字段)
-    quaLogos: Res.quaLogos || [], // 报价单多logo
+    id: Res.id,
+    title: Res.title,
+    logo: Res.logo,
+    seal: Res.seal,
+    quotationImage: Res.quotationImage,
+    quaLogos: Res.quaLogos || [],
     state: Res.state,
-    leaderId: belongs, // 负责人id
+    leaderId: belongs || Res.belongs,
     belongs: Res.belongs,
     belongsEmail: Res.belongsEmail,
     phone: Res.phone,
-    createTime: Res.createTime, // 创建时间
-    updateTime: Res.updateTime, // 更新时间
-    needApproval: '', // 是否需要审批
-    resources: Res.resources, // 存储总表的数据
+    createTime: Res.createTime,
+    updateTime: Res.updateTime,
+    needApproval: Res.needApproval || 'NO',
+    resources: Res.resources,
     storePhone: Res.storePhone,
 
-    // 项目
+
     projectId: Res.projectId || projectId,
-    name: Res.name || projectName, // 项目名称
-    projectName: Res.projectName, // 项目名称
+    name: Res.name || projectName,
+    projectName: Res.projectName,
     projectType: Res.projectType,
     projectNumber: Res.projectNumber || projectNumber,
-    // 客户
+
     projectManager: Res.projectManager,
     projectManagerPhone: Res.projectManagerPhone,
 
-    // 客户
+
     customer,
-    // 公司信息
+
     companyAddress: Res.companyAddress,
     companyEmail: Res.companyEmail,
     companyFax: Res.companyFax,
@@ -134,19 +134,19 @@ export const singleTableSyncStore = (Res, type) => {
 
     company: {
       companyName: Res.companyName || company.name,
-      createUserId: company.createUserId, // 用户名
-      companyAddress: Res.companyAddress || company.address, // 公司地址
-      companyEmail: Res.companyEmail, // 公司邮箱，
+      createUserId: company.createUserId,
+      companyAddress: Res.companyAddress || company.address,
+      companyEmail: Res.companyEmail,
       logoURL: company.logoURL,
-      companyPhone: Res.companyPhone || company.tel, // 公司电话
-      companyWebsite: Res.companyWebsite || company.website, // 公司网址
-      companyFax: Res.companyFax || company.fax, // 公司传真
-      industry: company.industry, // 行业
+      companyPhone: Res.companyPhone || company.tel,
+      companyWebsite: Res.companyWebsite || company.website,
+      companyFax: Res.companyFax || company.fax,
+      industry: company.industry,
       state: company.state
     },
 
-    conferenceHall: Res.conferenceHall, // 报价单的会场信息
-    parallelSessions: [], // 分会场信息
+    conferenceHall: Res.conferenceHall,
+    parallelSessions: [],
     preferentialWay: Res.preferentialWay,
     noImgTemplate: Res.noImgTemplate,
     designerPhone: Res.designerPhone,
@@ -154,51 +154,53 @@ export const singleTableSyncStore = (Res, type) => {
     engineerPhone: Res.engineerPhone,
     engineer: Res.engineer,
 
-    /** 总计相关 */
+
     willPay: Res.willPay,
-    DXdeposit: Res.DXdeposit, // 定金大写
-    deposit: Res.deposit, // 定金
-    DXwillPay: Res.DXwillPay, // 合计大写
+    DXdeposit: Res.DXdeposit,
+    deposit: Res.deposit,
+    DXwillPay: Res.DXwillPay,
     DXzje: Res.DXzje,
     capitalizeTotalAmount: Res.capitalizeTotalAmount,
     showCost: Res.showCost,
     totalAmount: Res.totalAmount,
-    sumAmount: Res.sumAmount, // 合计
-    dxsumAmount: Res.dxsumAmount, // 总金额大写
-    freight: Res.freight, // 运费
-    projectCost: Res.projectCost, // 项目费用
-    managementFee: Res.managementFee, // 管理费率
-    managementExpense: Res.managementExpense, // 管理费
-    rate: Res.rate, // 服务费率(新)
-    serviceCharge: Res.serviceCharge, // 服务费
-    taxRate: Res.taxRate, // 税率
-    tax: Res.tax, // 税率(新)
-    discount: Res.discount, // 折扣
-    concessionalRate: Res.concessionalRate, // 优惠价
-    concessionalType: (Res.concessionalType === 0 || Res.concessionalType) ? Res.concessionalType.toString() : '0', // 优惠类型
-    concessionalDiscount: Res.concessionalDiscount, // 优惠折扣
+    sumAmount: Res.sumAmount,
+    dxsumAmount: Res.dxsumAmount,
+    freight: Res.freight,
+    projectCost: Res.projectCost,
+    managementFee: Res.managementFee,
+    managementExpense: Res.managementExpense,
+    rate: Res.rate,
+    serviceCharge: Res.serviceCharge,
+    taxRate: Res.taxRate,
+    tax: Res.tax,
+    discount: Res.discount,
+    concessionalRate: Res.concessionalRate,
+    concessionalType: (Res.concessionalType === 0 || Res.concessionalType) ? Res.concessionalType.toString() : '0',
+    concessionalDiscount: Res.concessionalDiscount,
 
     excelJson: Res.excelJson,
     templateType: Res.templateType,
-    remark: Res.remark, // 备注
-    exportName: Res.exportName, // 导出名称
-    subheadingOne: Res.subheadingOne, // 副标题一
-    subheadingTwo: Res.subheadingTwo, // 副标题二
-    priceAdjustment: Res.priceAdjustment, // 单价调整比例
-    priceStatus: Res.priceStatus, // 价格设置
-    extFields: Res.extFields, // 预置字段
-    image: Res.image, // 报价单图片
+    remark: Res.remark,
+    exportName: Res.exportName,
+    subheadingOne: Res.subheadingOne,
+    subheadingTwo: Res.subheadingTwo,
+    priceAdjustment: Res.priceAdjustment,
+    priceStatus: Res.priceStatus,
+    extFields: Res.extFields,
+    image: Res.image,
     templateId: Res.templateId,
     isInt: Res.isInt,
     priceType: Res.priceType,
 
-    // 特殊标识
-    haveExport: Res.haveExport, // 决定能否导出:未审核通过
-    quotationExcel: Res.quotationExcel, // 导出excel报价单的URL
-    quotationPdf: Res.quotationPdf,// 导出pdf报价单的URL
 
-    // 配置相关信息
-    config: Res.config || {},
+    haveExport: Res.haveExport,
+    quotationExcel: Res.quotationExcel,
+    quotationPdf: Res.quotationPdf,
+
+
+    config: Res.config || {
+      startAutoFitRow: false
+    },
 
   };
 
