@@ -109,7 +109,6 @@ export const singleTableSyncStore = (Res, type) => {
     createTime: Res.createTime,
     updateTime: Res.updateTime,
     needApproval: Res.needApproval || 'NO',
-    resources: Res.resources,
     storePhone: Res.storePhone,
 
 
@@ -146,6 +145,8 @@ export const singleTableSyncStore = (Res, type) => {
     },
 
     conferenceHall: Res.conferenceHall,
+    resources: Res.resources || [],
+
     parallelSessions: [],
     preferentialWay: Res.preferentialWay,
     noImgTemplate: Res.noImgTemplate,

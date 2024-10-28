@@ -45,7 +45,7 @@ export const QUOTATION_INIT_DATA = {
   updateTime: '', // 更新时间
   needApproval: 'NO', // 是否需要审批
   approvelState: '',// 审批结果文本
-  resources: '', // 存储总表的数据
+  resources: [], // 存储总分表的数据
   storePhone: '',
 
   // 项目
