@@ -108,6 +108,18 @@ export const GetUserInfoDetail = () => {
 };
 
 /**
+ * Obtain the current user member information
+ * @returns 
+ */
+export const GetUserEmployee = () => {
+  const userEmployee = sessionStorage.getItem('userEmployeeInfo');
+  if (userEmployee) {
+    return JSON.parse(userEmployee);
+  }
+  return null;
+};
+
+/**
  * Get the system time
  * @param {*} date 
  * @param {*} fmt 

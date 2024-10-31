@@ -27,10 +27,10 @@ export const PROJECT_INIT_DATA = {
 };
 
 /**
- * Quote initialization data for a single table
+ * Quote initialization data for a table
  */
 export const QUOTATION_INIT_DATA = {
-  id: null, // 报价单id
+  id: '', // 报价单id
   title: '', // 报价单标题
   logo: '', // 绑定公司的logo
   seal: '', // 绑定公司的印章
@@ -59,11 +59,11 @@ export const QUOTATION_INIT_DATA = {
   projectManager: '',
   projectManagerPhone: '',
   customer: {
-    id: null, // 客户 id
-    name: null, // 客户 名称
+    id: '', // 客户 id
+    name: '', // 客户 名称
     address: '', // 客户 地址
-    contactInformation: null, // 联系方式
-    personInCharge: null // 客户 公司负责人名称
+    contactInformation: '', // 联系方式
+    personInCharge: '' // 客户 公司负责人名称
   },
 
   // 公司信息
@@ -90,7 +90,7 @@ export const QUOTATION_INIT_DATA = {
   },
 
   conferenceHall: { // 报价单的会场信息
-    address: null, // 场地地址
+    address: '', // 场地地址
     resourceViews: [], // 会场资源
     approachDate: new Date(), // 进场日期
     approachTime: new Date(), // 进场时间
@@ -155,13 +155,28 @@ export const QUOTATION_INIT_DATA = {
   quotationPdf: '',// 导出pdf报价单的URL
 
   // 配置相关信息
-  config: {
-    startAutoFitRow: false // 是否开启自动行高
-  },
+  config: JSON.stringify({
+    startAutoFitRow: false
+  }),
 };
 
+/**
+ * Quotation initialization data for the single table
+ * @returns 
+ */
+export const QuotationInitData = () => {
+  const singleInitData = _.cloneDeep(QUOTATION_INIT_DATA);
+  singleInitData.conferenceHall.startDate = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
+  singleInitData.conferenceHall.startTime = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
+  singleInitData.conferenceHall.approachDate = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
+  singleInitData.conferenceHall.approachTime = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
+  singleInitData.conferenceHall.fieldWithdrawalDate = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
+  singleInitData.conferenceHall.fieldWithdrawalTime = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
+  return singleInitData;
+}
+
 // Initialize the template data of a single table
-export const SingleWorkBook = () => {
+export const TemplateWorkBook = () => {
   return {
     id: '',
     mould: '0',
@@ -171,37 +186,6 @@ export const SingleWorkBook = () => {
     excelJsonMulti: '',
   }
 };
-
-/**
- * Quotation initialization data for the total score table
- * @returns 
- */
-export const MultipleInitData = () => {
-  const multipleInitData = _.cloneDeep(QUOTATION_INIT_DATA);
-  multipleInitData.conferenceHall.startDate = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
-  multipleInitData.conferenceHall.startTime = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
-  multipleInitData.conferenceHall.approachDate = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
-  multipleInitData.conferenceHall.approachTime = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
-  multipleInitData.conferenceHall.fieldWithdrawalDate = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
-  multipleInitData.conferenceHall.fieldWithdrawalTime = FormatDate(null, 'YYYY/MM/DD HH:mm:ss');
-  return multipleInitData;
-};
-
-/**
- * Template initialization data for the total score table
- * @returns 
- */
-export const MultipleWorkBook = () => {
-  const MULTIPLE_WORKBOOK = {
-    id: '',
-    mould: '1',
-    name: '总分表模板',
-    excelJson: '',
-    excelJsonCost: '',
-    excelJsonMulti: '',
-  }
-  return MULTIPLE_WORKBOOK
-}
 
 /**
  * Define the fields

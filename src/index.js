@@ -7,7 +7,7 @@ import Template from './template/index';
 import { initMobileData, startMobileMode } from './parsing-library/mobile'
 
 import { addSubLimitDiscountInput, addSubLimitDiscountInputType, addSubSortObject, addSubExportError, addSubSelectEquipmentImage } from './common/dep';
-import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA, SingleWorkBook, MultipleInitData, MultipleWorkBook } from './common/constant';
+import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA, QuotationInitData, TemplateWorkBook} from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
 import { multipleTableSyncStore } from './common/multiple-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
@@ -47,9 +47,8 @@ export {
   QUOTATION_INIT_DATA,
   DEFINE_IDENTIFIER_MAP,
   Template,
-  SingleWorkBook,
-  MultipleInitData,
-  MultipleWorkBook,
+  QuotationInitData,
+  TemplateWorkBook,
   initTemplateData,
   initMobileData,
   startMobileMode,

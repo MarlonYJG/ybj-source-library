@@ -199,10 +199,9 @@ export const singleTableSyncStore = (Res, type) => {
     quotationPdf: Res.quotationPdf,
 
 
-    config: Res.config || {
+    config: typeof Res.config === 'object' ? Res.config : ((Res.config && typeof Res.config === 'string') ? JSON.parse(Res.config) : {
       startAutoFitRow: false
-    },
-
+    })
   };
 
   // 时间格式化

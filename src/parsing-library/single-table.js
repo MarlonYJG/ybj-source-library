@@ -8,7 +8,7 @@ import _ from '../lib/lodash/lodash.min.js';
 import VERSION from "../lib/version/version.min.js";
 
 import store from 'store';
-import { getSystemDate, isNumber, regChineseCharacter, GetUserInfoDetail, GetUserCompany, imgUrlToBase64 } from '../utils/index';
+import { getSystemDate, isNumber, regChineseCharacter, GetUserEmployee, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 
 import { CreateTable, SetDataSource } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
@@ -713,16 +713,16 @@ export const InitBindValueTop = (spread, template, quotation) => {
 
     // 初始化个人信息
     if (initData.userName || initData.userTel || initData.belongsEmail) {
-      const userInfo = GetUserInfoDetail();
+      const userEmployeeInfo = GetUserEmployee();
 
-      if (initData.userName && userInfo) {
-        initDataSetValue(sheet, initData.userName, userInfo, ['name'], 'information');
+      if (initData.userName && userEmployeeInfo) {
+        initDataSetValue(sheet, initData.userName, userEmployeeInfo, ['name'], 'information');
       }
-      if (initData.userTel && userInfo) {
-        initDataSetValue(sheet, initData.userTel, userInfo, ['phone'], 'information');
+      if (initData.userTel && userEmployeeInfo) {
+        initDataSetValue(sheet, initData.userTel, userEmployeeInfo, ['phone'], 'information');
       }
-      if (initData.belongsEmail && userInfo) {
-        initDataSetValue(sheet, initData.belongsEmail, userInfo, ['email'], 'information');
+      if (initData.belongsEmail && userEmployeeInfo) {
+        initDataSetValue(sheet, initData.belongsEmail, userEmployeeInfo, ['email'], 'information');
       }
     }
 
@@ -754,14 +754,11 @@ export const InitBindValueTop = (spread, template, quotation) => {
           InsertLogo(spread, template, base64);
         });
       } else {
-        let userBindCompany = sessionStorage.getItem('userBindCompany');
-        if (userBindCompany) {
-          userBindCompany = JSON.parse(userBindCompany);
-          if (userBindCompany.logoURL) {
-            imgUrlToBase64(userBindCompany.logoURL, (base64) => {
-              InsertLogo(spread, template, base64);
-            });
-          }
+        let userBindCompany = GetUserCompany();
+        if (userBindCompany && userBindCompany.logoURL) {
+          imgUrlToBase64(userBindCompany.logoURL, (base64) => {
+            InsertLogo(spread, template, base64);
+          });
         }
       }
     }

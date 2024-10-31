@@ -12,11 +12,3 @@ export const getSingleWorkBook = (GetterQuotationWorkBook) => {
 export const getSingleInitData = (GetterQuotationInit) => {
   return GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
 }
-
-export const getMultipleWorkBook = (GetterMultipleWorkBook) => {
-  return GetterMultipleWorkBook || store.getters['quotationModule/GetterMultipleWorkBook'];
-}
-
-export const getMultipleInitData = (GetterMultipleInitData) => {
-  return GetterMultipleInitData || store.getters['quotationModule/GetterMultipleInitData'];
-}
