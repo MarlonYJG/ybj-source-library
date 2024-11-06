@@ -13,6 +13,7 @@ import { SHOW_DELETE, UPDATE_QUOTATION_PATH, IGNORE_EVENT, FROZEN_HEAD_TEMPLATE 
 import { PRICE_SET_MAP } from '../common/constant'
 import { SetDataSource } from '../common/sheetWorkBook';
 import { exportErrorProxy } from '../common/proxyData';
+import { getWorkBook } from '../common/store';
 
 import {
   getTemplateTopRowCol, getDiscountField, showPriceSet,
@@ -343,7 +344,7 @@ export const FrozenHead = (spread) => {
  * @param {*} locked 
  */
 export const ShowCostPrice = (spread, locked = false) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const showCost = store.getters['quotationModule/GetterShowCostPrice'];
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   if (spread && template) {
@@ -381,7 +382,7 @@ export const UpdateDiscount = (spread, percentage) => {
     });
 
     const sheet = spread.getActiveSheet();
-    const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+    const template = getWorkBook();
     console.log(template, 'template');
 
     const quotation = store.getters['quotationModule/GetterQuotationInit'];

@@ -18,8 +18,9 @@ export const SetDataSource = (sheet, dataSource) => {
 
 /**
  * Lock the spreadsheet
- * @param {*} spread
- * @param {*} domId
+ * @param {*} spread 
+ * @param {*} domId 
+ * @param {*} locked 
  */
 export const SpreadLocked = (spread, domId = 'spreadsheet-quotation-view', locked = true) => {
   const workbook = GC.Spread.Sheets.findControl(document.getElementById(domId));

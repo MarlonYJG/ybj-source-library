@@ -5,6 +5,7 @@
  */
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
+import { getWorkBook } from './store';
 
 import { PubGetTableStartRowIndex, PubGetTableRowCount, GetColumnComputedTotal } from './single-table';
 
@@ -73,7 +74,7 @@ export class IdentifierTemplate {
   constructor(sheet, name, template, quotation) {
     this.sheet = sheet;
     this.instanceName = name;
-    this.template = template || store.getters['quotationModule/GetterQuotationWorkBook'];
+    this.template = getWorkBook(template);
     this.quotation = quotation || store.getters['quotationModule/GetterQuotationInit'];
   }
 

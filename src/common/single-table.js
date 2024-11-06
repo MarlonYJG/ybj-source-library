@@ -11,6 +11,7 @@ import store from 'store';
 import { GetUserCompany, imgUrlToBase64, regChineseCharacter, FormatDate } from '../utils/index';
 
 import { LayoutRowColBlock } from './core';
+import { getWorkBook } from './store';
 
 import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR, ASSOCIATED_FIELDS_FORMULA_MAP } from './constant';
 import { columnToNumber, PubGetRandomNumber, replacePlaceholders } from './public';
@@ -456,8 +457,8 @@ export const setTotalRowHeight = (sheet, total, totalField, row) => {
  * Insert the start of the row of the table
  * @returns
  */
-export const PubGetTableStartRowIndex = (GetterQuotationWorkBook) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+export const PubGetTableStartRowIndex = (workBook) => {
+  const template = getWorkBook(workBook);
   return template.cloudSheet.top.rowCount;
 };
 /**
@@ -490,8 +491,8 @@ const getClassRowCount = (type, subtotal) => {
  * @param {*} headers
  * @returns
  */
-export const classificationAlgorithms = (quotation, headers = [], GetterQuotationWorkBook) => {
-  const { template, mixRender, classType } = templateRenderFlag(GetterQuotationWorkBook);
+export const classificationAlgorithms = (quotation, headers = [], workBook) => {
+  const { template, mixRender, classType } = templateRenderFlag(workBook);
   const { total = null, type = null } = template.cloudSheet.center;
   const { classRowCount, subTotalCount } = getClassRowCount(type, total);
   const { resourceViews } = quotation.conferenceHall;
@@ -531,7 +532,7 @@ export const classificationAlgorithms = (quotation, headers = [], GetterQuotatio
         subTotal = subTotalCount;
       } else {
         classRCount = classRowCount;
-        subTotal = showSubTotal(GetterQuotationWorkBook) ? subTotalCount : 0;
+        subTotal = showSubTotal(workBook) ? subTotalCount : 0;
       }
     }
   }
@@ -558,8 +559,8 @@ export const classificationAlgorithms = (quotation, headers = [], GetterQuotatio
  * @param {*} subBindPath
  * @returns
  */
-export const columnsTotal = (sheet, tableStartRowIndex, tableIndex, showRowTotal = false, columnComputed, subBindPath, GetterQuotationWorkBook = null, quotation = null) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+export const columnsTotal = (sheet, tableStartRowIndex, tableIndex, showRowTotal = false, columnComputed, subBindPath, workBook = null, quotation = null) => {
+  const template = getWorkBook(workBook);
   const equipment = template.cloudSheet.center.equipment.bindPath;
 
   const columnTotalMap = {};
@@ -946,7 +947,7 @@ export const translateSheet = (spread) => {
 export const translateTable = (spread, tableMap) => {
   const tables = Object.values(tableMap);
   if (tables && tables.length) {
-    const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+    const template = getWorkBook();
     const header = template.cloudSheet.center.equipment.bindPath;
     const sheet = spread.getActiveSheet();
     for (const key in tableMap) {
@@ -995,12 +996,12 @@ export const initShowCostPrice = (spread) => {
 /**
  * Obtain the classification type of the template
  * @param {*} GetterQuotationInit 
- * @param {*} GetterQuotationWorkBook 
+ * @param {*} workBook 
  * @returns 
  */
-export const getTemplateClassType = (GetterQuotationInit, GetterQuotationWorkBook) => {
+export const getTemplateClassType = (GetterQuotationInit, workBook) => {
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook(workBook);
   const templateClassIdentifier = template.cloudSheet.templateClassIdentifier;
   const resourceViews = quotation.conferenceHall.resourceViews;
 
@@ -1037,8 +1038,8 @@ export const getTemplateClassType = (GetterQuotationInit, GetterQuotationWorkBoo
  * @param {*} sheet
  * @returns
  */
-export const GetColumnComputedTotal = (sheet, GetterQuotationWorkBook = null, GetterQuotationInit = null) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+export const GetColumnComputedTotal = (sheet, workBook = null, GetterQuotationInit = null) => {
+  const template = getWorkBook(workBook);
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const { type = null } = template.cloudSheet.center;
   const resourceViews = quotation.conferenceHall.resourceViews;

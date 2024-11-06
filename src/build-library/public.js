@@ -5,6 +5,7 @@
  */
 import store from 'store';
 
+import { getWorkBook } from '../common/store';
 import { getTableHeaderDataTable } from '../common/parsing-template';
 
 import { PubGetTableStartRowIndex, classificationAlgorithms } from '../common/single-table';
@@ -14,7 +15,7 @@ import { PubGetTableStartRowIndex, classificationAlgorithms } from '../common/si
  * @param {*} spread
  */
 export const Reset = (spread) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   const resourceViews = quotation.conferenceHall.resourceViews;
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';

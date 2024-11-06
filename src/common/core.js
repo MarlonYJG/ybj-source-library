@@ -12,6 +12,8 @@ import { CombinationTypeBuild } from './combination-type';
 import { getTemplateClassType } from './single-table';
 import { showTotal, getPriceColumn } from './parsing-template';
 
+import { getWorkBook } from './store';
+
 const NzhCN = require('../lib/nzh/cn.min.js');
 
 /**
@@ -25,11 +27,11 @@ const getQuotationResource = (GetterQuotationInit = null) => {
 
 /**
  * Get template data
- * @param {*} GetterQuotationWorkBook 
+ * @param {*} workBook 
  * @returns 
  */
-const getTemplateCloudSheet = (GetterQuotationWorkBook = null) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+const getTemplateCloudSheet = (workBook = null) => {
+  const template = getWorkBook(workBook);
   return template.cloudSheet;
 }
 
@@ -51,7 +53,7 @@ export class LayoutRowColBlock {
     this.Quotation = quotation;
     this.Spread = spread;
     if (!template && store && store.getters) {
-      this.Template = store.getters['quotationModule/GetterQuotationWorkBook'];
+      this.Template = getWorkBook();
     }
     if (!quotation && store && store.getters) {
       this.Quotation = store.getters['quotationModule/GetterQuotationInit'];

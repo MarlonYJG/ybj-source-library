@@ -17,6 +17,7 @@ import {
 import { commandRegister, onOpenMenu } from './contextMenu';
 import { ShowCostPrice, ShowCostPriceStatus } from './head';
 
+import { getWorkBook } from '../common/store';
 import { limitDiscountInputProxy, limitDiscountInputTypeProxy } from '../common/proxyData';
 import { CreateTable } from '../common/sheetWorkBook';
 import IdentifierTemplate from '../common/identifier-template';
@@ -98,19 +99,19 @@ const OnEventBind = (spread) => {
   sheet.bind(GC.Spread.Sheets.Events.EditEnded, (sender, args) => {
     console.log('EditEnded事件');
 
-    const image = getImageConfig();
-    const rowsField = getEquipmentConfig();
-    const config = getConfig();
-    if (config && config.startAutoFitRow) {
-      const tableRows = getTableRowIndex(spread);
-      if (tableRows.includes(args.row)) {
+    const tableRows = getTableRowIndex(spread);
+    if (tableRows.includes(args.row)) {
+      const image = getImageConfig();
+      const rowsField = getEquipmentConfig();
+      const config = getConfig();
+      if (config && config.startAutoFitRow) {
         sheet.autoFitRow(args.row);
         setAutoFitRow(sheet, args.row, rowsField, image, (height) => {
           setRowImageHeight(sheet, args.row, height);
         });
+      } else {
+        defaultAutoFitRow(sheet, args.row, rowsField, image);
       }
-    } else {
-      defaultAutoFitRow(sheet, args.row, rowsField, image);
     }
 
     limitDiscountInput(spread, args);
@@ -456,7 +457,7 @@ const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
  * @param {*} totalRowIndex
  */
 export const updateTotalRowValue = (sheet, totalRowIndex) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   const { top, total, bottom, mixTopTotal = null } = template.cloudSheet;
 
@@ -489,7 +490,7 @@ export const updateTotalRowValue = (sheet, totalRowIndex) => {
  */
 export const updateSubTotalRowValue = (sheet) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const { type = null, total = null } = template.cloudSheet.center;
 
@@ -559,7 +560,7 @@ export const UpdateTotalBlock = (sheet) => {
  * @param {*} value
  */
 export const insertField = (spread, fileName, value) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const { top, total, bottom, mixTopTotal = null } = template.cloudSheet;
 
   if (showTotal()) {
@@ -702,7 +703,7 @@ export const removeAllTable = (sheet, quotation) => {
 
 const getTotalStartRowIndex = (sheet) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const topBottomIndex = template.cloudSheet.top.rowCount;
   const { subTotal } = classificationAlgorithms(quotation, [], null);
@@ -820,7 +821,7 @@ export const RenderHeaderClass = () => {
  */
 export const RenderTotal = (spread, isInit) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
 
   if (showTotal()) {
     const sheet = spread.getActiveSheet();
@@ -946,7 +947,7 @@ const rendering = (spread, type, template) => {
  */
 export const Render = (spread, isInit) => {
   store.commit(`quotationModule/${IGNORE_EVENT}`, true);
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   console.log(quotation, 'quotation');
   console.log(template, 'template');
@@ -1162,7 +1163,7 @@ export const Render = (spread, isInit) => {
  */
 export const positionBlock = (sheet) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const resourceViews = quotation.conferenceHall.resourceViews;
   if (resourceViews.length) {
     const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';

@@ -10,6 +10,7 @@ import VERSION from "../lib/version/version.min.js";
 import store from 'store';
 import { getSystemDate, isNumber, regChineseCharacter, GetUserEmployee, GetUserCompany, imgUrlToBase64 } from '../utils/index';
 
+import { getWorkBook } from '../common/store';
 import { CreateTable, SetDataSource } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { TOTAL_COMBINED_MAP, DESCRIPTION_MAP, REGULAR } from '../common/constant';
@@ -128,8 +129,8 @@ const deleteBottomRow = (spread, template) => {
  * @returns
  */
 // eslint-disable-next-line no-unused-vars
-const getBottomStartRowIndex = (spread, GetterQuotationWorkBook, GetterQuotationInit) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+const getBottomStartRowIndex = (spread, workBook, GetterQuotationInit) => {
+  const template = getWorkBook(workBook);
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const { rowCount } = template.cloudSheet.top;
   const { center, total } = template.cloudSheet;
@@ -405,8 +406,8 @@ const renderFinishedAddImage = (spread, template, quotation) => {
   }
 };
 
-const getHeaderRowCount = (GetterQuotationWorkBook) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+const getHeaderRowCount = (workBook) => {
+  const template = getWorkBook(workBook);
   const { top, bottom } = template.cloudSheet;
   return top.rowCount + bottom.rowCount;
 };
@@ -600,8 +601,8 @@ const updateUpperCase = (sheet, row, totalField, quotation) => {
  * @param {*} quotation
  * @param {*} columnTotal
  */
-const RenderHeaderClass = (spread, quotation, columnTotal, GetterQuotationWorkBook = null) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+const RenderHeaderClass = (spread, quotation, columnTotal, workBook = null) => {
+  const template = getWorkBook(workBook);
   const resourceViews = quotation.conferenceHall.resourceViews;
   const { top, center: { equipment }, mixTopTotal: { initTotal } } = template.cloudSheet;
   const rows = resourceViews.map((item, index) => { return top.mixCount + index; });
@@ -654,8 +655,8 @@ const RenderHeaderClass = (spread, quotation, columnTotal, GetterQuotationWorkBo
  * @param {*} columnTotal
  */
 // eslint-disable-next-line no-unused-vars
-const RenderHeaderTotal = (spread, quotation, columnTotal = null, GetterQuotationWorkBook = null) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+const RenderHeaderTotal = (spread, quotation, columnTotal = null, workBook = null) => {
+  const template = getWorkBook(workBook);
   const { top, total, mixTopTotal } = template.cloudSheet;
   const initTotal = mixTopTotal.initTotal;
   const { resourceViews } = quotation.conferenceHall;
@@ -685,7 +686,7 @@ const RenderHeaderTotal = (spread, quotation, columnTotal = null, GetterQuotatio
  * @param {*} template
  */
 export const LogicalTotalCalculationType = (spread) => {
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   if (_.has(template, ['cloudSheet', 'center', 'equipment', 'bindPath', 'areaTotal'])) {
     const sheet = spread.getActiveSheet();
     const allRow = sheet.getRowCount();// 表格所有行
@@ -812,8 +813,8 @@ export const FieldBindPath = (spread, template, bindingPath) => {
  * Initialize Total and assign a value
  * @param {*} spread
  */
-export const InitTotal = (spread, GetterQuotationWorkBook = null, quotation = null) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+export const InitTotal = (spread, workBook = null, quotation = null) => {
+  const template = getWorkBook(workBook);
   const sheet = spread.getActiveSheet();
   const { total } = template.cloudSheet;
 
@@ -837,8 +838,8 @@ export const InitTotal = (spread, GetterQuotationWorkBook = null, quotation = nu
  * @param {*} columnTotal
  */
 // eslint-disable-next-line no-unused-vars
-const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQuotationWorkBook = null, GetterQuotationInit = null) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+const RenderTotal = (spread, columnTotal = null, columnComputed = null, workBook = null, GetterQuotationInit = null) => {
+  const template = getWorkBook(workBook);
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
 
   console.log(template, '===== RenderTotal =========');
@@ -876,13 +877,13 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, GetterQu
  * Product Rendering
  * @param {*} spread
  */
-const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
+const renderSheet = (spread, workBook, GetterQuotationInit, isCompress = false) => {
   const sheet = spread.getActiveSheet();
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook(workBook);
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
   const { equipment, type = null, total = null, columnCount } = template.cloudSheet.center;
   const { mixTopTotal = null, image = null, top } = template.cloudSheet;
-  const { mixRender, classType, isHaveChild } = templateRenderFlag(GetterQuotationWorkBook);
+  const { mixRender, classType, isHaveChild } = templateRenderFlag(workBook);
   const resourceViews = quotation.conferenceHall.resourceViews;
 
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
@@ -1079,15 +1080,15 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
  * Render styles by template type
  * @param {*} spread
  */
-export const Render = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress = false) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+export const Render = (spread, workBook, GetterQuotationInit, isCompress = false) => {
+  const template = getWorkBook(workBook);
   const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
 
   console.log(`%c parsing-library %c version： ${VERSION}`, LOG_STYLE_1, LOG_STYLE_3);
 
   console.log(quotation, 'quotation');
   console.log(template, 'template');
-  renderSheet(spread, GetterQuotationWorkBook, GetterQuotationInit, isCompress);
+  renderSheet(spread, workBook, GetterQuotationInit, isCompress);
   // setLastColumnWidth(spread, template);
   translateSheet(spread);
   initShowCostPrice(spread);
@@ -1149,15 +1150,4 @@ export const initSingleTable = (spread, template, dataSource, isCompress = false
   InitWorksheet(sheet, dataSource);
   InitBindPath(spread, template, dataSource)
   InitSheetRender(spread, template, dataSource, isCompress)
-};
-
-export const initMultipleTable = (spread, template, dataSource, isCompress = false) => {
-  if (!spread) {
-    console.error('spread is null');
-    return
-  }
-  // const sheet = spread.getActiveSheet();
-  // InitWorksheet(sheet, dataSource);
-  // InitBindPath(spread, template, dataSource)
-  // InitSheetRender(spread, template, dataSource, isCompress)
 };

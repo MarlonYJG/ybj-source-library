@@ -18,8 +18,8 @@ import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
 import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
 
 import { spreadExportExcel, spreadExportPDF, spreadStyleLocked } from './parsing-library/public';
-import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal, initSingleTable } from './parsing-library/single-table';
-import { MultipleRender as ParsingMultipleRender } from "./parsing-library/multiple-table";
+import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, InitTotal, initSingleTable } from './parsing-library/single-table';
+import { initMultipleTable } from "./parsing-library/multiple-table";
 
 import { MENU_DELETE } from './build-library/config';
 import { menuTotal } from './build-library/menu';
@@ -54,6 +54,7 @@ export {
   initMobileData,
   startMobileMode,
   initSingleTable,
+  initMultipleTable,
   initPriceSetField,
   initDiscountPercentage,
   showPriceSet,
@@ -82,8 +83,6 @@ export {
   InsertTotal,
   RenderTotal,
   BuildRender,
-  ParsingRender,
-  ParsingMultipleRender,
   InitSheet,
   updateCellValue,
   SpreadLocked,

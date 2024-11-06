@@ -5,7 +5,7 @@
  */
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
-import store from 'store';
+import { getWorkBook } from './store';
 
 import { updateFormula } from './public';
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template';
@@ -19,7 +19,7 @@ import { getConfig } from './parsing-quotation';
  * @returns 
  */
 const getTemplate = () => {
-  return store.getters['quotationModule/GetterQuotationWorkBook'];
+  return getWorkBook();
 }
 
 /**
@@ -32,8 +32,8 @@ export const PubGetTableStartColumnIndex = () => {
  * The total number of columns inserted into the table
  * @returns
  */
-export const PubGetTableColumnCount = (GetterQuotationWorkBook) => {
-  const template = GetterQuotationWorkBook || getTemplate();
+export const PubGetTableColumnCount = (workBook) => {
+  const template = getWorkBook(workBook);
   return template.cloudSheet.center.columnCount;
 };
 
@@ -58,8 +58,8 @@ export const getTemplateTopRowCol = () => {
 /**
  * Template render markers
  */
-export const templateRenderFlag = (GetterQuotationWorkBook) => {
-  const template = GetterQuotationWorkBook || getTemplate();
+export const templateRenderFlag = (workBook) => {
+  const template = getWorkBook(workBook);
   const { mixRender = false, classType = null, isHaveChild = false } = template;
 
   return {
@@ -265,9 +265,9 @@ export const mergeColumn = (sheet, field, row, rowCount, columnCount = 1, column
  * @param {*} allowResize
  * @param {*} isLocked
  */
-export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMove = false, allowResize = true, isLocked = true, GetterQuotationWorkBook) => {
+export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMove = false, allowResize = true, isLocked = true, workBook) => {
   const sheet = spread.getActiveSheet();
-  const template = GetterQuotationWorkBook || getTemplate();
+  const template = getWorkBook(workBook);
   let x = 2;
   let y = 2;
   let curWidth = 100;
@@ -294,8 +294,8 @@ export const AddEquipmentImage = (spread, pictureName, base64, startRow, allowMo
  * Show total
  * @param {*} total
  */
-export const showTotal = (GetterQuotationWorkBook) => {
-  const template = GetterQuotationWorkBook || getTemplate();
+export const showTotal = (workBook) => {
+  const template = getWorkBook(workBook);
   const total = template.cloudSheet.total;
   let show = true;
   if (total) {
@@ -320,11 +320,11 @@ export const showTotal = (GetterQuotationWorkBook) => {
  * Show subTotal
  * @returns 
  */
-export const showSubTotal = (GetterQuotationWorkBook) => {
+export const showSubTotal = (workBook) => {
   let show = true;
-  const template = GetterQuotationWorkBook || getTemplate();
+  const template = getWorkBook(workBook);
   const subTotal = template.cloudSheet.center.total;
-  if (showTotal(GetterQuotationWorkBook)) {
+  if (showTotal(workBook)) {
     if (subTotal) {
       if (_.has(subTotal, ['show'])) {
         show = subTotal.show;

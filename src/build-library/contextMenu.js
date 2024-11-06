@@ -10,6 +10,7 @@ import { imgUrlToBase64, BlobToBase64 } from '../utils/index';
 import { SHOW_DRAWER, UPDATE_QUOTATION_PATH, SHOW_SORT, SORT_TYPE_ID, SHOW_DELETE, IGNORE_EVENT } from 'store/quotation/mutation-types';
 import { sortObjectProxy } from '../common/proxyData'
 import { LayoutRowColBlock } from '../common/core';
+import { getWorkBook } from '../common/store';
 import { REGULAR } from '../common/constant';
 import { SetDataSource } from '../common/sheetWorkBook';
 import { uniqAndSortBy, GetAllTableRange } from '../common/public';
@@ -39,7 +40,7 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
   const spread = sheet.getParent();
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   const resourceViews = quotation.conferenceHall.resourceViews;
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const { equipment } = template.cloudSheet.center;
   const { image = null } = template.cloudSheet;
   let imageObj = {};

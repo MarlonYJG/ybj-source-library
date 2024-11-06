@@ -4,6 +4,7 @@
  * @Description:multipleTable
  */
 import { getWorkBook, getInitData } from '../common/store';
+import { CreateTable, SetDataSource } from '../common/sheetWorkBook';
 
 /**
  * Multiple render
@@ -21,8 +22,29 @@ export const MultipleRender = (spread, GetterMultipleWorkBook = null, GetterMult
   console.log('quotation', quotation);
   console.log('template', template);
 
-  
+
 
 
 };
 
+const InitWorksheet = (sheet, dataSource) => {
+  if (!sheet) return;
+  // sheet.name('sheet');
+  // sheet.tag('sheet');
+  SetDataSource(sheet, dataSource);
+};
+
+export const initMultipleTable = (spread, template, dataSource, isCompress = false) => {
+  if (!spread) {
+    console.error('spread is null');
+    return
+  }
+  console.log(template,'template');
+  
+  console.log(dataSource,'dataSource');
+  
+  const sheet = spread.getActiveSheet();
+  InitWorksheet(sheet, dataSource);
+  // InitBindPath(spread, template, dataSource)
+  // InitSheetRender(spread, template, dataSource, isCompress)
+};

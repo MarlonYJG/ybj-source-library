@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 
+import { getWorkBook } from './store';
 import { flattenArray } from '../utils/index'
 
 /**
@@ -89,7 +90,7 @@ const getClassificationName = (classificationId) => {
 export const buildData = (tableId, insertIndex, count, classType) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
-  const template = store.getters['quotationModule/GetterQuotationWorkBook'];
+  const template = getWorkBook();
   const { equipment } = template.cloudSheet.center;
 
   const resource = {};
