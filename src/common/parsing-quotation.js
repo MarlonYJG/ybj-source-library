@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
 
-import { getWorkBook } from './store';
+import { getWorkBook, getInitData } from './store';
 import { flattenArray } from '../utils/index'
 
 /**
@@ -213,3 +213,17 @@ export const getConfig = (quotation) => {
   return null;
 }
 
+/**
+ * Determine whether the current quotation is a single table or a total score table
+ * @param {*} quotation 
+ * @returns 
+ */
+export const isSingleTable = (quotation) => {
+  if (!quotation) {
+    quotation = getInitData();
+  }
+  if (quotation.resources && quotation.resources.length) {
+    return false;
+  }
+  return true;
+}

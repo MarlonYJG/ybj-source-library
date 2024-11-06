@@ -12,7 +12,7 @@ import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, t
 import { multipleTableSyncStore } from './common/multiple-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
-import { formatterPrice, getShowCostPrice, initDiscountPercentage, initPriceSetField } from './common/parsing-quotation';
+import { formatterPrice, getShowCostPrice, initDiscountPercentage, initPriceSetField, isSingleTable } from './common/parsing-quotation';
 import { getTemplateClassType, getProjectNameField, showDiscount, showPriceSet, initTemplateData } from './common/parsing-template';
 import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
 import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
@@ -55,6 +55,7 @@ export {
   startMobileMode,
   initSingleTable,
   initMultipleTable,
+  isSingleTable,
   initPriceSetField,
   initDiscountPercentage,
   showPriceSet,

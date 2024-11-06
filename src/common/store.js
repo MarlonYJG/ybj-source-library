@@ -6,7 +6,7 @@
 import store from 'store';
 
 export const getWorkBook = (GetterQuotationWorkBook) => {
-  return GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
+  return GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook']();
 }
 
 export const getInitData = (GetterQuotationInit) => {
