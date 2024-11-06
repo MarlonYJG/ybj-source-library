@@ -28,6 +28,7 @@ import {
   mergeRow,
   PubSetCellHeight,
   setRowStyle,
+  renderAutoFitRow,
   mergeColumn,
   showTotal,
   getComputedColumnFormula,
@@ -991,7 +992,7 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
       const { image = null } = template.cloudSheet;
 
       mergeSpan(sheet, equipment.spans, startRow);
-      setRowStyle(sheet, equipment, startRow, image, false, quotation, template);
+      setRowStyle(sheet, equipment, startRow, image, false);
       columnComputedValue(sheet, equipment, startRow, computedColumnFormula);
     }
 
@@ -1030,6 +1031,11 @@ const renderSheet = (spread, GetterQuotationWorkBook, GetterQuotationInit, isCom
   // Delete headers in batches
   for (let i = 0; i < headerIndexs.length; i++) {
     sheet.deleteRows(headerIndexs[i] - i, 1);
+  }
+
+  // Adaptive rendering
+  if (resourceViews.length) {
+    renderAutoFitRow(sheet, equipment, image, quotation, template);
   }
 
   // Add product images
@@ -1121,6 +1127,11 @@ const InitSheetRender = (spread, template, quotation, isCompress = false) => {
   renderFinishedAddImage(spread, template, quotation);
 };
 
+const InitMultipleSheetRender = (spread, template, quotation, isCompress = false) => {
+  const { conferenceHall } = quotation;
+  const resourceViews = conferenceHall.resourceViews;
+};
+
 /**
  * Initialization of a single table
  * @param {*} spread 
@@ -1138,4 +1149,15 @@ export const initSingleTable = (spread, template, dataSource, isCompress = false
   InitWorksheet(sheet, dataSource);
   InitBindPath(spread, template, dataSource)
   InitSheetRender(spread, template, dataSource, isCompress)
+};
+
+export const initMultipleTable = (spread, template, dataSource, isCompress = false) => {
+  if (!spread) {
+    console.error('spread is null');
+    return
+  }
+  // const sheet = spread.getActiveSheet();
+  // InitWorksheet(sheet, dataSource);
+  // InitBindPath(spread, template, dataSource)
+  // InitSheetRender(spread, template, dataSource, isCompress)
 };

@@ -36,6 +36,7 @@ import {
   mergeRow,
   PubSetCellHeight,
   setRowStyle,
+  renderAutoFitRow,
   mergeColumn,
   showTotal,
   showSubTotal,
@@ -109,7 +110,7 @@ const OnEventBind = (spread) => {
         });
       }
     } else {
-      defaultAutoFitRow(sheet, args.row, rowsField, image, 0);
+      defaultAutoFitRow(sheet, args.row, rowsField, image);
     }
 
     limitDiscountInput(spread, args);
@@ -1109,6 +1110,10 @@ export const Render = (spread, isInit) => {
     sheet.deleteRows(headerIndexs[i] - i, 1);
   }
 
+  // Adaptive rendering
+  if (resourceViews.length) {
+    renderAutoFitRow(sheet, equipment, image, quotation, template);
+  }
   // Add product images
   if (image) {
     renderSheetImage(spread, tableStartRowIndex, true, false, false);

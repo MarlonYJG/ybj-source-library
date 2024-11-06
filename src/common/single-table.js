@@ -1536,28 +1536,17 @@ export const setAutoFitRow = (sheet, row, rowsField, image, cb) => {
  * @param {*} row 
  * @param {*} rowsField 
  * @param {*} image 
- * @param {*} i 
- * @param {*} quotation 
- * @param {*} template 
  */
-export const defaultAutoFitRow = (sheet, row, rowsField, image, i, quotation = null, template = null) => {
-  const spread = sheet.getParent();
-  const tableRows = getTableRowIndex(spread, quotation, template);
-
-  console.log(tableRows);
-
+export const defaultAutoFitRow = (sheet, row, rowsField, image) => {
   console.log(row);
-
-  if (tableRows.includes(row - i)) {
-    if (image && image.height) {
-      const maxH = Math.max(image.height, rowsField.height || 0);
-      sheet.setRowHeight(row, maxH);
-    } else if (rowsField && rowsField.height) {
-      sheet.setRowHeight(row, rowsField.height);
-    } else {
-      sheet.getCell(row, -1).wordWrap(true);
-      sheet.autoFitRow(row)
-    }
+  if (image && image.height) {
+    const maxH = Math.max(image.height, rowsField.height || 0);
+    sheet.setRowHeight(row, maxH);
+  } else if (rowsField && rowsField.height) {
+    sheet.setRowHeight(row, rowsField.height);
+  } else {
+    sheet.getCell(row, -1).wordWrap(true);
+    sheet.autoFitRow(row)
   }
 };
 

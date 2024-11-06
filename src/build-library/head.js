@@ -511,7 +511,7 @@ export const StartAutoFitRow = (spread) => {
   } else {
     tableRows.forEach(row => {
       ((row) => {
-        defaultAutoFitRow(sheet, row, rowsField, image, 0);
+        defaultAutoFitRow(sheet, row, rowsField, image);
       })(row);
     });
   }

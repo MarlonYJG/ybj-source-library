@@ -15,7 +15,7 @@ import { SetDataSource } from '../common/sheetWorkBook';
 import { uniqAndSortBy, GetAllTableRange } from '../common/public';
 
 import { buildData, getPositionBlock } from '../common/parsing-quotation';
-import { setRowStyle, AddEquipmentImage, getComputedColumnFormula, getImageField } from '../common/parsing-template';
+import { setRowStyle, renderAutoFitRow, AddEquipmentImage, getComputedColumnFormula, getImageField } from '../common/parsing-template';
 import { updateEquipmentImage } from '../common/update-quotation'
 
 import { mergeSpan, columnComputedValue } from '../common/single-table';
@@ -67,6 +67,11 @@ const repaintTableStyle = (sheet, classId, row, rowH) => {
         })(table[i], row + i);
       }
     }
+  }
+
+  // Adaptive rendering
+  if (resourceViews.length) {
+    renderAutoFitRow(sheet, equipment, image, quotation, template);
   }
   sheet.resumePaint();
 };

@@ -3,7 +3,7 @@
  * @Date: 2024-05-14 21:52:13
  * @Description:multipleTable
  */
-import { getSingleWorkBook, getSingleInitData } from '../common/store';
+import { getWorkBook, getInitData } from '../common/store';
 
 /**
  * Multiple render
@@ -15,8 +15,8 @@ import { getSingleWorkBook, getSingleInitData } from '../common/store';
  */
 export const MultipleRender = (spread, GetterMultipleWorkBook = null, GetterMultipleInitData = null, isCompress = false) => {
   if (!spread) return;
-  const template = getSingleWorkBook(GetterMultipleWorkBook);
-  const quotation = getSingleInitData(GetterMultipleInitData);
+  const template = getWorkBook(GetterMultipleWorkBook);
+  const quotation = getInitData(GetterMultipleInitData);
 
   console.log('quotation', quotation);
   console.log('template', template);

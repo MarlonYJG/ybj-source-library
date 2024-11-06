@@ -7,7 +7,7 @@ import Template from './template/index';
 import { initMobileData, startMobileMode } from './parsing-library/mobile'
 
 import { addSubLimitDiscountInput, addSubLimitDiscountInputType, addSubSortObject, addSubExportError, addSubSelectEquipmentImage } from './common/dep';
-import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA, QuotationInitData, TemplateWorkBook} from './common/constant';
+import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA, QuotationInitData, TemplateWorkBook } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
 import { multipleTableSyncStore } from './common/multiple-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
@@ -19,6 +19,7 @@ import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
 
 import { spreadExportExcel, spreadExportPDF, spreadStyleLocked } from './parsing-library/public';
 import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, Render as ParsingRender, InitTotal, initSingleTable } from './parsing-library/single-table';
+import { MultipleRender as ParsingMultipleRender } from "./parsing-library/multiple-table";
 
 import { MENU_DELETE } from './build-library/config';
 import { menuTotal } from './build-library/menu';
@@ -82,6 +83,7 @@ export {
   RenderTotal,
   BuildRender,
   ParsingRender,
+  ParsingMultipleRender,
   InitSheet,
   updateCellValue,
   SpreadLocked,

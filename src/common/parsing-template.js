@@ -10,7 +10,7 @@ import store from 'store';
 import { updateFormula } from './public';
 import { DEFINE_IDENTIFIER_MAP } from './identifier-template';
 import { PRICE_SET_MAP } from "./constant";
-import { LogicalProcessing, setAutoFitRow, defaultAutoFitRow } from './single-table';
+import { LogicalProcessing, setAutoFitRow, getTableRowIndex, defaultAutoFitRow } from './single-table';
 import { CombinationType } from './combination-type';
 import { getConfig } from './parsing-quotation';
 
@@ -169,10 +169,8 @@ export const PubSetCellHeight = (sheet, field, row) => {
  * @param {*} startRow 
  * @param {*} image 
  * @param {*} locked 
- * @param {*} quotation 
- * @param {*} template 
  */
-export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, quotation = null, template = null) => {
+export const setRowStyle = (sheet, rowsField, startRow, image, locked = false) => {
   if (rowsField.dataTable) {
     for (const i in rowsField.dataTable) {
       if (Object.hasOwnProperty.call(rowsField.dataTable, i)) {
@@ -192,18 +190,40 @@ export const setRowStyle = (sheet, rowsField, startRow, image, locked = false, q
             }
           }
         }
-        const config = getConfig(quotation);
-        if (config && config.startAutoFitRow) {
-          sheet.getCell(startRow + Number(i), -1).wordWrap(true);
-          sheet.autoFitRow(startRow + Number(i))
-          setAutoFitRow(sheet, startRow + Number(i), rowsField, image)
-        } else {
-          ((n) => {
-            defaultAutoFitRow(sheet, startRow + Number(n), rowsField, image, 1, quotation, template);
-          })(i)
-        }
       }
     }
+  }
+};
+
+/**
+ * Adaptive row-height rendering
+ * @param {*} sheet 
+ * @param {*} rowsField 
+ * @param {*} image 
+ * @param {*} quotation 
+ * @param {*} template 
+ */
+export const renderAutoFitRow = (sheet, rowsField, image, quotation, template) => {
+  const spread = sheet.getParent();
+  const config = getConfig(quotation);
+  const tableRows = getTableRowIndex(spread, quotation, template);
+
+  console.log(tableRows);
+
+  if (config && config.startAutoFitRow) {
+    tableRows.forEach(row => {
+      ((row) => {
+        sheet.getCell(row, -1).wordWrap(true);
+        sheet.autoFitRow(row)
+        setAutoFitRow(sheet, row, rowsField, image)
+      })(row);
+    });
+  } else {
+    tableRows.forEach(row => {
+      ((row) => {
+        defaultAutoFitRow(sheet, row, rowsField, image);
+      })(row);
+    });
   }
 };
 
