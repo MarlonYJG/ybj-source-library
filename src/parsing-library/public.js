@@ -316,3 +316,13 @@ export const setLastColumnWidth = (spread, template, val = 10) => {
   sheet.setColumnWidth(column, sheet.getColumnWidth(column) + val);
   sheet.resumePaint();
 };
+
+/**
+ * Initialization configuration of the workbook
+ * @param {*} workBook 
+ */
+export const initWorkBookConfig = (workBook) => {
+  if (workBook) {
+    workBook.options.tabEditable = false;
+  }
+};

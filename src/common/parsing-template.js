@@ -15,14 +15,6 @@ import { CombinationType } from './combination-type';
 import { getConfig } from './parsing-quotation';
 
 /**
- * Get the template
- * @returns 
- */
-const getTemplate = () => {
-  return getWorkBook();
-}
-
-/**
  * Insert the start of the column of the table
  */
 export const PubGetTableStartColumnIndex = () => {
@@ -42,7 +34,7 @@ export const PubGetTableColumnCount = (workBook) => {
  * @returns 
  */
 export const getTemplateTopRowCol = () => {
-  const template = getTemplate();
+  const template = getWorkBook();
   if (template.cloudSheet.top) {
     return {
       rowCount: template.cloudSheet.top.rowCount,
@@ -396,7 +388,7 @@ export const getFormulaFieldRowCol = (field) => {
  * @returns 
  */
 export const getTemplateClassType = () => {
-  const template = getTemplate().cloudSheet;
+  const template = getWorkBook().cloudSheet;
   if (template.templateClassIdentifier) {
     if (Object.keys(DEFINE_IDENTIFIER_MAP).includes(template.templateClassIdentifier)) {
       return DEFINE_IDENTIFIER_MAP[template.templateClassIdentifier].identifier;
@@ -414,7 +406,7 @@ export const getTemplateClassType = () => {
  * @returns 
  */
 export const isMultiHead = () => {
-  const template = getTemplate().cloudSheet;
+  const template = getWorkBook().cloudSheet;
   const regex = /title@/;
   if (template.templateClassIdentifier && regex.test(template.templateClassIdentifier)) {
     return true;
@@ -427,7 +419,7 @@ export const isMultiHead = () => {
  * @returns 
  */
 export const isL1L2RowMerge = () => {
-  const template = getTemplate().cloudSheet;
+  const template = getWorkBook().cloudSheet;
   if (template.templateClassIdentifier === 'Level_1_row@Level_2_row') {
     return true;
   }
@@ -440,7 +432,7 @@ export const isL1L2RowMerge = () => {
  * @returns 
  */
 export const getProjectNameField = () => {
-  const template = getTemplate();
+  const template = getWorkBook();
   const projectNameField = template.cloudSheet.top.bindPath.quotation.name;
   return projectNameField;
 }
@@ -450,7 +442,7 @@ export const getProjectNameField = () => {
  * @returns 
  */
 export const getDiscountField = () => {
-  const template = getTemplate();
+  const template = getWorkBook();
   const discountField = template.cloudSheet.center.equipment.bindPath;
   if (Object.keys(discountField).includes('discountUnitPrice') || Object.keys(discountField).includes('unitPrice')) {
     if (Object.keys(discountField).includes('discountUnitPrice') && Object.keys(discountField).includes('unitPrice')) {
@@ -473,7 +465,7 @@ export const getDiscountField = () => {
  * @returns 
  */
 export const showDiscount = (temp) => {
-  const template = temp || getTemplate();
+  const template = getWorkBook(temp);
   if (template) {
     const discountField = template.cloudSheet.center.equipment.bindPath;
     if (Object.keys(discountField).includes('discountUnitPrice')) {
@@ -489,7 +481,7 @@ export const showDiscount = (temp) => {
  * @returns 
  */
 export const showPriceSet = (temp) => {
-  const template = temp || getTemplate();
+  const template = getWorkBook(temp);
   if (template) {
     return !!showDiscount(template);
   }
@@ -502,7 +494,7 @@ export const showPriceSet = (temp) => {
  * @returns 
  */
 export const getPriceColumn = () => {
-  const template = getTemplate();
+  const template = getWorkBook();
   let priceFieldCol = null;
   const binds = template.cloudSheet.center.equipment.bindPath;
   for (const key in binds) {
@@ -574,7 +566,7 @@ export const initTemplateData = (templateJSON, quotation = null, quaLogos = [], 
  */
 export const getImageField = (template) => {
   if (!template) {
-    template = getTemplate();
+    template = getWorkBook();
   }
   const imgField = template.cloudSheet.center.equipment.bindPath.img;
   const imageField = template.cloudSheet.center.equipment.bindPath.imageId;
@@ -601,7 +593,7 @@ export const getImageField = (template) => {
  */
 export const getImageConfig = (template) => {
   if (!template) {
-    template = getTemplate();
+    template = getWorkBook();
   }
   if (getImageField(template)) {
     const imageConfig = template.cloudSheet.image;
@@ -621,7 +613,7 @@ export const getImageConfig = (template) => {
  */
 export const getEquipmentConfig = (template) => {
   if (!template) {
-    template = getTemplate();
+    template = getWorkBook();
   }
   const equipmentConfig = template.cloudSheet.center.equipment;
   return equipmentConfig;
@@ -633,7 +625,19 @@ export const getEquipmentConfig = (template) => {
  */
 export const checkTemplate = (template) => {
   if (!template) {
-    template = getTemplate();
+    template = getWorkBook();
   }
   getImageField(template);
+}
+
+/**
+ * 
+ * @param {*} template 
+ * @returns 
+ */
+export const getTrunkTemplate = (template) => {
+  if (!template) {
+    template = getWorkBook();
+  }
+  return template.cloudSheet.scoreList || [];
 }

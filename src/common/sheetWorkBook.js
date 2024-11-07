@@ -70,3 +70,18 @@ export const CreateTable = (sheet, id, r, c, rc, cc, header, bindDataPath) => {
     table.bindingPath(bindDataPath);
   }
 };
+
+/**
+ * Create a sheet object
+ * @param {*} rootWorkBook 
+ * @param {*} sheetName 
+ * @param {*} index 
+ * @param {*} sheetTemplateSource 
+ */
+export const CreateSheet = (rootWorkBook, sheetName, index = 1, sheetTemplateSource = null) => {
+  const sheet = new GC.Spread.Sheets.Worksheet(sheetName);
+  rootWorkBook.addSheet(index, sheet);
+  if (sheetTemplateSource) {
+    sheet.fromJSON(sheetTemplateSource);
+  }
+};

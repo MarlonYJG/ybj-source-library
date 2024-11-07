@@ -227,3 +227,15 @@ export const isSingleTable = (quotation) => {
   }
   return true;
 }
+
+// 获取分表对应模板的索引
+export const getSheetTemplateIndexs = (quotation) => {
+  if (!quotation) {
+    quotation = getInitData();
+  }
+  if (quotation.title && quotation.title.indexOf('@') !== -1) {
+    const templateIndex = quotation.title.split('@')[1];
+    return templateIndex.split('-');
+  }
+  return [];
+}

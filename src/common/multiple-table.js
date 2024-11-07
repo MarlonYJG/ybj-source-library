@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 // import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
-import { GetUserCompany,  FormatDate } from '../utils/index';
+import { GetUserCompany, FormatDate } from '../utils/index';
 export const multipleTableSyncStore = (Res, type) => {
   console.log(Res);
   let company = {
@@ -149,51 +149,51 @@ export const multipleTableSyncStore = (Res, type) => {
       startAutoFitRow: false
     })
   }
-// 时间格式化
-const { approachDate = '', approachTime = '', fieldWithdrawalDate = '', fieldWithdrawalTime = '', startDate = '', startTime = '' } = quotationDefault.conferenceHall;
-if (approachDate) {
-  quotationDefault.conferenceHall.approachDate = FormatDate(approachDate, 'YYYY-MM-DD');
-}
-if (approachTime) {
-  quotationDefault.conferenceHall.approachTime = FormatDate(approachTime, 'YYYY-MM-DD');
-}
-if (fieldWithdrawalDate) {
-  quotationDefault.conferenceHall.fieldWithdrawalDate = FormatDate(fieldWithdrawalDate, 'YYYY-MM-DD');
-}
-if (fieldWithdrawalTime) {
-  quotationDefault.conferenceHall.fieldWithdrawalTime = FormatDate(fieldWithdrawalTime, 'YYYY-MM-DD');
-}
-if (startDate) {
-  quotationDefault.conferenceHall.startDate = FormatDate(startDate, 'YYYY-MM-DD');
-}
-if (startTime) {
-  quotationDefault.conferenceHall.startTime = FormatDate(startTime, 'YYYY-MM-DD');
-}
-
-// 报价单中的项目名称字段不统一问题
-quotationDefault.name = quotationDefault.name || quotationDefault.projectName;
-// 扩展字段特殊处理
-if (quotationDefault.extFields) {
-  if (typeof quotationDefault.extFields === 'string') {
-    quotationDefault.extFields = JSON.parse(quotationDefault.extFields);
+  // 时间格式化
+  const { approachDate = '', approachTime = '', fieldWithdrawalDate = '', fieldWithdrawalTime = '', startDate = '', startTime = '' } = quotationDefault.conferenceHall;
+  if (approachDate) {
+    quotationDefault.conferenceHall.approachDate = FormatDate(approachDate, 'YYYY-MM-DD');
   }
-}
-// 去除空数据
-let resourceViews = _.cloneDeep(quotationDefault.conferenceHall.resourceViews);
-resourceViews = resourceViews.filter((item) => { return item.resources && item.resources.length; });
-resourceViews.forEach((item, i) => {
-  item.sort = i + 1;
-  item.resources.forEach((resource) => {
-    if (!resource.imageId) {
-      resource.imageId = uuidv4();
+  if (approachTime) {
+    quotationDefault.conferenceHall.approachTime = FormatDate(approachTime, 'YYYY-MM-DD');
+  }
+  if (fieldWithdrawalDate) {
+    quotationDefault.conferenceHall.fieldWithdrawalDate = FormatDate(fieldWithdrawalDate, 'YYYY-MM-DD');
+  }
+  if (fieldWithdrawalTime) {
+    quotationDefault.conferenceHall.fieldWithdrawalTime = FormatDate(fieldWithdrawalTime, 'YYYY-MM-DD');
+  }
+  if (startDate) {
+    quotationDefault.conferenceHall.startDate = FormatDate(startDate, 'YYYY-MM-DD');
+  }
+  if (startTime) {
+    quotationDefault.conferenceHall.startTime = FormatDate(startTime, 'YYYY-MM-DD');
+  }
+
+  // 报价单中的项目名称字段不统一问题
+  quotationDefault.name = quotationDefault.name || quotationDefault.projectName;
+  // 扩展字段特殊处理
+  if (quotationDefault.extFields) {
+    if (typeof quotationDefault.extFields === 'string') {
+      quotationDefault.extFields = JSON.parse(quotationDefault.extFields);
     }
+  }
+  // 去除空数据
+  let resourceViews = _.cloneDeep(quotationDefault.conferenceHall.resourceViews);
+  resourceViews = resourceViews.filter((item) => { return item.resources && item.resources.length; });
+  resourceViews.forEach((item, i) => {
+    item.sort = i + 1;
+    item.resources.forEach((resource) => {
+      if (!resource.imageId) {
+        resource.imageId = uuidv4();
+      }
+    });
   });
-});
-quotationDefault.conferenceHall.resourceViews = resourceViews;
+  quotationDefault.conferenceHall.resourceViews = resourceViews;
 
-resourceSort(quotationDefault)
+  resourceSort(quotationDefault)
 
-console.log(quotationDefault, '====响应数据处理-并同步至store');
+  console.log(quotationDefault, '====响应数据处理-并同步至store');
   return quotationDefault;
 };
 
@@ -216,4 +216,9 @@ export const resourceSort = (quotation) => {
     resourceViewsMap[item.resourceLibraryId] = item;
   });
   quotation.conferenceHall.resourceViewsMap = resourceViewsMap;
+};
+
+// 分表排序
+export const branchSort = (quotation) => {
+  //  TODO 底部分表排序时，需要同步总表中的分表数据
 };
