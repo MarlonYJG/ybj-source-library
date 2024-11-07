@@ -3,6 +3,7 @@
  * @Date: 2024-05-17 14:53:45
  * @Description:
  */
+import { monitorInstance } from './monitor';
 
 /**
  *Index letter algorithm
@@ -101,4 +102,35 @@ export const replacePlaceholders = (formula, variables) => {
     updatedFormula = updatedFormula.replace(regex, value);
   }
   return updatedFormula;
+}
+
+/**
+ * Cell pop-up box
+ * @param {*} spread 
+ * @param {*} args 
+ * @param {*} template 
+ */
+export const cellDialog = (spread, args, template) => {
+  const sheet = spread.getActiveSheet();
+  if (args?.newSelections?.length === 1) {
+    const target = args.newSelections[0];
+    const templateSelection = template.cloudSheet.dateSelection;
+    if (templateSelection) {
+      for (const key in templateSelection) {
+        if (Object.prototype.hasOwnProperty.call(templateSelection, key)) {
+          const value = templateSelection[key];
+          if (!value.row) {
+            value.row = sheet.getRowCount() - value.lastRow - 1;
+          }
+
+          const hitTarget = value.row === target.row && value.rowCount == target.rowCount && value.column == target.col && value.columnCount == target.colCount;
+          if (hitTarget) {
+            return monitorInstance.callFunction('cellDialog', {
+              cellBindValue: value
+            });;
+          }
+        }
+      }
+    }
+  }
 }

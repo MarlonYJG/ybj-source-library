@@ -25,7 +25,7 @@ import IdentifierTemplate from '../common/identifier-template';
 import { CombinationTypeBuild } from '../common/combination-type';
 import { DESCRIPTION_MAP, TOTAL_COMBINED_MAP, PRICE_SET_MAP } from '../common/constant';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
-import { numberToColumn } from '../common/public'
+import { numberToColumn, cellDialog } from '../common/public';
 
 import { getPositionBlock, getConfig } from '../common/parsing-quotation';
 import {
@@ -175,6 +175,10 @@ const OnEventBind = (spread) => {
     const dataSource = sheet.getDataSource().getSource();
     store.commit(`quotationModule/${SET_WORK_SHEET_QUOTATION}`, dataSource);
     UpdateTotalBlock(sheet);
+  });
+
+  sheet.bind(GC.Spread.Sheets.Events.SelectionChanged, (sender, args) => {
+    cellDialog(spread, args, getWorkBook());
   });
 };
 /**
