@@ -9,7 +9,7 @@ import { initMobileData, startMobileMode } from './parsing-library/mobile'
 import { addSubLimitDiscountInput, addSubLimitDiscountInputType, addSubSortObject, addSubExportError, addSubSelectEquipmentImage } from './common/dep';
 import { monitorInstance } from "./common/monitor";
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA, QuotationInitData, TemplateWorkBook } from './common/constant';
-import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet } from './common/single-table';
+import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet, InitBindValueTop, FieldBindPath } from './common/single-table';
 import { multipleTableSyncStore } from './common/multiple-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
@@ -19,13 +19,13 @@ import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
 import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
 
 import { spreadExportExcel, spreadExportPDF, spreadStyleLocked } from './parsing-library/public';
-import { FieldBindPath, InitBindValueTop, LogicalTotalCalculationType, InitTotal, initSingleTable } from './parsing-library/single-table';
+import { LogicalTotalCalculationType, InitTotal, initSingleTable } from './parsing-library/single-table';
 import { initMultipleTable } from "./parsing-library/multiple-table";
 
 import { MENU_DELETE } from './build-library/config';
 import { menuTotal } from './build-library/menu';
 import { Reset } from './build-library/public';
-import { InsertTotal, RenderTotal, Render as BuildRender, InitSheet, updateCellValue, setProjectName } from './build-library/single-table';
+import { InsertTotal, RenderTotal, Render as BuildRender, InitSheet, updateCellValue, setProjectName, buildSingleTable } from './build-library/single-table';
 import {
   Sort, DeleteProduct, HeadDelete, spreadPrint,
   spreadExportExcel as headSpreadExportExcel,
@@ -55,6 +55,7 @@ export {
   initMobileData,
   startMobileMode,
   initSingleTable,
+  buildSingleTable,
   initMultipleTable,
   isSingleTable,
   initPriceSetField,

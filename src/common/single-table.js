@@ -8,7 +8,7 @@ import Decimal from '../lib/decimal/decimal.min.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
-import { GetUserCompany, imgUrlToBase64, regChineseCharacter, FormatDate } from '../utils/index';
+import { GetUserCompany, imgUrlToBase64, regChineseCharacter, FormatDate, GetUserEmployee, getSystemDate } from '../utils/index';
 
 import { LayoutRowColBlock } from './core';
 import { getWorkBook } from './store';
@@ -21,13 +21,15 @@ import { NEW_OLD_FIELD_MAP } from '../build-library/config'
 import { ShowCostPrice, ShowCostPriceStatus } from '../build-library/head'
 import { synchronousStoreSumAmount } from '../build-library/single-table'
 
+import { SetDataSource } from './sheetWorkBook';
 import {
   templateRenderFlag,
   setCell,
   AddEquipmentImage,
   showSubTotal,
   getTableHeaderDataTable,
-  getFormulaFieldRowCol
+  getFormulaFieldRowCol,
+  getPaths
 } from './parsing-template';
 import { IdentifierTemplate, DEFINE_IDENTIFIER_MAP } from './identifier-template'
 import { formatterPrice, getShowCostPrice } from './parsing-quotation';
@@ -1572,3 +1574,396 @@ export const getTableRowIndex = (spread, quotation, template) => {
   }
   return rows;
 };
+
+/**
+ * Add an image to the quote
+ * @param {*} spread
+ * @param {*} template
+ * @param {*} base64
+ */
+const InsertImage = (spread, template, base64) => {
+  const sheet = spread.getActiveSheet();
+  sheet.suspendPaint();
+  const row = sheet.getRowCount();// 表格所有行
+  const quotationImageName = template.cloudSheet.quotationImage.name;// 公司印章名称
+  const quotationImageH = template.cloudSheet.quotationImage.height;// 公司印章高度
+  const quotationImageW = template.cloudSheet.quotationImage.width;// 公司印章宽度
+  const rowOffsetLeft = template.cloudSheet.quotationImage.rowOffsetLeft;// 公司印章距离表格左侧的列数
+  const bottomR = template.cloudSheet.quotationImage.columntBottm;// 公司印章距离底部行数
+  let offsetLeft = 0;// 公司印章距离表格左侧距离
+  let offsetTop = 0;// 公司印章距离顶部距离
+  let bottomH = quotationImageH;// 公司印章距离底部高度
+  // 计算距离左侧距离
+  for (let i = 0; i < rowOffsetLeft; i++) {
+    offsetLeft = offsetLeft + sheet.getColumnWidth(i);
+  }
+  // 计算距离顶部距离
+  for (let i = 0; i < row; i++) {
+    offsetTop = offsetTop + sheet.getRowHeight(i);
+  }
+  // 计算距离底部距离
+  for (let i = row - bottomR; i < row; i++) {
+    bottomH = bottomH + sheet.getRowHeight(i);
+  }
+
+  offsetTop = offsetTop - bottomH;
+  let picture = sheet.pictures.get(quotationImageName);
+  if (picture) {
+    sheet.pictures.remove(quotationImageName);
+    picture = sheet.pictures.add(quotationImageName, base64, offsetLeft, offsetTop, quotationImageW, quotationImageH);
+  } else {
+    picture = sheet.pictures.add(quotationImageName, base64, offsetLeft, offsetTop, quotationImageW, quotationImageH);
+  }
+  picture.allowMove(false);
+  picture.allowResize(true);
+  picture.isLocked(true);
+  sheet.resumePaint();
+};
+
+/**
+ * Initialize the company seal
+ * @param {*} spread
+ * @param {*} template
+ * @param {*} base64
+ */
+const InsertSeal = (spread, template, base64) => {
+  const sheet = spread.getActiveSheet();
+  sheet.suspendPaint();
+  const row = sheet.getRowCount();// 表格所有行
+  const sealName = template.cloudSheet.seal.name;// 公司印章名称
+  const sealH = template.cloudSheet.seal.height;// 公司印章高度
+  const sealW = template.cloudSheet.seal.width;// 公司印章宽度
+  const rowOffsetLeft = template.cloudSheet.seal.rowOffsetLeft;// 公司印章距离表格左侧的列数
+  const bottomR = template.cloudSheet.seal.columntBottm;// 公司印章距离底部行数
+  let offsetLeft = 0;// 公司印章距离表格左侧距离
+  let offsetTop = 0;// 公司印章距离顶部距离
+  let bottomH = sealH;// 公司印章距离底部高度
+
+  // 计算距离左侧距离
+  for (let i = 0; i < rowOffsetLeft; i++) {
+    offsetLeft = offsetLeft + sheet.getColumnWidth(i);
+  }
+  // 计算距离顶部距离
+  for (let i = 0; i < row; i++) {
+    offsetTop = offsetTop + sheet.getRowHeight(i);
+  }
+  // 计算距离底部距离
+  for (let i = row - bottomR; i < row; i++) {
+    bottomH = bottomH + sheet.getRowHeight(i);
+  }
+  offsetTop = offsetTop - bottomH;
+  let picture = sheet.pictures.get(sealName);
+
+  if (picture) {
+    sheet.pictures.remove(sealName);
+    picture = sheet.pictures.add(sealName, base64, offsetLeft, offsetTop, sealW, sealH);
+  } else {
+    picture = sheet.pictures.add(sealName, base64, offsetLeft, offsetTop, sealW, sealH);
+  }
+  picture.allowMove(false);
+  picture.allowResize(true);
+  picture.isLocked(true);
+  sheet.resumePaint();
+};
+
+/**
+ * Add an image to the quote
+ * @param {*} spread
+ * @param {*} quotationImgs
+ * @param {*} imgs
+ */
+const InsertImages = (spread, quotationImgs) => {
+  const sheet = spread.getActiveSheet();
+  sheet.suspendPaint();
+  quotationImgs.forEach((item, index) => {
+    ((item) => {
+      const row = sheet.getRowCount();
+      const sealH = item.height;
+      const rowOffsetLeft = item.columnOffsetLeft;
+      const bottomR = item.rows;// 距离底部行数
+      let bottomH = sealH;// 距离底部高度
+
+      let offsetLeft = 0;// 距离表格左侧距离
+      let offsetTop = 0;// 距离顶部距离
+      // 计算距离左侧距离
+      for (let i = 0; i < rowOffsetLeft; i++) {
+        offsetLeft = offsetLeft + sheet.getColumnWidth(i);
+      }
+      if (item.position == 'top') {
+        // 计算距离底部距离
+        for (let i = 0; i < bottomR; i++) {
+          offsetTop = offsetTop + sheet.getRowHeight(i);
+        }
+      } else if (item.position == 'bottom') {
+        // 计算距离顶部距离
+        for (let i = 0; i < row; i++) {
+          offsetTop = offsetTop + sheet.getRowHeight(i);
+        }
+        // 计算距离底部距离
+        for (let i = row - bottomR; i < row; i++) {
+          bottomH = bottomH + sheet.getRowHeight(i);
+        }
+        offsetTop = offsetTop - bottomH;
+      } else {
+        console.warn('报价单多Logo字段(position)配置出错');
+      }
+      let picture = sheet.pictures.get(item.name);
+      if (picture) {
+        picture.src(item.url);
+        sheet.resumePaint();
+        return;
+      }
+      picture = sheet.pictures.add(item.name, item.url, offsetLeft, offsetTop, item.width, item.height);
+      picture.isLocked(true);
+    })(item, index);
+  });
+  sheet.resumePaint();
+};
+
+/**
+ * Images are added asynchronously at the end of rendering
+ * @param {*} spread
+ * @param {*} template
+ * @param {*} quotation
+ */
+export const renderFinishedAddImage = (spread, template, quotation) => {
+  const { quaLogos = [], seal = null } = template.cloudSheet;
+
+  if (_.has(template, ['cloudSheet', 'quotationImage'])) {
+    if (quotation.image) {
+      let imgUrl = '';
+      if (REGULAR.chineseCharacters.test(quotation.image)) {
+        imgUrl = encodeURI(quotation.image);
+      } else {
+        imgUrl = quotation.image;
+      }
+      imgUrlToBase64(imgUrl, (base64) => {
+        InsertImage(spread, template, base64);
+      });
+    }
+  }
+
+  if (quaLogos && quaLogos.length) {
+    quaLogos.forEach(item => {
+      ((item) => {
+        if (item.url) {
+          imgUrlToBase64(item.url, (base64) => {
+            item.url = base64;
+            InsertImages(spread, quaLogos, quaLogos);
+          });
+        }
+      })(item);
+    });
+  }
+
+  if (seal && quotation.seal) {
+    imgUrlToBase64(quotation.seal, (base64) => {
+      InsertSeal(spread, template, base64);
+    });
+  }
+};
+
+export const InitWorksheet = (sheet, dataSource) => {
+  if (!sheet) return;
+  sheet.name('sheet');
+  sheet.tag('sheet');
+  SetDataSource(sheet, dataSource);
+};
+
+export const InitBindPath = (spread, template, quotation) => {
+  InitBindValueTop(spread, template, quotation);
+  const { topPath, conferenceHallTopPath, conferenceHallBottomPath, bottomPath } = getPaths();
+
+  // top
+  FieldBindPath(spread, template, topPath);
+  // center
+  FieldBindPath(spread, template, conferenceHallTopPath);
+  FieldBindPath(spread, template, conferenceHallBottomPath);
+  // bottom
+  FieldBindPath(spread, template, bottomPath);
+};
+
+/**
+ * Header Initialize the top assignment
+ * @param {*} spread
+ * @param {*} template
+ * @param {*} quotation
+ */
+export const InitBindValueTop = (spread, template, quotation) => {
+  const sheet = spread.getActiveSheet();
+  const initDataPath = ['cloudSheet', 'initData'];
+
+  sheet.suspendPaint();
+  if (_.has(template, initDataPath)) {
+    const initData = _.get(template, initDataPath);
+
+    // 初始化个人信息
+    if (initData.userName || initData.userTel || initData.belongsEmail) {
+      const userEmployeeInfo = GetUserEmployee();
+
+      if (initData.userName && userEmployeeInfo) {
+        initDataSetValue(sheet, initData.userName, userEmployeeInfo, ['name'], 'information');
+      }
+      if (initData.userTel && userEmployeeInfo) {
+        initDataSetValue(sheet, initData.userTel, userEmployeeInfo, ['phone'], 'information');
+      }
+      if (initData.belongsEmail && userEmployeeInfo) {
+        initDataSetValue(sheet, initData.belongsEmail, userEmployeeInfo, ['email'], 'information');
+      }
+    }
+
+    // 初始化公司信息
+    if (initData) {
+      const companyInfo = GetUserCompany();
+
+      if (initData.userCompanyName && companyInfo && companyInfo.name) {
+        initDataSetValue(sheet, initData.userCompanyName, companyInfo, ['name'], 'company');
+      }
+      if (initData.userCompanyEnglishName && companyInfo && companyInfo.companyEnglishName) {
+        initDataSetValue(sheet, initData.userCompanyEnglishName, companyInfo, ['companyEnglishName'], 'company');
+      }
+      if (initData.userCompanyFax && companyInfo && companyInfo.fax) {
+        initDataSetValue(sheet, initData.userCompanyFax, companyInfo, ['fax'], 'company');
+      }
+      if (initData.userCompanyWebsite && companyInfo && companyInfo.website) {
+        initDataSetValue(sheet, initData.userCompanyWebsite, companyInfo, ['website'], 'company');
+      }
+      if (initData.userCompanyLocation && companyInfo && companyInfo.address) {
+        initDataSetValue(sheet, initData.userCompanyLocation, companyInfo, ['address'], 'company');
+      }
+      if (initData.userCompanyTel && companyInfo && companyInfo.tel) {
+        initDataSetValue(sheet, initData.userCompanyTel, companyInfo, ['tel'], 'company');
+      }
+
+      if (template.cloudSheet.logo && quotation.logo) {
+        imgUrlToBase64(quotation.logo, (base64) => {
+          InsertLogo(spread, template, base64);
+        });
+      } else {
+        let userBindCompany = GetUserCompany();
+        if (userBindCompany && userBindCompany.logoURL) {
+          imgUrlToBase64(userBindCompany.logoURL, (base64) => {
+            InsertLogo(spread, template, base64);
+          });
+        }
+      }
+    }
+
+    // 初始化时间
+    if (initData) {
+      if (initData.approachDate) {
+        initDataSetValue(sheet, initData.approachDate, quotation, ['conferenceHall', 'approachDate'], 'date');
+      }
+      if (initData.startDate) {
+        initDataSetValue(sheet, initData.startDate, quotation, ['conferenceHall', 'startDate'], 'date');
+      }
+      if (initData.fieldWithdrawalDate) {
+        initDataSetValue(sheet, initData.fieldWithdrawalDate, quotation, ['conferenceHall', 'fieldWithdrawalDate'], 'date');
+      }
+      if (initData.createTime) {
+        initDataSetValue(sheet, initData.createTime, quotation, ['createTime'], 'date');
+      }
+    }
+  }
+  sheet.resumePaint();
+};
+
+/**
+ * Initialize the initData field value
+ * @param {*} sheet
+ * @param {*} field
+ * @param {*} source
+ * @param {*} path
+ * @param {*} type
+ */
+const initDataSetValue = (sheet, field, source, path, type) => {
+  const lastRow = sheet.getRowCount() - 1;
+
+  let row;
+
+  if (field.row === 0 || field.row) {
+    row = field.row;
+  } else {
+    row = lastRow - Number(field.lastRow);
+  }
+
+  if (type === 'date') {
+    if (path && _.has(source, path)) {
+      const value = _.get(source, path);
+      if (value) {
+        sheet.setValue(row, field.column, getSystemDate(new Date(value), 'yyyy/MM/dd'));
+      }
+    }
+  } else if (type === 'company') {
+    const value = _.get(source, path);
+    if (value === 0 || value) {
+      sheet.setValue(row, field.column, value);
+    }
+  } else if (type === 'information') {
+    if (_.has(source, path)) {
+      const value = _.get(source, path);
+      if (value === 0 || value) {
+        sheet.setValue(row, field.column, value);
+      }
+    }
+  }
+};
+
+/**
+ * Bind company's logo
+ * @param {*} spread
+ * @param {*} template
+ * @param {*} base64
+ * @returns
+ */
+const InsertLogo = (spread, template, base64) => {
+  if (!spread) return;
+  if (!base64) return;
+  if (template.cloudSheet.logo) {
+    const sheet = spread.getActiveSheet();
+    sheet.suspendPaint();
+    let picture = sheet.pictures.get(template.cloudSheet.logo.name);
+    if (picture) {
+      picture.src(base64);
+      sheet.resumePaint();
+      return;
+    }
+    picture = sheet.pictures.add(template.cloudSheet.logo.name, base64, template.cloudSheet.logo.x, template.cloudSheet.logo.y, template.cloudSheet.logo.width, template.cloudSheet.logo.height);
+    picture.allowMove(false);
+    picture.allowResize(true);
+    picture.isLocked(true);
+    sheet.resumePaint();
+  }
+};
+
+/**
+ * Fields are bound and assigned
+ * @param {*} spread
+ * @param {*} template
+ * @param {*} bindingPath
+ */
+export const FieldBindPath = (spread, template, bindingPath) => {
+  const sheet = spread.getActiveSheet();
+  if (_.has(template, bindingPath)) {
+    const bindPath = _.get(template, bindingPath);
+    for (const key in bindPath) {
+      if (Object.hasOwnProperty.call(bindPath, key)) {
+        const ele = bindPath[key];
+        if (ele.row === 0 || ele.row) {
+          sheet.setBindingPath(ele.row, ele.column, ele.bindPath);
+        } else {
+          const lastRow = getHeaderRowCount(template) - 1;
+          const row = lastRow - Number(ele.lastRow);
+          sheet.setBindingPath(row, ele.column, ele.bindPath);
+        }
+      }
+    }
+  }
+};
+
+const getHeaderRowCount = (workBook) => {
+  const template = getWorkBook(workBook);
+  const { top, bottom } = template.cloudSheet;
+  return top.rowCount + bottom.rowCount;
+};
+

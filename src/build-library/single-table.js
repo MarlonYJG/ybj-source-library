@@ -70,7 +70,10 @@ import {
   finalPriceByConcessional,
   setAutoFitRow,
   defaultAutoFitRow,
-  getTableRowIndex
+  getTableRowIndex,
+  renderFinishedAddImage,
+  InitWorksheet,
+  InitBindPath,
 } from '../common/single-table';
 
 import { LayoutRowColBlock } from '../common/core';
@@ -1287,4 +1290,27 @@ export const setRowImageHeight = (sheet, row, height, i = null) => {
       }
     }
   }
+}
+
+const buildSheetRender = (spread, template, quotation, isCompress = false) => {
+  const { conferenceHall } = quotation;
+  const resourceViews = conferenceHall.resourceViews;
+  if (resourceViews.length) {
+    Render(spread, true, isCompress);
+  } else {
+    RenderTotal(spread, true);
+  }
+  renderFinishedAddImage(spread, template, quotation);
+};
+
+export const buildSingleTable = (spread, template, dataSource, isCompress = false) => {
+  if (!spread) {
+    console.error('spread is null');
+    return
+  }
+  const sheet = spread.getActiveSheet();
+  InitWorksheet(sheet, dataSource)
+  InitBindPath(spread, template, dataSource);
+  InitSheet(spread);
+  buildSheetRender(spread, template, dataSource, isCompress);
 }
