@@ -14,7 +14,7 @@ import { multipleTableSyncStore } from './common/multiple-table';
 import { PubGetRandomNumber, GetAllTableRange } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
 import { formatterPrice, getShowCostPrice, initDiscountPercentage, initPriceSetField, isSingleTable } from './common/parsing-quotation';
-import { getTemplateClassType, getProjectNameField, showDiscount, showPriceSet, initTemplateData } from './common/parsing-template';
+import { getTemplateClassType, getProjectNameField, initTemplateData } from './common/parsing-template';
 import { DEFINE_IDENTIFIER_MAP } from './common/identifier-template'
 import { SetDataSource, SpreadLocked } from './common/sheetWorkBook';
 
@@ -60,8 +60,6 @@ export {
   isSingleTable,
   initPriceSetField,
   initDiscountPercentage,
-  showPriceSet,
-  showDiscount,
   UpdateDiscount,
   UpdatePriceSet,
   StartAutoFitRow,

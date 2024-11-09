@@ -958,7 +958,6 @@ export const Render = (spread, isInit) => {
   const quotation = store.getters['quotationModule/GetterQuotationInit'];
   console.log(quotation, 'quotation');
   console.log(template, 'template');
-  checkTemplate(template);
   const sheet = spread.getActiveSheet();
 
   const { equipment, type = null, total = null, columnCount } = template.cloudSheet.center;
@@ -1301,6 +1300,7 @@ const buildSheetRender = (spread, template, quotation, isCompress = false) => {
     RenderTotal(spread, true);
   }
   renderFinishedAddImage(spread, template, quotation);
+  checkTemplate(template);
 };
 
 export const buildSingleTable = (spread, template, dataSource, isCompress = false) => {

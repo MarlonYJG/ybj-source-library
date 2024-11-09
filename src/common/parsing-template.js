@@ -628,6 +628,10 @@ export const checkTemplate = (template) => {
     template = getWorkBook();
   }
   getImageField(template);
+  if (!showDiscount(template)) {
+    console.warn('The template does not support discounts(discountUnitPrice)');
+  }
+  showPriceSet(template);
 }
 
 /**
