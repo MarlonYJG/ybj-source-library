@@ -9,40 +9,29 @@ import { getWorkBook, getInitData } from '../common/store';
 import { CreateSheet } from '../common/sheetWorkBook';
 
 import { getTrunkTemplate } from '../common/parsing-template';
-import { getSheetTemplateIndexs } from '../common/parsing-quotation';
+import { getAllSheet } from '../common/parsing-quotation';
+
+import { SetDataSource } from '../common/sheetWorkBook';
+import { InitMainSheetRender, getSheetTemplateIndexs } from '../common/multiple-table';
 
 import { initWorkBookConfig } from './public';
 
-/**
- * Multiple render
- * @param {*} spread 
- * @param {*} GetterMultipleWorkBook 
- * @param {*} GetterMultipleInitData 
- * @param {*} isCompress 
- * @returns 
- */
-export const MultipleRender = (spread, GetterMultipleWorkBook = null, GetterMultipleInitData = null, isCompress = false) => {
+const InitWorksheet = (spread, dataSource, template, isCompress) => {
   if (!spread) return;
-  const template = getWorkBook(GetterMultipleWorkBook);
-  const quotation = getInitData(GetterMultipleInitData);
+  if (!dataSource) {
+    dataSource = getInitData();
+  }
+  if (!template) {
+    template = getWorkBook();
+  }
 
-  console.log('quotation', quotation);
-  console.log('template', template);
-
-
-
-
-};
-
-const InitWorksheet = (spread, dataSource, template) => {
-  if (!spread) return;
-  const trunks = dataSource.resources || [];
+  const trunks = getAllSheet(dataSource);
 
   console.log(trunks);
 
-  if (!(trunks.length === 1 && trunks[0].name === 'noProject')) {
+  if (trunks.length) {
     const trunkTemplate = getTrunkTemplate(template);
-    const trunkIndex = getSheetTemplateIndexs(dataSource);
+    const trunkIndex = getSheetTemplateIndexs(dataSource, trunkTemplate);
 
     console.log('trunkIndex', trunkIndex);
     console.log('trunkTemplate', trunkTemplate);
@@ -56,13 +45,14 @@ const InitWorksheet = (spread, dataSource, template) => {
       const sheetTemplate = _.cloneDeep(sheetTemplateData.sheets['分表']);
       CreateSheet(spread, trunks[index].name, index + 1, sheetTemplate);
     }
+    spread.setSheetCount(trunks.length + 1);
   }
+  spread.setActiveSheetIndex(0);
 
+  const sheet = spread.getActiveSheet();
+  SetDataSource(sheet, dataSource);
 
-
-
-
-
+  InitMainSheetRender(spread, template, dataSource, isCompress);
 
 };
 
@@ -72,12 +62,9 @@ export const initMultipleTable = (spread, template, dataSource, isCompress = fal
     return
   }
   initWorkBookConfig(spread);
-  console.log(template, 'template');
 
+  console.log(template, 'template');
   console.log(dataSource, 'dataSource');
 
-  // const sheet = spread.getActiveSheet();
-  InitWorksheet(spread, dataSource, template);
-  // InitBindPath(spread, template, dataSource)
-  // InitSheetRender(spread, template, dataSource, isCompress)
+  InitWorksheet(spread, dataSource, template, isCompress);
 };

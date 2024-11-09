@@ -740,11 +740,6 @@ const InitSheetRender = (spread, template, quotation, isCompress = false) => {
   renderFinishedAddImage(spread, template, quotation);
 };
 
-// const InitMultipleSheetRender = (spread, template, quotation, isCompress = false) => {
-//   const { conferenceHall } = quotation;
-//   const resourceViews = conferenceHall.resourceViews;
-// };
-
 /**
  * Initialization of a single table
  * @param {*} spread 
@@ -761,5 +756,5 @@ export const initSingleTable = (spread, template, dataSource, isCompress = false
   const sheet = spread.getActiveSheet();
   InitWorksheet(sheet, dataSource);
   InitBindPath(spread, template, dataSource)
-  InitSheetRender(spread, template, dataSource, isCompress)
+  InitSheetRender(spread, template, dataSource, isCompress);
 };

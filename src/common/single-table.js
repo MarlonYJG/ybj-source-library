@@ -14,7 +14,7 @@ import { LayoutRowColBlock } from './core';
 import { getWorkBook } from './store';
 
 import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR, ASSOCIATED_FIELDS_FORMULA_MAP } from './constant';
-import { columnToNumber, PubGetRandomNumber, replacePlaceholders } from './public';
+import { columnToNumber, replacePlaceholders } from './public';
 import { GeneratorUpperCaseFormatter } from './generator';
 
 import { NEW_OLD_FIELD_MAP } from '../build-library/config'
@@ -261,40 +261,58 @@ export const singleTableSyncStore = (Res, type) => {
  * @param {*} template
  */
 export const LogicalProcessing = (quotation, template) => {
-  const { titleHAlign = '' } = template;
-  // 产品字段关联性 逻辑处理
-  const resourceViews = quotation.conferenceHall.resourceViews;
-  if (resourceViews.length) {
-    resourceViews.forEach(classItem => {
-      if (classItem.resources.length) {
-        classItem.resources.forEach(item => {
-          if (titleHAlign) {
-            item.quantity = 1;
-            item.batch = 1;
-          }
-
-          if (item.discountUnitPrice === 0 || item.discountUnitPrice) {
-            item.discountUnitPrice = parseFloat(item.discountUnitPrice);
-          } else {
-            item.discountUnitPrice = parseFloat(Number(item.unitPrice));
-          }
-          if (item.quantity === 0 || item.quantity) {
-            item.quantity = parseFloat(item.quantity);
-          } else {
-            item.quantity = 0;
-          }
-          if (!item.imageId) {
-            item.imageId = PubGetRandomNumber();
-          }
-          if (item.numberOfDays === 0 || item.numberOfDays) {
-            item.numberOfDays = Number(item.numberOfDays);
-          } else {
-            item.numberOfDays = 1;
-          }
-        });
-      }
-    });
+  let titleHAlign = '';
+  if (template && template.titleHAlign) {
+    titleHAlign = template.titleHAlign;
   }
+
+  const resourceViews = quotation.conferenceHall.resourceViews;
+  resourceViews.forEach(classItem => {
+    if (classItem.resources && classItem.resources.length) {
+      classItem.resources.forEach(item => {
+
+        if (titleHAlign) {
+          item.quantity = 1;
+          item.batch = 1;
+        }
+
+        if (item.batch === 0 || item.batch) {
+          item.batch = Number(item.batch);
+        }
+
+        if (!item.imageId) {
+          item.imageId = uuidv4();
+        }
+
+        if (item.numberOfDays === 0 || item.numberOfDays) {
+          item.numberOfDays = Number(item.numberOfDays);
+        } else {
+          item.numberOfDays = 1;
+        }
+
+        if (item.quantity === 0 || item.quantity) {
+          item.quantity = parseFloat(item.quantity);
+        } else {
+          item.quantity = 0;
+        }
+
+        if (item.discountUnitPrice === 0 || item.discountUnitPrice) {
+          item.discountUnitPrice = parseFloat(item.discountUnitPrice);
+        } else {
+          if (item.unitPrice === 0 || item.unitPrice) {
+            item.discountUnitPrice = parseFloat(Number(item.unitPrice));
+          } else {
+            console.warn('The product is missing the field unitPrice');
+          }
+        }
+      });
+    }
+  });
+
+  quotation.conferenceHall.resourceViewsMap = {};
+  resourceViews.forEach(item => {
+    quotation.conferenceHall.resourceViewsMap[item.resourceLibraryId] = item;
+  });
 };
 
 /**
@@ -1770,6 +1788,12 @@ export const InitWorksheet = (sheet, dataSource) => {
   SetDataSource(sheet, dataSource);
 };
 
+/**
+ * init bind path
+ * @param {*} spread 
+ * @param {*} template 
+ * @param {*} quotation 
+ */
 export const InitBindPath = (spread, template, quotation) => {
   InitBindValueTop(spread, template, quotation);
   const { topPath, conferenceHallTopPath, conferenceHallBottomPath, bottomPath } = getPaths();

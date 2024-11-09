@@ -228,7 +228,11 @@ export const isSingleTable = (quotation) => {
   return true;
 }
 
-// 获取分表对应模板的索引
+/**
+ * 获取分表对应模板的索引
+ * @param {*} quotation 
+ * @returns 
+ */
 export const getSheetTemplateIndexs = (quotation) => {
   if (!quotation) {
     quotation = getInitData();
@@ -238,4 +242,21 @@ export const getSheetTemplateIndexs = (quotation) => {
     return templateIndex.split('-');
   }
   return [];
+}
+
+/**
+ * Gets all shards and returns
+ * @param {*} quotation 
+ * @returns 
+ */
+export const getAllSheet = (quotation) => {
+  if (!quotation) {
+    quotation = getInitData();
+  }
+  let trunks = quotation.resources || [];
+  if (!(trunks.length === 1 && trunks[0].name === 'noProject')) {
+    return trunks
+  } else {
+    return trunks = []
+  }
 }

@@ -4,13 +4,21 @@
  * @Description:multiple - public
  */
 import { v4 as uuidv4 } from 'uuid';
-// import Decimal from '../lib/decimal/decimal.min.js';
-// import * as GC from '@grapecity/spread-sheets';
-import _ from '../lib/lodash/lodash.min.js';
 import store from 'store';
+// import Decimal from '../lib/decimal/decimal.min.js';
+import * as GC from '@grapecity/spread-sheets';
+import _ from '../lib/lodash/lodash.min.js';
+
 import { GetUserCompany, FormatDate } from '../utils/index';
+
+import { SetDataSource } from './sheetWorkBook';
+import { InitBindPath } from './single-table';
+
+import { getAllSheet } from './parsing-quotation';
+
+
+
 export const multipleTableSyncStore = (Res, type) => {
-  console.log(Res);
   let company = {
     name: '',
     createUserId: '',
@@ -170,7 +178,6 @@ export const multipleTableSyncStore = (Res, type) => {
     quotationDefault.conferenceHall.startTime = FormatDate(startTime, 'YYYY-MM-DD');
   }
 
-  // 报价单中的项目名称字段不统一问题
   quotationDefault.name = quotationDefault.name || quotationDefault.projectName;
   // 扩展字段特殊处理
   if (quotationDefault.extFields) {
@@ -178,47 +185,129 @@ export const multipleTableSyncStore = (Res, type) => {
       quotationDefault.extFields = JSON.parse(quotationDefault.extFields);
     }
   }
-  // 去除空数据
+
   let resourceViews = _.cloneDeep(quotationDefault.conferenceHall.resourceViews);
-  resourceViews = resourceViews.filter((item) => { return item.resources && item.resources.length; });
-  resourceViews.forEach((item, i) => {
-    item.sort = i + 1;
-    item.resources.forEach((resource) => {
-      if (!resource.imageId) {
-        resource.imageId = uuidv4();
-      }
-    });
+  resourceViews.forEach(sheet => {
+    if (sheet.resourceViews && sheet.resourceViews.length) {
+      sheet.resourceViews.forEach(classItem => {
+        if (!classItem.resources || !classItem.resources.length) {
+          sheet.resourceViews.splice(sheet.resourceViews.indexOf(classItem), 1);
+        }
+        classItem.resources.forEach((item, i) => {
+          item.sort = i + 1;
+          if (!item.imageId) {
+            item.imageId = uuidv4();
+          }
+        });
+      });
+    }
   });
+
   quotationDefault.conferenceHall.resourceViews = resourceViews;
 
-  resourceSort(quotationDefault)
+  // resourceSort(quotationDefault)
 
   console.log(quotationDefault, '====响应数据处理-并同步至store');
   return quotationDefault;
 };
 
-/**
- * Product list added sorting and init resourceViewsMap
- * @param {*} quotation
- */
-export const resourceSort = (quotation) => {
-  const resourceViewsMap = {};
-  const resourceViews = quotation.conferenceHall.resourceViews;
-  for (let index = 0; index < resourceViews.length; index++) {
-    resourceViews[index].sort = index + 1;
-    if (resourceViews[index].resources) {
-      resourceViews[index].resources.forEach((resource, i) => {
-        resource.sort = i + 1;
-      });
-    }
-  }
-  resourceViews.forEach(item => {
-    resourceViewsMap[item.resourceLibraryId] = item;
-  });
-  quotation.conferenceHall.resourceViewsMap = resourceViewsMap;
-};
+// /**
+//  * Product list added sorting and init resourceViewsMap
+//  * @param {*} quotation
+//  */
+// const resourceSort = (quotation) => {
+//   const resourceViewsMap = {};
+//   const resourceViews = quotation.conferenceHall.resourceViews;
+//   for (let index = 0; index < resourceViews.length; index++) {
+//     resourceViews[index].sort = index + 1;
+//     if (resourceViews[index].resources) {
+//       resourceViews[index].resources.forEach((resource, i) => {
+//         resource.sort = i + 1;
+//       });
+//     }
+//   }
+//   resourceViews.forEach(item => {
+//     resourceViewsMap[item.resourceLibraryId] = item;
+//   });
+//   quotation.conferenceHall.resourceViewsMap = resourceViewsMap;
+// };
 
 // 分表排序
-export const branchSort = (quotation) => {
-  //  TODO 底部分表排序时，需要同步总表中的分表数据
+// const branchSort = (quotation) => {
+//   //  TODO 底部分表排序时，需要同步总表中的分表数据
+// };
+
+/**
+ * The template index corresponding to the table sharding
+ * @param {*} quotation 
+ * @param {*} templates 
+ * @returns 
+ */
+export const getSheetTemplateIndexs = (quotation, templates) => {
+  const trunkTempIndex = [];
+  const trunks = quotation.resources || [];
+
+  if (templates && templates.length === 1) {
+    for (let i = 0; i < trunks.length; i++) {
+      trunkTempIndex.push(0);
+    }
+  } else if (templates && templates.length > 1) {
+    for (let i = 0; i < trunks.length; i++) {
+      trunkTempIndex.push(trunks[i].templateIndex || 0);
+    }
+  } else {
+    console.error('The data of the table sharding template is abnormal');
+  }
+  return trunkTempIndex;
+}
+
+/**
+ * bingn event
+ * @param {*} spread 
+ * @param {*} quotation 
+ */
+const OnEventBind = (spread, quotation, template, isCompress) => {
+  spread.bind(GC.Spread.Sheets.Events.ActiveSheetChanged, function (sender, args) {
+    console.log(sender, args);
+    const trunks = getAllSheet(quotation);
+    const sheet = spread.getActiveSheet();
+    const sheetName = sheet.name();
+    const sheetNames = trunks.map((item) => item.name);
+    if (sheetNames.includes(sheetName)) {
+      // TODO 分表
+
+      InitSheetRender(spread, quotation, template, isCompress);
+    }
+  })
+}
+
+/**
+ * 绘制总表
+ * @param {*} spread 
+ * @param {*} template 
+ * @param {*} quotation 
+ * @param {*} isCompress 
+ */
+export const InitMainSheetRender = (spread, template, quotation, isCompress) => {
+  OnEventBind(spread, quotation, template, isCompress);
+  InitBindPath(spread, template, quotation);
+}
+
+// 绘制分表
+export const InitSheetRender = (spread, quotation, template, isCompress) => {
+  const sheet = spread.getActiveSheet();
+  // SetDataSource(sheet, quotation);
+  // InitBindPath(spread, template, quotation);
+
 };
+
+// 构建单条分表数据
+const buildSheetData = (spread, quotation) => {
+  const sheet = spread.getActiveSheet();
+  const sheetName = sheet.name();
+};
+
+// 通过分表数据更新总表数据
+const updateMainSheetData = (spread, quotation) => {
+
+}

@@ -324,5 +324,6 @@ export const setLastColumnWidth = (spread, template, val = 10) => {
 export const initWorkBookConfig = (workBook) => {
   if (workBook) {
     workBook.options.tabEditable = false;
+    workBook.options.allowSheetReorder = false;
   }
 };
