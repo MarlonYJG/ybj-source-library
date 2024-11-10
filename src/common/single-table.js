@@ -1795,6 +1795,10 @@ export const InitWorksheet = (sheet, dataSource) => {
  * @param {*} quotation 
  */
 export const InitBindPath = (spread, template, quotation) => {
+  console.log('quotation', quotation);
+  console.log('template', template);
+  
+  
   InitBindValueTop(spread, template, quotation);
   const { topPath, conferenceHallTopPath, conferenceHallBottomPath, bottomPath } = getPaths();
 

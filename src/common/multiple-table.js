@@ -8,16 +8,23 @@ import store from 'store';
 // import Decimal from '../lib/decimal/decimal.min.js';
 import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
-
 import { GetUserCompany, FormatDate } from '../utils/index';
+
+import { QuotationInitData } from './constant';
 
 import { SetDataSource } from './sheetWorkBook';
 import { InitBindPath } from './single-table';
 
 import { getAllSheet } from './parsing-quotation';
+import { getTrunkTemplate } from './parsing-template';
 
 
-
+/**
+ * Initialize the total score table data
+ * @param {*} Res 
+ * @param {*} type 
+ * @returns 
+ */
 export const multipleTableSyncStore = (Res, type) => {
   let company = {
     name: '',
@@ -262,6 +269,94 @@ export const getSheetTemplateIndexs = (quotation, templates) => {
 }
 
 /**
+ * Get the template for the quote
+ * @param {*} spread 
+ * @param {*} dataSource 
+ * @param {*} template 
+ * @returns 
+ */
+const getTemplateByQuotation = (spread, dataSource, template) => {
+  // const sheet = spread.getActiveSheet();
+  // const sheetName = sheet.name();
+  const trunks = getAllSheet(dataSource);
+  if (trunks.length) {
+    const trunkNames = trunks.map((trunk) => trunk.name);
+    // const trunkIndex = trunkNames.indexOf(sheetName);
+
+    const trunkTemplate = getTrunkTemplate(template);
+    const templateIndexs = getSheetTemplateIndexs(dataSource, trunkTemplate);
+
+    // const currentTemplate = _.cloneDeep(template);
+
+    // if (trunkTemplate[templateIndexs[trunkIndex]]) {
+    //   currentTemplate.name = trunkTemplate[templateIndexs[trunkIndex]].name;
+    //   currentTemplate.cloudSheet = trunkTemplate[templateIndexs[trunkIndex]];
+    // }
+    // return currentTemplate;
+  }
+  return null;
+};
+
+/**
+ * Build a mapping table of quotes to templates
+ * @param {*} dataSource 
+ * @param {*} template 
+ * @returns 
+ */
+export const templateMap = (dataSource, template) => {
+  const trunks = getAllSheet(dataSource);
+  if (trunks.length) {
+    const trunkTemplate = getTrunkTemplate(template);
+    const templateIndexs = getSheetTemplateIndexs(dataSource, trunkTemplate);
+
+    const templateMap = {};
+    trunks.forEach((trunk, i) => {
+      const templateItem = _.cloneDeep(trunkTemplate[templateIndexs[i]]);
+      templateItem.sheets['分表'].name = trunk.name;
+      templateMap[trunk.name] = templateItem;
+    });
+
+    for (const key in templateMap) {
+      if (Object.prototype.hasOwnProperty.call(templateMap, key)) {
+        const sourceBuild = _.cloneDeep(template);
+        sourceBuild.sheets.sheet = templateMap[key].sheets['分表'];
+        sourceBuild.name = key;
+        sourceBuild.cloudSheet = templateMap[key];
+        templateMap[key] = sourceBuild;
+      }
+    }
+
+    return templateMap;
+  }
+  return null;
+}
+
+/**
+ * Create a single sharded table data
+ * @param {*} spread 
+ * @param {*} quotation 
+ */
+const buildSheetData = (spread, quotation) => {
+  const sheet = spread.getActiveSheet();
+  const sheetName = sheet.name();
+  const sheets = quotation.conferenceHall.resourceViews;
+  const sheetQuotation = sheets.filter(item => item.name === sheetName);
+  console.log(sheetQuotation, 'sheetQuotation');
+  const initData = QuotationInitData();
+  if (sheetQuotation.length) {
+    const { extFields = {} } = sheetQuotation[0];
+    for (const key in extFields) {
+      if (Object.prototype.hasOwnProperty.call(extFields, key)) {
+        initData[key] = extFields[key];
+      }
+    }
+  }
+
+  console.log(initData, 'initData');
+  return initData;
+};
+
+/**
  * bingn event
  * @param {*} spread 
  * @param {*} quotation 
@@ -273,16 +368,22 @@ const OnEventBind = (spread, quotation, template, isCompress) => {
     const sheet = spread.getActiveSheet();
     const sheetName = sheet.name();
     const sheetNames = trunks.map((item) => item.name);
+
+    const templateMapData = templateMap(quotation, template);
+    console.log(templateMapData, 'templateMapData');
+
     if (sheetNames.includes(sheetName)) {
       // TODO 分表
-
-      InitSheetRender(spread, quotation, template, isCompress);
+      InitSheetRender(spread, quotation, templateMapData[sheetName], isCompress);
+    } else {
+      // SetDataSource(sheet, quotation);
+      // InitBindPath(spread, template, quotation);
     }
   })
 }
 
 /**
- * 绘制总表
+ * Draw a summary table
  * @param {*} spread 
  * @param {*} template 
  * @param {*} quotation 
@@ -290,24 +391,30 @@ const OnEventBind = (spread, quotation, template, isCompress) => {
  */
 export const InitMainSheetRender = (spread, template, quotation, isCompress) => {
   OnEventBind(spread, quotation, template, isCompress);
+  const sheet = spread.getActiveSheet();
+  SetDataSource(sheet, quotation);
   InitBindPath(spread, template, quotation);
 }
 
-// 绘制分表
-export const InitSheetRender = (spread, quotation, template, isCompress) => {
+/**
+ * Draw a table split
+ * @param {*} spread 
+ * @param {*} quotation 
+ * @param {*} template 
+ * @param {*} isCompress 
+ */
+const InitSheetRender = (spread, quotation, template, isCompress) => {
+  const initData = buildSheetData(spread, quotation);
   const sheet = spread.getActiveSheet();
-  // SetDataSource(sheet, quotation);
-  // InitBindPath(spread, template, quotation);
-
+  SetDataSource(sheet, initData);
+  // InitBindPath(spread, template, initData);
 };
 
-// 构建单条分表数据
-const buildSheetData = (spread, quotation) => {
-  const sheet = spread.getActiveSheet();
-  const sheetName = sheet.name();
-};
-
-// 通过分表数据更新总表数据
+/**
+ * Update the data in the summary table by using the sharded table data
+ * @param {*} spread 
+ * @param {*} quotation 
+ */
 const updateMainSheetData = (spread, quotation) => {
 
 }
