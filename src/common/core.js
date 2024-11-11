@@ -28,7 +28,6 @@ class RootWorkBook {
   _setWorkBook(spread) {
     this.workBook = spread;
   }
-
   _getWorkBook() {
     return this.workBook;
   }
@@ -36,19 +35,16 @@ class RootWorkBook {
   _getTemplateMap() {
     return this.templateMap;
   }
-
   _setTemplateMap(templateMap) {
     this.templateMap = templateMap;
   }
 
-  _setQuotationMap(quotationMap) {
-    this.quotationMap = quotationMap
+  _setActiveTemplate(template) {
+    this.activeTemplate = template
   }
-
-  _getQuotationMap() {
-    return this.quotationMap;
+  _getActiveTemplate() {
+    return this.activeTemplate;
   }
-
 
   _setActiveQuotation(quotation) {
     this.activeQuotation = quotation;
@@ -96,12 +92,8 @@ export class LayoutRowColBlock {
     this.Template = template;
     this.Quotation = quotation;
     this.Spread = spread;
-    if (!template && store && store.getters) {
-      this.Template = getWorkBook();
-    }
-    if (!quotation && store && store.getters) {
-      this.Quotation = getInitData();
-    }
+    this.Template = getWorkBook(template);
+    this.Quotation = getInitData(quotation);
     this._init();
   }
 

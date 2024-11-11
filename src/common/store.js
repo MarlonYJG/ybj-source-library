@@ -26,13 +26,10 @@ export const getWorkBook = (GetterQuotationWorkBook) => {
 
 export const getInitData = (GetterQuotationInit) => {
   const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
-  if (!quotation.id && !quotation.templateId && !quotation.resources.length) {
-    return quotation;
-  } else {
-    const active = rootWorkBook._getActiveQuotation();
-    if (active) {
-      return active;
-    }
-    return quotation
+  const active = rootWorkBook._getActiveQuotation();
+  if (active) {
+    return active;
   }
+  return quotation
+
 }

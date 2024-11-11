@@ -757,6 +757,7 @@ export const initSingleTable = (spread, template, dataSource, isCompress = false
     return
   }
   rootWorkBook._setWorkBook(spread);
+  rootWorkBook._setActiveQuotation(dataSource);
   const sheet = spread.getActiveSheet();
   InitWorksheet(sheet, dataSource);
   InitBindPath(spread, template, dataSource);

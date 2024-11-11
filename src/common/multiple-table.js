@@ -351,7 +351,6 @@ const OnEventBind = (spread, quotation, template, isCompress, type, templateMapD
     const sheet = spread.getActiveSheet();
     const sheetName = sheet.name();
     const sheetNames = trunks.map((item) => item.name);
-
     if (sheetNames.includes(sheetName)) {
       // TODO 分表
       InitSheetRender(spread, quotation, templateMapData[sheetName], isCompress, type);
@@ -374,9 +373,15 @@ export const InitMainSheetRender = (spread, template, quotation, isCompress, typ
   const templateMapData = templateMap(quotation, template);
   console.log(templateMapData, 'templateMapData');
   rootWorkBook._setTemplateMap(templateMapData);
+  rootWorkBook._setActiveTemplate(template);
+  console.log(templateMapData);
+
   OnEventBind(spread, quotation, template, isCompress, type, templateMapData);
   const sheet = spread.getActiveSheet();
   SetDataSource(sheet, quotation);
+
+  console.log(template);
+
   InitBindPath(spread, template, quotation);
 }
 
@@ -391,7 +396,7 @@ export const InitMainSheetRender = (spread, template, quotation, isCompress, typ
 const InitSheetRender = (spread, dataSource, template, isCompress, type) => {
   const initData = buildSheetData(spread, dataSource);
   rootWorkBook._setActiveQuotation(initData);
-
+  rootWorkBook._setActiveTemplate(template);
   if (type === 'parsing') {
     const sheet = spread.getActiveSheet();
     SetDataSource(sheet, initData);

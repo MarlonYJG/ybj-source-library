@@ -177,6 +177,7 @@ const insertLogo = (spread, template, base64) => {
  * @param {*} base64 
  */
 export const RenderLogo = (spread, template, quotation) => {
+  template = getWorkBook(template);
   if (template.cloudSheet.logo && quotation.logo) {
     imgUrlToBase64(quotation.logo, (base64) => {
       insertLogo(spread, template, base64);

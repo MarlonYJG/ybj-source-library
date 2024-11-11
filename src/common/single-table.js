@@ -1745,6 +1745,7 @@ const InsertImages = (spread, quotationImgs) => {
  * @param {*} quotation
  */
 export const renderFinishedAddImage = (spread, template, quotation) => {
+  template = getWorkBook(template);
   const { quaLogos = [], seal = null } = template.cloudSheet;
 
   if (_.has(template, ['cloudSheet', 'quotationImage'])) {

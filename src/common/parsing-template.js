@@ -569,9 +569,7 @@ export const initTemplateData = (templateJSON, quotation = null, quaLogos = [], 
  * @returns 
  */
 export const getImageField = (template) => {
-  if (!template) {
-    template = getWorkBook();
-  }
+  template = getWorkBook(template);
   const imgField = template.cloudSheet.center.equipment.bindPath.img;
   const imageField = template.cloudSheet.center.equipment.bindPath.imageId;
   if (imgField) {
@@ -596,9 +594,7 @@ export const getImageField = (template) => {
  * @returns 
  */
 export const getImageConfig = (template) => {
-  if (!template) {
-    template = getWorkBook();
-  }
+  template = getWorkBook(template);
   if (getImageField(template)) {
     const imageConfig = template.cloudSheet.image;
     if (imageConfig) {
@@ -616,9 +612,7 @@ export const getImageConfig = (template) => {
  * @returns 
  */
 export const getEquipmentConfig = (template) => {
-  if (!template) {
-    template = getWorkBook();
-  }
+  template = getWorkBook(template);
   const equipmentConfig = template.cloudSheet.center.equipment;
   return equipmentConfig;
 }
@@ -628,9 +622,7 @@ export const getEquipmentConfig = (template) => {
  * @param {*} template 
  */
 export const checkTemplate = (template) => {
-  if (!template) {
-    template = getWorkBook();
-  }
+  template = getWorkBook(template);
   getImageField(template);
   if (!showDiscount(template)) {
     console.warn('The template does not support discounts(discountUnitPrice)');
@@ -644,8 +636,6 @@ export const checkTemplate = (template) => {
  * @returns 
  */
 export const getTrunkTemplate = (template) => {
-  if (!template) {
-    template = getWorkBook();
-  }
+  template = getWorkBook(template);
   return template.cloudSheet.scoreList || [];
 }

@@ -24,10 +24,6 @@ import { InitSheetRender } from './single-table';
  */
 const InitWorksheet = (spread, dataSource, template, isCompress) => {
   if (!spread) return;
-  dataSource = getInitData(dataSource);
-  if (!template) {
-    template = getWorkBook();
-  }
   const trunks = getAllSheet(dataSource);
 
   console.log(trunks);
@@ -57,7 +53,9 @@ export const initMultipleTable = (spread, template, dataSource, isCompress = fal
   if (!spread) {
     return console.error('spread is null');
   }
+  console.log(template);
   rootWorkBook._setWorkBook(spread);
+  rootWorkBook._setActiveQuotation(dataSource); 
   initWorkBookConfig(spread);
   InitWorksheet(spread, dataSource, template, isCompress);
 };
