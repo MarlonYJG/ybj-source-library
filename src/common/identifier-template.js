@@ -4,8 +4,7 @@
  * @Description: Template identifier
  */
 import _ from '../lib/lodash/lodash.min.js';
-import store from 'store';
-import { getWorkBook } from './store';
+import { getWorkBook, getInitData } from './store';
 
 import { PubGetTableStartRowIndex, PubGetTableRowCount, GetColumnComputedTotal } from './single-table';
 
@@ -75,7 +74,7 @@ export class IdentifierTemplate {
     this.sheet = sheet;
     this.instanceName = name;
     this.template = getWorkBook(template);
-    this.quotation = quotation || store.getters['quotationModule/GetterQuotationInit'];
+    this.quotation = getInitData(quotation);
   }
 
   /**

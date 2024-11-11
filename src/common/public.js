@@ -3,7 +3,15 @@
  * @Date: 2024-05-17 14:53:45
  * @Description:
  */
+
+import { imgUrlToBase64, GetUserCompany } from '../utils/index';
 import { monitorInstance } from './monitor';
+
+import { getWorkBook, getInitData } from './store';
+import { getTableHeaderDataTable } from './parsing-template';
+import { PubGetTableStartRowIndex, classificationAlgorithms } from './single-table';
+import { TOTAL_COMBINED_MAP } from './constant';
+import { CombinationTypeBuild } from './combination-type';
 
 /**
  *Index letter algorithm
@@ -134,3 +142,108 @@ export const cellDialog = (spread, args, template) => {
     }
   }
 }
+
+/**
+ * Bind company's logo
+ * @param {*} spread
+ * @param {*} template
+ * @param {*} base64
+ * @returns
+ */
+const insertLogo = (spread, template, base64) => {
+  if (!spread) return;
+  if (!base64) return;
+  if (template.cloudSheet.logo) {
+    const sheet = spread.getActiveSheet();
+    sheet.suspendPaint();
+    let picture = sheet.pictures.get(template.cloudSheet.logo.name);
+    if (picture) {
+      picture.src(base64);
+      sheet.resumePaint();
+      return;
+    }
+    picture = sheet.pictures.add(template.cloudSheet.logo.name, base64, template.cloudSheet.logo.x, template.cloudSheet.logo.y, template.cloudSheet.logo.width, template.cloudSheet.logo.height);
+    picture.allowMove(false);
+    picture.allowResize(true);
+    picture.isLocked(true);
+    sheet.resumePaint();
+  }
+};
+
+/**
+ * Render logo
+ * @param {*} spread 
+ * @param {*} template 
+ * @param {*} base64 
+ */
+export const RenderLogo = (spread, template, quotation) => {
+  if (template.cloudSheet.logo && quotation.logo) {
+    imgUrlToBase64(quotation.logo, (base64) => {
+      insertLogo(spread, template, base64);
+    });
+  } else {
+    let userBindCompany = GetUserCompany();
+    if (userBindCompany && userBindCompany.logoURL) {
+      imgUrlToBase64(userBindCompany.logoURL, (base64) => {
+        insertLogo(spread, template, base64);
+      });
+    }
+  }
+};
+
+/**
+ * reset center sheet data
+ * @param {*} spread
+ */
+export const Reset = (spread) => {
+  const template = getWorkBook();
+  const quotation = getInitData();
+  const resourceViews = quotation.conferenceHall.resourceViews;
+  const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
+
+  const { type = null } = template.cloudSheet.center;
+  const tableStartRowIndex = PubGetTableStartRowIndex();
+
+  let header = [];
+  // table header
+  if (!noClass) {
+    if (type) {
+      const headerTable = getTableHeaderDataTable(type, true);
+      if (headerTable.length) {
+        header = headerTable;
+      }
+    }
+  }
+  const { classRow, subTotal, tableHeaderRow } = classificationAlgorithms(quotation, header, null);
+
+  let centerCount = tableHeaderRow;
+  resourceViews.forEach((item) => {
+    centerCount = centerCount + item.resources.length + classRow + subTotal;
+  });
+
+  const sheet = spread.getActiveSheet();
+  sheet.suspendPaint();
+  sheet.deleteRows(tableStartRowIndex, centerCount);
+  sheet.resumePaint();
+};
+
+/**
+ * Reset the total
+ * @param {*} sheet
+ * @param {*} quotation
+ * @param {*} bottom
+ * @param {*} total
+ */
+export const ResetTotal = (sheet, quotation, bottom, total, top, mark) => {
+  if (mark) {
+    const resourceViews = quotation.conferenceHall.resourceViews;
+    const totalRowIndex = top.mixCount + resourceViews.length;
+    const combined = TOTAL_COMBINED_MAP[CombinationTypeBuild(quotation)];
+    sheet.deleteRows(totalRowIndex, mark[combined].rowCount);
+  } else {
+    const Total = total[CombinationTypeBuild(quotation)];
+
+    const totalRowStartIndex = sheet.getRowCount() - bottom.rowCount - Total.rowCount;
+    sheet.deleteRows(totalRowStartIndex, Total.rowCount);
+  }
+};

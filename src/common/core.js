@@ -12,16 +12,60 @@ import { CombinationTypeBuild } from './combination-type';
 import { getTemplateClassType } from './single-table';
 import { showTotal, getPriceColumn } from './parsing-template';
 
-import { getWorkBook } from './store';
+import { getWorkBook, getInitData } from './store';
 
 const NzhCN = require('../lib/nzh/cn.min.js');
+
+class RootWorkBook {
+  constructor() {
+    this.workBook = null;
+    this.templateMap = null;
+    this.quotationMap = null;
+    this.activeQuotation = null;
+    this.activeTemplate = null;
+  }
+
+  _setWorkBook(spread) {
+    this.workBook = spread;
+  }
+
+  _getWorkBook() {
+    return this.workBook;
+  }
+
+  _getTemplateMap() {
+    return this.templateMap;
+  }
+
+  _setTemplateMap(templateMap) {
+    this.templateMap = templateMap;
+  }
+
+  _setQuotationMap(quotationMap) {
+    this.quotationMap = quotationMap
+  }
+
+  _getQuotationMap() {
+    return this.quotationMap;
+  }
+
+
+  _setActiveQuotation(quotation) {
+    this.activeQuotation = quotation;
+  }
+  _getActiveQuotation() {
+    return this.activeQuotation;
+  }
+}
+
+export const rootWorkBook = new RootWorkBook();
 
 /**
  * Get quote data 
  * @returns 
  */
-const getQuotationResource = (GetterQuotationInit = null) => {
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+const getQuotationResource = (quotationInit = null) => {
+  const quotation = getInitData(quotationInit);
   return quotation.conferenceHall.resourceViews;
 }
 
@@ -56,7 +100,7 @@ export class LayoutRowColBlock {
       this.Template = getWorkBook();
     }
     if (!quotation && store && store.getters) {
-      this.Quotation = store.getters['quotationModule/GetterQuotationInit'];
+      this.Quotation = getInitData();
     }
     this._init();
   }
@@ -114,7 +158,7 @@ export class LayoutRowColBlock {
     tableMap = sortObjectByRow(tableMap)
 
     if (showTotal(this.Template)) {
-      const quotation = this.Quotation || store.getters['quotationModule/GetterQuotationInit'];
+      const quotation = getInitData(this.Quotation);
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
         const rowCount = sheet.getRowCount();
@@ -194,7 +238,7 @@ export class LayoutRowColBlock {
     subTotalMap = sortObjectByRow(subTotalMap)
 
     if (showTotal(this.Template)) {
-      const quotation = this.Quotation || store.getters['quotationModule/GetterQuotationInit'];
+      const quotation = getInitData(this.Quotation);
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
         const rowCount = sheet.getRowCount();
@@ -277,7 +321,7 @@ export class LayoutRowColBlock {
     subTotalMap = sortObjectByRow(subTotalMap)
 
     if (showTotal(this.Template)) {
-      const quotation = this.Quotation || store.getters['quotationModule/GetterQuotationInit'];
+      const quotation = getInitData(this.Quotation);
       const Total = total[CombinationTypeBuild(quotation)];
       if (Total) {
         const rowCount = sheet.getRowCount();

@@ -13,7 +13,7 @@ import { SHOW_DELETE, UPDATE_QUOTATION_PATH, IGNORE_EVENT, FROZEN_HEAD_TEMPLATE 
 import { PRICE_SET_MAP } from '../common/constant'
 import { SetDataSource } from '../common/sheetWorkBook';
 import { exportErrorProxy } from '../common/proxyData';
-import { getWorkBook } from '../common/store';
+import { getWorkBook, getInitData } from '../common/store';
 
 import {
   getTemplateTopRowCol, getDiscountField, showPriceSet,
@@ -30,7 +30,7 @@ import {
 
 import { CheckCostPrice } from '../common/cost-price';
 
-import { Reset } from './public';
+import { Reset } from '../common/public';
 import { MENU_TOTAL } from './config';
 
 // eslint-disable-next-line no-unused-vars
@@ -59,7 +59,7 @@ const saveAs = (fileType = 'xlsx', blob, fileName) => {
 const clearProduct = (spread) => {
   store.commit(`quotationModule/${IGNORE_EVENT}`, true);
   const sheet = spread.getActiveSheet();
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
 
   removeAllTable(sheet, quotation);
 
@@ -71,7 +71,7 @@ const clearProduct = (spread) => {
     path: ['conferenceHall'],
     value: conferenceHall
   });
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
 
   UpdateTotalBlock(sheet);
 
@@ -255,7 +255,7 @@ export const Sort = (spread, resourceViews) => {
     resourceViewsMap[item.resourceLibraryId] = item;
   });
 
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
   conferenceHall.resourceViews = resourceViews;
   conferenceHall.resourceViewsMap = resourceViewsMap;
@@ -266,7 +266,7 @@ export const Sort = (spread, resourceViews) => {
   });
 
   Reset(spread);
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
   Render(spread);
 };
 
@@ -277,7 +277,7 @@ export const Sort = (spread, resourceViews) => {
  */
 export const DeleteProduct = (spread, resourceViews) => {
   const sheet = spread.getActiveSheet();
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
   conferenceHall.resourceViews = resourceViews;
   const resourceViewsMap = {};
@@ -292,7 +292,7 @@ export const DeleteProduct = (spread, resourceViews) => {
     value: conferenceHall
   });
 
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
   Render(spread);
 };
 
@@ -324,7 +324,7 @@ export const HeadDelete = (spread, fieldType) => {
 export const Repaint = (spread) => {
   const sheet = spread.getActiveSheet();
   Reset(spread);
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
   Render(spread);
 };
 
@@ -346,7 +346,7 @@ export const FrozenHead = (spread) => {
 export const ShowCostPrice = (spread, locked = false) => {
   const template = getWorkBook();
   const showCost = store.getters['quotationModule/GetterShowCostPrice'];
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   if (spread && template) {
     const costPrice = new CheckCostPrice(spread, template, quotation);
     if (showCost) {
@@ -385,7 +385,7 @@ export const UpdateDiscount = (spread, percentage) => {
     const template = getWorkBook();
     console.log(template, 'template');
 
-    const quotation = store.getters['quotationModule/GetterQuotationInit'];
+    const quotation = getInitData();
     const conferenceHall = _.cloneDeep(quotation.conferenceHall);
     const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
     const resourceViewsMap = {};
@@ -413,7 +413,7 @@ export const UpdateDiscount = (spread, percentage) => {
       path: ['conferenceHall'],
       value: conferenceHall
     });
-    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+    SetDataSource(sheet, getInitData());
 
     ShowCostPrice(spread, ShowCostPriceStatus());
   }
@@ -433,7 +433,7 @@ export const UpdatePriceSet = (spread, priceSet) => {
 
     // resetDiscountRatio()
 
-    const quotation = store.getters['quotationModule/GetterQuotationInit'];
+    const quotation = getInitData();
     const conferenceHall = _.cloneDeep(quotation.conferenceHall);
     const resourceViews = _.cloneDeep(conferenceHall.resourceViews);
     const resourceViewsMap = {};
@@ -476,7 +476,7 @@ export const UpdatePriceSet = (spread, priceSet) => {
       value: conferenceHall
     });
     const sheet = spread.getActiveSheet();
-    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+    SetDataSource(sheet, getInitData());
 
     ShowCostPrice(spread, ShowCostPriceStatus());
   }

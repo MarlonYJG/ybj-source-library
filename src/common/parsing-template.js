@@ -512,11 +512,15 @@ export const getPriceColumn = () => {
  * @returns 
  */
 export const getPaths = () => {
+  const top = ['cloudSheet', 'top'];
+  const bottom = ['cloudSheet', 'bottom'];
   const topPath = ['cloudSheet', 'top', 'bindPath', 'quotation'];
   const bottomPath = ['cloudSheet', 'bottom', 'bindPath', 'quotation'];
   const conferenceHallTopPath = ['cloudSheet', 'top', 'bindPath', 'conferenceHall'];
   const conferenceHallBottomPath = ['cloudSheet', 'bottom', 'bindPath', 'conferenceHall'];
   return {
+    top,
+    bottom,
     topPath,
     bottomPath,
     conferenceHallTopPath,

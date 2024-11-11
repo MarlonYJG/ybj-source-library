@@ -17,7 +17,7 @@ import {
 import { commandRegister, onOpenMenu } from './contextMenu';
 import { ShowCostPrice, ShowCostPriceStatus } from './head';
 
-import { getWorkBook } from '../common/store';
+import { getWorkBook, getInitData } from '../common/store';
 import { limitDiscountInputProxy, limitDiscountInputTypeProxy } from '../common/proxyData';
 import { CreateTable } from '../common/sheetWorkBook';
 import IdentifierTemplate from '../common/identifier-template';
@@ -25,7 +25,7 @@ import IdentifierTemplate from '../common/identifier-template';
 import { CombinationTypeBuild } from '../common/combination-type';
 import { DESCRIPTION_MAP, TOTAL_COMBINED_MAP, PRICE_SET_MAP } from '../common/constant';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
-import { numberToColumn, cellDialog } from '../common/public';
+import { numberToColumn, cellDialog, ResetTotal } from '../common/public';
 
 import { getPositionBlock, getConfig } from '../common/parsing-quotation';
 import {
@@ -295,34 +295,13 @@ export const synchronousStoreSumAmount = (sumAmount) => {
 };
 
 /**
- * Reset the total
- * @param {*} sheet
- * @param {*} quotation
- * @param {*} bottom
- * @param {*} total
- */
-const resetTotal = (sheet, quotation, bottom, total, top, mark) => {
-  if (mark) {
-    const resourceViews = quotation.conferenceHall.resourceViews;
-    const totalRowIndex = top.mixCount + resourceViews.length;
-    const combined = TOTAL_COMBINED_MAP[CombinationTypeBuild(quotation)];
-    sheet.deleteRows(totalRowIndex, mark[combined].rowCount);
-  } else {
-    const Total = total[CombinationTypeBuild(quotation)];
-
-    const totalRowStartIndex = sheet.getRowCount() - bottom.rowCount - Total.rowCount;
-    sheet.deleteRows(totalRowStartIndex, Total.rowCount);
-  }
-};
-
-/**
  * Update the sheet according to the new quotation
  * @param {*} sheet
  * @param {*} row
  * @param {*} totalField
  */
 const updateTotalValue = (sheet, row, totalField) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   for (const key in totalField.bindPath) {
     if (Object.hasOwnProperty.call(totalField.bindPath, key)) {
       const rows = totalField.bindPath[key];
@@ -347,7 +326,7 @@ const updateTotalValue = (sheet, row, totalField) => {
 const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
   console.log('setTotalRowValue', totalField, row, totalBinds);
 
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const columnTotal = GetColumnComputedTotal(sheet);
   const columnTotalSum = columnTotalSumFormula(columnTotal);
@@ -465,7 +444,7 @@ const setTotalRowValue = (sheet, totalField, row, totalBinds, template) => {
  */
 export const updateTotalRowValue = (sheet, totalRowIndex) => {
   const template = getWorkBook();
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const { top, total, bottom, mixTopTotal = null } = template.cloudSheet;
 
   if (showTotal()) {
@@ -496,7 +475,7 @@ export const updateTotalRowValue = (sheet, totalRowIndex) => {
  * @param {*} sheet
  */
 export const updateSubTotalRowValue = (sheet) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const template = getWorkBook();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const { type = null, total = null } = template.cloudSheet.center;
@@ -573,8 +552,8 @@ export const insertField = (spread, fileName, value) => {
   if (showTotal()) {
     const sheet = spread.getActiveSheet();
 
-    const quotation = store.getters['quotationModule/GetterQuotationInit'];
-    resetTotal(sheet, quotation, bottom, total, top, mixTopTotal);
+    const quotation = getInitData();
+    ResetTotal(sheet, quotation, bottom, total, top, mixTopTotal);
 
     if (value) {
       switch (fileName) {
@@ -666,7 +645,7 @@ export const insertField = (spread, fileName, value) => {
   const layout = new LayoutRowColBlock(spread);
   const { Tables, TotalMap } = layout.getLayout();
 
-  const costPrice = new CheckCostPrice(spread, template, store.getters['quotationModule/GetterQuotationInit']);
+  const costPrice = new CheckCostPrice(spread, template, getInitData());
   costPrice.updateTotalPosition(Tables, TotalMap)
 
 };
@@ -709,7 +688,7 @@ export const removeAllTable = (sheet, quotation) => {
 };
 
 const getTotalStartRowIndex = (sheet) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const template = getWorkBook();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const topBottomIndex = template.cloudSheet.top.rowCount;
@@ -827,7 +806,7 @@ export const RenderHeaderClass = () => {
  * @param {*} isInit
  */
 export const RenderTotal = (spread, isInit) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const template = getWorkBook();
 
   if (showTotal()) {
@@ -890,7 +869,7 @@ export const RenderTotal = (spread, isInit) => {
  * @param {*} template
  */
 const rendering = (spread, type, template) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const { top, total, bottom, mixTopTotal = null } = template.cloudSheet;
   const sheet = spread.getActiveSheet();
 
@@ -955,7 +934,7 @@ const rendering = (spread, type, template) => {
 export const Render = (spread, isInit) => {
   store.commit(`quotationModule/${IGNORE_EVENT}`, true);
   const template = getWorkBook();
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   console.log(quotation, 'quotation');
   console.log(template, 'template');
   const sheet = spread.getActiveSheet();
@@ -1168,7 +1147,7 @@ export const Render = (spread, isInit) => {
  * @param {*} sheet
  */
 export const positionBlock = (sheet) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const template = getWorkBook();
   const resourceViews = quotation.conferenceHall.resourceViews;
   if (resourceViews.length) {

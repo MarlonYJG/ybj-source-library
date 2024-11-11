@@ -7,10 +7,10 @@ import * as GC from '@grapecity/spread-sheets';
 import _ from '../lib/lodash/lodash.min.js';
 import VERSION from "../lib/version/version.min.js";
 
-import store from 'store';
 import { isNumber, regChineseCharacter } from '../utils/index';
 
-import { getWorkBook } from '../common/store';
+import { rootWorkBook } from '../common/core';
+import { getWorkBook, getInitData } from '../common/store';
 import { CreateTable } from '../common/sheetWorkBook';
 import { GeneratorCellStyle, GeneratorLineBorder } from '../common/generator';
 import { TOTAL_COMBINED_MAP, DESCRIPTION_MAP } from '../common/constant';
@@ -75,7 +75,7 @@ let SumAmount = null;
  */
 // eslint-disable-next-line no-unused-vars
 const getOneClassAndSubRowsIndex = () => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const tableStartRowIndex = PubGetTableStartRowIndex();
 
@@ -131,9 +131,9 @@ const deleteBottomRow = (spread, template) => {
  * @returns
  */
 // eslint-disable-next-line no-unused-vars
-const getBottomStartRowIndex = (spread, workBook, GetterQuotationInit) => {
+const getBottomStartRowIndex = (spread, workBook, quotationInit) => {
   const template = getWorkBook(workBook);
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData(quotationInit);
   const { rowCount } = template.cloudSheet.top;
   const { center, total } = template.cloudSheet;
   const resourceViews = PubGetResourceViews(spread, quotation);
@@ -200,12 +200,12 @@ const setDefaultCalMethod = (sheet, template, row) => {
  * @param {*} row 
  * @param {*} totalBinds 
  * @param {*} template 
- * @param {*} GetterQuotationInit 
+ * @param {*} quotationInit 
  */
-const setTotalRowValue = (sheet, totalField, row, totalBinds, template, GetterQuotationInit = null) => {
+const setTotalRowValue = (sheet, totalField, row, totalBinds, template, quotationInit = null) => {
   console.log(totalField, row, totalBinds);
 
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData(quotationInit);
   const resourceViews = quotation.conferenceHall.resourceViews;
   const columnTotal = GetColumnComputedTotal(sheet, template, quotation);
   const columnTotalSum = columnTotalSumFormula(columnTotal);
@@ -468,9 +468,9 @@ export const InitTotal = (spread, workBook = null, quotation = null) => {
  * @param {*} columnTotal
  */
 // eslint-disable-next-line no-unused-vars
-const RenderTotal = (spread, columnTotal = null, columnComputed = null, workBook = null, GetterQuotationInit = null) => {
+const RenderTotal = (spread, columnTotal = null, columnComputed = null, workBook = null, quotationInit = null) => {
   const template = getWorkBook(workBook);
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData(quotationInit);
 
   console.log(template, '===== RenderTotal =========');
 
@@ -507,10 +507,10 @@ const RenderTotal = (spread, columnTotal = null, columnComputed = null, workBook
  * Product Rendering
  * @param {*} spread
  */
-const renderSheet = (spread, workBook, GetterQuotationInit, isCompress = false) => {
+const renderSheet = (spread, workBook, quotationInit, isCompress = false) => {
   const sheet = spread.getActiveSheet();
   const template = getWorkBook(workBook);
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData(quotationInit);
   const { equipment, type = null, total = null, columnCount } = template.cloudSheet.center;
   const { mixTopTotal = null, image = null, top } = template.cloudSheet;
   const { mixRender, classType, isHaveChild } = templateRenderFlag(workBook);
@@ -710,26 +710,30 @@ const renderSheet = (spread, workBook, GetterQuotationInit, isCompress = false) 
  * Render styles by template type
  * @param {*} spread
  */
-export const Render = (spread, workBook, GetterQuotationInit, isCompress = false) => {
+export const Render = (spread, workBook, quotationInit, isCompress = false) => {
   const template = getWorkBook(workBook);
-  const quotation = GetterQuotationInit || _.cloneDeep(store.getters['quotationModule/GetterQuotationInit']);
+  const quotation = _.cloneDeep(getInitData(quotationInit));
 
   console.log(`%c parsing-library %c version： ${VERSION}`, LOG_STYLE_1, LOG_STYLE_3);
 
   console.log(quotation, 'quotation');
   console.log(template, 'template');
-  renderSheet(spread, workBook, GetterQuotationInit, isCompress);
+  renderSheet(spread, workBook, quotation, isCompress);
   // setLastColumnWidth(spread, template);
   translateSheet(spread);
   initShowCostPrice(spread);
 };
 
 
-
-const InitSheetRender = (spread, template, quotation, isCompress = false) => {
-  // 逻辑处理
-  // LogicalTotalCalculationType(this.spread);
-  // render center
+/**
+ * Initialization of a single table
+ * @param {*} spread 
+ * @param {*} template 
+ * @param {*} quotation 
+ * @param {*} isCompress 
+ */
+export const InitSheetRender = (spread, template, quotation, isCompress = false) => {
+  // LogicalTotalCalculationType(spread);
   const { conferenceHall } = quotation;
   const resourceViews = conferenceHall.resourceViews;
   if (resourceViews.length) {
@@ -737,7 +741,6 @@ const InitSheetRender = (spread, template, quotation, isCompress = false) => {
   } else {
     InitTotal(spread, template, quotation);
   }
-  renderFinishedAddImage(spread, template, quotation);
 };
 
 /**
@@ -753,8 +756,10 @@ export const initSingleTable = (spread, template, dataSource, isCompress = false
     console.error('spread is null');
     return
   }
+  rootWorkBook._setWorkBook(spread);
   const sheet = spread.getActiveSheet();
   InitWorksheet(sheet, dataSource);
-  InitBindPath(spread, template, dataSource)
+  InitBindPath(spread, template, dataSource);
   InitSheetRender(spread, template, dataSource, isCompress);
+  renderFinishedAddImage(spread, template, dataSource);
 };

@@ -10,10 +10,10 @@ import { imgUrlToBase64, BlobToBase64 } from '../utils/index';
 import { SHOW_DRAWER, UPDATE_QUOTATION_PATH, SHOW_SORT, SORT_TYPE_ID, SHOW_DELETE, IGNORE_EVENT } from 'store/quotation/mutation-types';
 import { sortObjectProxy } from '../common/proxyData'
 import { LayoutRowColBlock } from '../common/core';
-import { getWorkBook } from '../common/store';
+import { getWorkBook, getInitData } from '../common/store';
 import { REGULAR } from '../common/constant';
 import { SetDataSource } from '../common/sheetWorkBook';
-import { uniqAndSortBy, GetAllTableRange } from '../common/public';
+import { uniqAndSortBy, GetAllTableRange, Reset } from '../common/public';
 
 import { buildData, getPositionBlock } from '../common/parsing-quotation';
 import { setRowStyle, renderAutoFitRow, AddEquipmentImage, getComputedColumnFormula, getImageField } from '../common/parsing-template';
@@ -21,7 +21,7 @@ import { updateEquipmentImage } from '../common/update-quotation'
 
 import { mergeSpan, columnComputedValue } from '../common/single-table';
 
-import { Reset, UpdateSort } from './public';
+import { UpdateSort } from './public';
 
 // eslint-disable-next-line no-unused-vars
 import { Render, positionBlock, OperationWorkBookSync, UpdateTotalBlock } from './single-table';
@@ -38,7 +38,7 @@ let pickCol = null;
  */
 const repaintTableStyle = (sheet, classId, row, rowH) => {
   const spread = sheet.getParent();
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const template = getWorkBook();
   const { equipment } = template.cloudSheet.center;
@@ -131,12 +131,12 @@ const tableInsert = (context, options, buildDataConfig, classType) => {
       path: ['conferenceHall'],
       value: conferenceHall
     });
-    SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+    SetDataSource(sheet, getInitData());
   }
 
   console.log('00000000000000');
 
-  console.log(store.getters['quotationModule/GetterQuotationInit']);
+  console.log(getInitData());
 
   if (tableRange) {
     repaintTableStyle(sheet, tableId, tableRange.row, rowH);
@@ -162,7 +162,7 @@ const leavelInsert = (context, options, { index, count }) => {
  * @returns
  */
 const isRemoveLeavel = (tableId, count) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const resourceViews = quotation.conferenceHall.resourceViews;
   if (resourceViews && resourceViews.length) {
     const tables = resourceViews.filter((item) => item.resourceLibraryId == tableId);
@@ -774,7 +774,7 @@ const deleteClassRowSingle = (sheet, table, leavel1Area, leavel2Area, srange) =>
   }
   sheet.resumePaint();
 
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
   const resourceViews = conferenceHall.resourceViews;
   const resourceViewsMap = conferenceHall.resourceViewsMap;
@@ -799,7 +799,7 @@ const deleteClassRowSingle = (sheet, table, leavel1Area, leavel2Area, srange) =>
     path: ['conferenceHall'],
     value: conferenceHall
   });
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
 
   UpdateTotalBlock(sheet);
   positionBlock(sheet);
@@ -812,7 +812,7 @@ const deleteClassRowSingle = (sheet, table, leavel1Area, leavel2Area, srange) =>
  */
 const deleteTableRowSingle = (sheet, srange) => {
   const se = [{ row: srange.row, rowCount: srange.rowCount }];
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
 
   const selectedResource = getSelectionsRowData(sheet, se);
@@ -826,7 +826,7 @@ const deleteTableRowSingle = (sheet, srange) => {
     path: ['conferenceHall'],
     value: conferenceHall
   });
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
 
   UpdateTotalBlock(sheet);
   positionBlock(sheet);
@@ -849,7 +849,7 @@ const deleteClassRowMulti = (sheet, srange) => {
     }
   }
 
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
   const sourceData = conferenceHall.resourceViews;
   const resourceViews = [];
@@ -875,7 +875,7 @@ const deleteClassRowMulti = (sheet, srange) => {
     path: ['conferenceHall'],
     value: conferenceHall
   });
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
 
   Render(spread);
 };
@@ -887,7 +887,7 @@ const deleteClassRowMulti = (sheet, srange) => {
  */
 const deleteTableRowMulti = (sheet, srange) => {
   const spread = sheet.getParent();
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
 
   const selectedResource = getSelectionsRowData(sheet, srange);
@@ -899,7 +899,7 @@ const deleteTableRowMulti = (sheet, srange) => {
     path: ['conferenceHall'],
     value: conferenceHall
   });
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
 
   Render(spread);
 };
@@ -912,7 +912,7 @@ const deleteTableRowMulti = (sheet, srange) => {
  */
 const getSelectionsRowData = (sheet, srange) => {
   const selectedRange = uniqAndSortBy(srange, item => item.row, 'row');
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = quotation.conferenceHall;
   const resourceViews = conferenceHall.resourceViews;
   const selectedResource = [];

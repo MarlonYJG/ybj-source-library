@@ -11,19 +11,11 @@ import { getWorkBook, getInitData } from './store';
 import { flattenArray } from '../utils/index'
 
 /**
- * Get quotation data
- * @returns 
- */
-const getQuotation = () => {
-  return store.getters['quotationModule/GetterQuotationInit'];
-}
-
-/**
  * Price format
  * @returns
  */
-export const formatterPrice = (GetterQuotationInit) => {
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+export const formatterPrice = (quotationInit) => {
+  const quotation = getInitData(quotationInit);
   let symbol = '';
   let type = '';
   let typeInt = '0.00';
@@ -88,7 +80,7 @@ const getClassificationName = (classificationId) => {
  * @returns
  */
 export const buildData = (tableId, insertIndex, count, classType) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
   const template = getWorkBook();
   const { equipment } = template.cloudSheet.center;
@@ -145,7 +137,7 @@ export const buildData = (tableId, insertIndex, count, classType) => {
  * Get all categories in a quote
  */
 export const getQuotationAllClassification = () => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = quotation.conferenceHall;
   const resourceViews = conferenceHall.resourceViews;
   const classification = [];
@@ -168,7 +160,7 @@ export const getQuotationAllClassification = () => {
  * @returns 
  */
 export const getShowCostPrice = () => {
-  return getQuotation().showCost;
+  return getInitData().showCost;
 }
 
 /**
@@ -177,7 +169,7 @@ export const getShowCostPrice = () => {
  * @returns 
  */
 export const initDiscountPercentage = (quo) => {
-  const quotation = quo || getQuotation();
+  const quotation = getInitData(quo);
   if (quotation) {
     return quotation.priceAdjustment || 1;
   }
@@ -190,7 +182,7 @@ export const initDiscountPercentage = (quo) => {
  * @returns 
  */
 export const initPriceSetField = (quo) => {
-  const quotation = quo || getQuotation();
+  const quotation = getInitData(quo);
   if (quotation && quotation.priceStatus) {
     return Number(quotation.priceStatus);
   }
@@ -203,9 +195,7 @@ export const initPriceSetField = (quo) => {
  * @returns 
  */
 export const getConfig = (quotation) => {
-  if (!quotation) {
-    quotation = getQuotation();
-  }
+  quotation = getInitData(quotation);
   if (quotation.config) {
     return quotation.config;
   }
@@ -219,9 +209,7 @@ export const getConfig = (quotation) => {
  * @returns 
  */
 export const isSingleTable = (quotation) => {
-  if (!quotation) {
-    quotation = getInitData();
-  }
+  quotation = getInitData(quotation);
   if (quotation.resources && quotation.resources.length) {
     return false;
   }
@@ -234,9 +222,7 @@ export const isSingleTable = (quotation) => {
  * @returns 
  */
 export const getSheetTemplateIndexs = (quotation) => {
-  if (!quotation) {
-    quotation = getInitData();
-  }
+  quotation = getInitData(quotation);
   if (quotation.title && quotation.title.indexOf('@') !== -1) {
     const templateIndex = quotation.title.split('@')[1];
     return templateIndex.split('-');
@@ -250,9 +236,7 @@ export const getSheetTemplateIndexs = (quotation) => {
  * @returns 
  */
 export const getAllSheet = (quotation) => {
-  if (!quotation) {
-    quotation = getInitData();
-  }
+  quotation = getInitData(quotation);
   let trunks = quotation.resources || [];
   if (!(trunks.length === 1 && trunks[0].name === 'noProject')) {
     return trunks

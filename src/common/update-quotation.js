@@ -12,6 +12,7 @@ import {
 import { SetDataSource } from './sheetWorkBook';
 import { selectEquipmentImageProxy } from './proxyData';
 import { AddEquipmentImage } from './parsing-template';
+import { getInitData } from './store';
 
 let isProcessing = null;// 加锁防止重复执行
 
@@ -62,7 +63,7 @@ const insertEquipmentImage = (spread, pictureId, row, id) => {
  * @param {*} file 
  */
 const uploadEquipmentImageByPath = (sheet, id, file) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const conferenceHall = _.cloneDeep(quotation.conferenceHall);
   const resourceViews = conferenceHall.resourceViews;
   const resourceViewsMap = {};
@@ -83,7 +84,7 @@ const uploadEquipmentImageByPath = (sheet, id, file) => {
     path: ['conferenceHall'],
     value: conferenceHall
   });
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
 }
 
 /**
@@ -97,9 +98,7 @@ const uploadEquipmentImageByPath = (sheet, id, file) => {
  * @param {*} quotation 
  */
 export const updateEquipmentImage = (spread, tableId, data, imageName, type, row, quotation = null) => {
-  if (!quotation) {
-    quotation = store.getters['quotationModule/GetterQuotationInit'];
-  }
+  quotation = getInitData(quotation);
   const sheet = spread.getActiveSheet();
   const conferenceHall = quotation.conferenceHall;
   const resourceViews = conferenceHall.resourceViews;
@@ -154,5 +153,5 @@ export const updateEquipmentImage = (spread, tableId, data, imageName, type, row
     path: ['conferenceHall'],
     value: conferenceHall
   });
-  SetDataSource(sheet, store.getters['quotationModule/GetterQuotationInit']);
+  SetDataSource(sheet, getInitData());
 }

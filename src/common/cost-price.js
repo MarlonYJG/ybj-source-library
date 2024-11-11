@@ -41,6 +41,11 @@ export class CheckCostPrice {
   _init() {
     const sheet = this.spread.getActiveSheet();
     this.sheet = sheet;
+    
+    console.log(sheet.name());
+    
+    console.log(this.template);
+    
     this.sourceSheetColCount = this.template.sheets[sheet.name()].columnCount;
     this._getColIndex();
     this._getFormatter();

@@ -4,11 +4,35 @@
  * @Description: store getter
  */
 import store from 'store';
-
+import { rootWorkBook } from './core';
 export const getWorkBook = (GetterQuotationWorkBook) => {
-  return GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook']();
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook']();
+  const spread = rootWorkBook._getWorkBook();
+  const templateMap = rootWorkBook._getTemplateMap();
+  if (templateMap) {
+    const sheet = spread.getActiveSheet();
+    const activeName = sheet.name();
+    if (Object.keys(templateMap).includes(activeName)) {
+      return templateMap[activeName];
+    }
+  }
+
+  if (typeof template === 'object') {
+    return template;
+  } else {
+    return JSON.parse(template);
+  }
 }
 
 export const getInitData = (GetterQuotationInit) => {
-  return GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  if (!quotation.id && !quotation.templateId && !quotation.resources.length) {
+    return quotation;
+  } else {
+    const active = rootWorkBook._getActiveQuotation();
+    if (active) {
+      return active;
+    }
+    return quotation
+  }
 }

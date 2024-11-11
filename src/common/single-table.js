@@ -11,10 +11,10 @@ import store from 'store';
 import { GetUserCompany, imgUrlToBase64, regChineseCharacter, FormatDate, GetUserEmployee, getSystemDate } from '../utils/index';
 
 import { LayoutRowColBlock } from './core';
-import { getWorkBook } from './store';
+import { getWorkBook, getInitData } from './store';
 
 import { GENERATE_FIELDS_NUMBER, DESCRIPTION_MAP, REGULAR, ASSOCIATED_FIELDS_FORMULA_MAP } from './constant';
-import { columnToNumber, replacePlaceholders } from './public';
+import { columnToNumber, replacePlaceholders, RenderLogo } from './public';
 import { GeneratorUpperCaseFormatter } from './generator';
 
 import { NEW_OLD_FIELD_MAP } from '../build-library/config'
@@ -484,8 +484,8 @@ export const PubGetTableStartRowIndex = (workBook) => {
 /**
  * The total number of rows inserted into the table
  */
-export const PubGetTableRowCount = (index = 0, GetterQuotationInit) => {
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+export const PubGetTableRowCount = (index = 0, quotationInit) => {
+  const quotation = getInitData(quotationInit);
   const resourceViews = quotation.conferenceHall.resourceViews;
   if (resourceViews.length === 1 && resourceViews[0].name === '无分类') {
     return resourceViews[0].resources.length;
@@ -922,8 +922,8 @@ const tableAddImage = (spread, table, classIndex, insertTableIndex, classRow, su
  * @param {*} allowResize
  * @param {*} isLocked
  */
-export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowResize, isLocked, GetterQuotationInit = null, template = null, isCompress = false) => {
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowResize, isLocked, quotationInit = null, template = null, isCompress = false) => {
+  const quotation = getInitData(quotationInit);
   const resourceViews = quotation.conferenceHall.resourceViews;
   const { classRow, subTotal } = classificationAlgorithms(quotation, [], template);
 
@@ -946,7 +946,7 @@ export const renderSheetImage = (spread, tableStartRowIndex, allowMove, allowRes
  * @param {*} spread
  */
 export const translateSheet = (spread) => {
-  const quotation = store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData();
   const resourceViews = quotation.conferenceHall.resourceViews;
   const sheet = spread.getActiveSheet();
   sheet.suspendPaint();
@@ -1015,12 +1015,12 @@ export const initShowCostPrice = (spread) => {
 
 /**
  * Obtain the classification type of the template
- * @param {*} GetterQuotationInit 
+ * @param {*} quotationInit 
  * @param {*} workBook 
  * @returns 
  */
-export const getTemplateClassType = (GetterQuotationInit, workBook) => {
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+export const getTemplateClassType = (quotationInit, workBook) => {
+  const quotation = getInitData(quotationInit);
   const template = getWorkBook(workBook);
   const templateClassIdentifier = template.cloudSheet.templateClassIdentifier;
   const resourceViews = quotation.conferenceHall.resourceViews;
@@ -1058,9 +1058,9 @@ export const getTemplateClassType = (GetterQuotationInit, workBook) => {
  * @param {*} sheet
  * @returns
  */
-export const GetColumnComputedTotal = (sheet, workBook = null, GetterQuotationInit = null) => {
+export const GetColumnComputedTotal = (sheet, workBook = null, quotationInit = null) => {
   const template = getWorkBook(workBook);
-  const quotation = GetterQuotationInit || store.getters['quotationModule/GetterQuotationInit'];
+  const quotation = getInitData(quotationInit);
   const { type = null } = template.cloudSheet.center;
   const resourceViews = quotation.conferenceHall.resourceViews;
 
@@ -1795,20 +1795,16 @@ export const InitWorksheet = (sheet, dataSource) => {
  * @param {*} quotation 
  */
 export const InitBindPath = (spread, template, quotation) => {
-  console.log('quotation', quotation);
-  console.log('template', template);
-  
-  
   InitBindValueTop(spread, template, quotation);
-  const { topPath, conferenceHallTopPath, conferenceHallBottomPath, bottomPath } = getPaths();
-
-  // top
-  FieldBindPath(spread, template, topPath);
-  // center
-  FieldBindPath(spread, template, conferenceHallTopPath);
-  FieldBindPath(spread, template, conferenceHallBottomPath);
-  // bottom
-  FieldBindPath(spread, template, bottomPath);
+  const { top, bottom, topPath, conferenceHallTopPath, conferenceHallBottomPath, bottomPath } = getPaths();
+  if (_.has(template, top) && _.get(template, top).rowCount) {
+    FieldBindPath(spread, template, topPath);
+    FieldBindPath(spread, template, conferenceHallTopPath);
+  }
+  if (_.has(template, bottom) && _.get(template, bottom).rowCount) {
+    FieldBindPath(spread, template, bottomPath);
+    FieldBindPath(spread, template, conferenceHallBottomPath);
+  }
 };
 
 /**
@@ -1818,14 +1814,12 @@ export const InitBindPath = (spread, template, quotation) => {
  * @param {*} quotation
  */
 export const InitBindValueTop = (spread, template, quotation) => {
-  const sheet = spread.getActiveSheet();
   const initDataPath = ['cloudSheet', 'initData'];
-
+  const sheet = spread.getActiveSheet();
   sheet.suspendPaint();
   if (_.has(template, initDataPath)) {
     const initData = _.get(template, initDataPath);
 
-    // 初始化个人信息
     if (initData.userName || initData.userTel || initData.belongsEmail) {
       const userEmployeeInfo = GetUserEmployee();
 
@@ -1840,7 +1834,6 @@ export const InitBindValueTop = (spread, template, quotation) => {
       }
     }
 
-    // 初始化公司信息
     if (initData) {
       const companyInfo = GetUserCompany();
 
@@ -1862,22 +1855,8 @@ export const InitBindValueTop = (spread, template, quotation) => {
       if (initData.userCompanyTel && companyInfo && companyInfo.tel) {
         initDataSetValue(sheet, initData.userCompanyTel, companyInfo, ['tel'], 'company');
       }
-
-      if (template.cloudSheet.logo && quotation.logo) {
-        imgUrlToBase64(quotation.logo, (base64) => {
-          InsertLogo(spread, template, base64);
-        });
-      } else {
-        let userBindCompany = GetUserCompany();
-        if (userBindCompany && userBindCompany.logoURL) {
-          imgUrlToBase64(userBindCompany.logoURL, (base64) => {
-            InsertLogo(spread, template, base64);
-          });
-        }
-      }
     }
 
-    // 初始化时间
     if (initData) {
       if (initData.approachDate) {
         initDataSetValue(sheet, initData.approachDate, quotation, ['conferenceHall', 'approachDate'], 'date');
@@ -1893,6 +1872,7 @@ export const InitBindValueTop = (spread, template, quotation) => {
       }
     }
   }
+  RenderLogo(spread, template, quotation);
   sheet.resumePaint();
 };
 
@@ -1934,33 +1914,6 @@ const initDataSetValue = (sheet, field, source, path, type) => {
         sheet.setValue(row, field.column, value);
       }
     }
-  }
-};
-
-/**
- * Bind company's logo
- * @param {*} spread
- * @param {*} template
- * @param {*} base64
- * @returns
- */
-const InsertLogo = (spread, template, base64) => {
-  if (!spread) return;
-  if (!base64) return;
-  if (template.cloudSheet.logo) {
-    const sheet = spread.getActiveSheet();
-    sheet.suspendPaint();
-    let picture = sheet.pictures.get(template.cloudSheet.logo.name);
-    if (picture) {
-      picture.src(base64);
-      sheet.resumePaint();
-      return;
-    }
-    picture = sheet.pictures.add(template.cloudSheet.logo.name, base64, template.cloudSheet.logo.x, template.cloudSheet.logo.y, template.cloudSheet.logo.width, template.cloudSheet.logo.height);
-    picture.allowMove(false);
-    picture.allowResize(true);
-    picture.isLocked(true);
-    sheet.resumePaint();
   }
 };
 
