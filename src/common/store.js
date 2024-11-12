@@ -6,7 +6,7 @@
 import store from 'store';
 import { rootWorkBook } from './core';
 export const getWorkBook = (GetterQuotationWorkBook) => {
-  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook']();
+  const template = GetterQuotationWorkBook || store.getters['quotationModule/GetterQuotationWorkBook'];
   const spread = rootWorkBook._getWorkBook();
   const templateMap = rootWorkBook._getTemplateMap();
   if (templateMap) {
