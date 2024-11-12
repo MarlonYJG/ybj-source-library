@@ -196,7 +196,7 @@ export const RenderLogo = (spread, template, quotation) => {
  * reset center sheet data
  * @param {*} spread
  */
-export const Reset = (spread) => {
+export const ResetCenter = (spread) => {
   const template = getWorkBook();
   const quotation = getInitData();
   const resourceViews = quotation.conferenceHall.resourceViews;

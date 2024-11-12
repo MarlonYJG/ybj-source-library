@@ -517,7 +517,7 @@ const renderSheet = (spread, workBook, quotationInit, isCompress = false) => {
   const resourceViews = quotation.conferenceHall.resourceViews;
 
   const noClass = resourceViews.length === 1 && resourceViews[0].name === '无分类';
-  console.log(noClass, '-----------');
+  console.log(noClass, '-----------是否为无分类');
 
 
   if (!noClass) {
@@ -737,6 +737,10 @@ export const InitSheetRender = (spread, template, quotation, isCompress = false)
   const { conferenceHall } = quotation;
   const resourceViews = conferenceHall.resourceViews;
   if (resourceViews.length) {
+    const sheet = spread.getActiveSheet();
+
+    console.log(sheet.getRowCount(),'row count');
+    
     Render(spread, template, quotation, isCompress);
   } else {
     InitTotal(spread, template, quotation);

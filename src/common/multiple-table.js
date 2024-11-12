@@ -275,13 +275,13 @@ export const getSheetTemplateIndexs = (quotation, templates) => {
 /**
  * Build a mapping table of quotes to templates
  * @param {*} dataSource 
- * @param {*} template 
+ * @param {*} templateSource 
  * @returns 
  */
-export const templateMap = (dataSource, template) => {
+export const templateMap = (dataSource, templateSource) => {
   const trunks = getAllSheet(dataSource);
   if (trunks.length) {
-    const trunkTemplate = getTrunkTemplate(template);
+    const trunkTemplate = getTrunkTemplate(templateSource);
     const templateIndexs = getSheetTemplateIndexs(dataSource, trunkTemplate);
 
     const templateMap = {};
@@ -293,7 +293,7 @@ export const templateMap = (dataSource, template) => {
 
     for (const key in templateMap) {
       if (Object.prototype.hasOwnProperty.call(templateMap, key)) {
-        const sourceBuild = _.cloneDeep(template);
+        const sourceBuild = _.cloneDeep(templateSource);
         sourceBuild.sheets[key] = templateMap[key].sheets['分表'];
         sourceBuild.name = key;
         sourceBuild.cloudSheet = templateMap[key];
@@ -316,8 +316,8 @@ const buildSheetData = (spread, dataSource) => {
   const sheetName = sheet.name();
   const sheets = dataSource.conferenceHall.resourceViews;
   const sheetQuotation = sheets.filter(item => item.name === sheetName);
-  console.log(sheetQuotation, 'sheetQuotation');
   const quotation = QuotationInitData();
+  quotation.config = JSON.parse(quotation.config);
   if (sheetQuotation.length) {
     const { extFields = {}, resourceViews = [] } = sheetQuotation[0];
     for (const key in extFields) {
@@ -339,50 +339,33 @@ const buildSheetData = (spread, dataSource) => {
 /**
  * bingn event
  * @param {*} spread 
- * @param {*} quotation 
- * @param {*} template 
+ * @param {*} dataSource 
+ * @param {*} templateSource 
  * @param {*} isCompress 
  * @param {*} type 
  */
-const OnEventBind = (spread, quotation, template, isCompress, type, templateMapData) => {
+export const OnEventBind = (spread, dataSource, templateSource, isCompress, type, templateMapData) => {
   spread.bind(GC.Spread.Sheets.Events.ActiveSheetChanged, function (sender, args) {
     console.log(sender, args);
-    const trunks = getAllSheet(quotation);
+    const trunks = getAllSheet(dataSource);
     const sheet = spread.getActiveSheet();
     const sheetName = sheet.name();
     const sheetNames = trunks.map((item) => item.name);
+
+    console.log(templateSource, 'template');
+    console.log(dataSource, 'quotation');
+
     if (sheetNames.includes(sheetName)) {
-      // TODO 分表
-      InitSheetRender(spread, quotation, templateMapData[sheetName], isCompress, type);
+      const template = templateMapData[sheetName];
+      rootWorkBook._setActiveTemplate(template);
+      InitSheetRender(spread, dataSource, template, isCompress, type);
     } else {
+      rootWorkBook._setActiveTemplate(templateSource);
+      rootWorkBook._setActiveQuotation(dataSource);
       // SetDataSource(sheet, quotation);
       // InitBindPath(spread, template, quotation);
     }
   })
-}
-
-/**
- * Draw a summary table
- * @param {*} spread 
- * @param {*} template 
- * @param {*} quotation 
- * @param {*} isCompress 
- * @param {*} type 
- */
-export const InitMainSheetRender = (spread, template, quotation, isCompress, type) => {
-  const templateMapData = templateMap(quotation, template);
-  console.log(templateMapData, 'templateMapData');
-  rootWorkBook._setTemplateMap(templateMapData);
-  rootWorkBook._setActiveTemplate(template);
-  console.log(templateMapData);
-
-  OnEventBind(spread, quotation, template, isCompress, type, templateMapData);
-  const sheet = spread.getActiveSheet();
-  SetDataSource(sheet, quotation);
-
-  console.log(template);
-
-  InitBindPath(spread, template, quotation);
 }
 
 /**
@@ -396,18 +379,31 @@ export const InitMainSheetRender = (spread, template, quotation, isCompress, typ
 const InitSheetRender = (spread, dataSource, template, isCompress, type) => {
   const initData = buildSheetData(spread, dataSource);
   rootWorkBook._setActiveQuotation(initData);
-  rootWorkBook._setActiveTemplate(template);
+  const sheet = spread.getActiveSheet();
+  ResetSheet(sheet, template);
   if (type === 'parsing') {
-    const sheet = spread.getActiveSheet();
     SetDataSource(sheet, initData);
     InitBindPath(spread, template, initData);
     renderFinishedAddImage(spread, template, initData);
-
 
     CenterSheetRender(spread, template, initData, isCompress);
     SpreadLocked(spread);
   } else if (type === 'build') {
     CenterSheetBuild(spread, template, initData, isCompress);
   }
+
+  console.log(rootWorkBook._getActiveQuotation(), '激活的报价单');
+  console.log(rootWorkBook._getActiveTemplate(), '激活的模板');
+
+
 };
 
+/**
+ * Reset the entire sheet
+ * @param {*} spread 
+ * @param {*} template 
+ */
+const ResetSheet = (sheet, template) => {
+  sheet.reset();
+  sheet.fromJSON(template.sheets[sheet.name()]);
+};

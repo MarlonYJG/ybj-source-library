@@ -236,7 +236,6 @@ export const getSheetTemplateIndexs = (quotation) => {
  * @returns 
  */
 export const getAllSheet = (quotation) => {
-  quotation = getInitData(quotation);
   let trunks = quotation.resources || [];
   if (!(trunks.length === 1 && trunks[0].name === 'noProject')) {
     return trunks

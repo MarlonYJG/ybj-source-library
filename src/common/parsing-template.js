@@ -636,6 +636,5 @@ export const checkTemplate = (template) => {
  * @returns 
  */
 export const getTrunkTemplate = (template) => {
-  template = getWorkBook(template);
   return template.cloudSheet.scoreList || [];
 }

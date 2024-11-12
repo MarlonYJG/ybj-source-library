@@ -4,12 +4,13 @@
  * @Description:multipleTable
  */
 import { rootWorkBook } from '../common/core';
-import { getWorkBook, getInitData } from '../common/store';
 import { CreateSheet } from '../common/sheetWorkBook';
 
 import { getAllSheet } from '../common/parsing-quotation';
 
-import { InitMainSheetRender, templateMap } from '../common/multiple-table';
+import { SetDataSource } from '../common/sheetWorkBook';
+import { InitBindPath } from '../common/single-table';
+import { templateMap, OnEventBind } from '../common/multiple-table';
 
 import { initWorkBookConfig } from './public';
 import { InitSheetRender } from './single-table';
@@ -18,11 +19,11 @@ import { InitSheetRender } from './single-table';
  * Initialize multiple sheet render
  * @param {*} spread 
  * @param {*} dataSource 
- * @param {*} template 
+ * @param {*} templateSource 
  * @param {*} isCompress 
  * @returns 
  */
-const InitWorksheet = (spread, dataSource, template, isCompress) => {
+const InitWorksheet = (spread, dataSource, templateSource, isCompress) => {
   if (!spread) return;
   const trunks = getAllSheet(dataSource);
 
@@ -30,34 +31,56 @@ const InitWorksheet = (spread, dataSource, template, isCompress) => {
 
   if (trunks.length) {
     for (let index = 0; index < trunks.length; index++) {
-      const tMap = templateMap(dataSource, template);
+      const tMap = templateMap(dataSource, templateSource);
       CreateSheet(spread, trunks[index].name, index + 1, tMap[trunks[index].name].sheets[trunks[index].name]);
     }
     spread.setSheetCount(trunks.length + 1);
   }
   spread.setActiveSheetIndex(0);
 
-  InitMainSheetRender(spread, template, dataSource, isCompress, 'parsing');
+  InitMainSheetRender(spread, templateSource, dataSource, isCompress);
 
 };
 
 /**
+ * Draw a summary table
+ * @param {*} spread 
+ * @param {*} templateSource 
+ * @param {*} dataSource 
+ * @param {*} isCompress 
+ * @param {*} type 
+ */
+const InitMainSheetRender = (spread, templateSource, dataSource, isCompress) => {
+  const templateMapData = templateMap(dataSource, templateSource);
+  console.log(templateMapData, 'templateMapData');
+  rootWorkBook._setTemplateMap(templateMapData);
+  rootWorkBook._setActiveTemplate(templateSource);
+  console.log(templateMapData);
+
+  OnEventBind(spread, dataSource, templateSource, isCompress, 'parsing', templateMapData);
+
+  const sheet = spread.getActiveSheet();
+  SetDataSource(sheet, dataSource);
+  InitBindPath(spread, templateSource, dataSource);
+}
+
+/**
  * Initialize the total score table
  * @param {*} spread 
- * @param {*} template 
+ * @param {*} templateSource 
  * @param {*} dataSource 
  * @param {*} isCompress 
  * @returns 
  */
-export const initMultipleTable = (spread, template, dataSource, isCompress = false) => {
+export const initMultipleTable = (spread, templateSource, dataSource, isCompress = false) => {
   if (!spread) {
     return console.error('spread is null');
   }
-  console.log(template);
+  console.log(templateSource);
   rootWorkBook._setWorkBook(spread);
-  rootWorkBook._setActiveQuotation(dataSource); 
+  rootWorkBook._setActiveQuotation(dataSource);
   initWorkBookConfig(spread);
-  InitWorksheet(spread, dataSource, template, isCompress);
+  InitWorksheet(spread, dataSource, templateSource, isCompress);
 };
 
 /**

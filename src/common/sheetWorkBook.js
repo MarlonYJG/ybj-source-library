@@ -48,6 +48,11 @@ export const SpreadLocked = (spread, domId = 'spreadsheet-quotation-view', locke
  * @param {*} bindDataPath
  */
 export const CreateTable = (sheet, id, r, c, rc, cc, header, bindDataPath) => {
+  console.log(sheet.name());
+
+  console.log(id, r, c, rc, cc);
+  
+  console.log(sheet.tables);
   const table = sheet.tables.add(`table${id}`, r, c, rc, cc, GeneratorTableStyle());
   const tableColumns = [];
   for (const key in header) {
@@ -82,6 +87,6 @@ export const CreateSheet = (rootWorkBook, sheetName, index = 1, sheetTemplateSou
   const sheet = new GC.Spread.Sheets.Worksheet(sheetName);
   rootWorkBook.addSheet(index, sheet);
   if (sheetTemplateSource) {
-    sheet.fromJSON(sheetTemplateSource);
+    // sheet.fromJSON(sheetTemplateSource);
   }
 };

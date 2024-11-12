@@ -13,7 +13,7 @@ import { LayoutRowColBlock } from '../common/core';
 import { getWorkBook, getInitData } from '../common/store';
 import { REGULAR } from '../common/constant';
 import { SetDataSource } from '../common/sheetWorkBook';
-import { uniqAndSortBy, GetAllTableRange, Reset } from '../common/public';
+import { uniqAndSortBy, GetAllTableRange, ResetCenter } from '../common/public';
 
 import { buildData, getPositionBlock } from '../common/parsing-quotation';
 import { setRowStyle, renderAutoFitRow, AddEquipmentImage, getComputedColumnFormula, getImageField } from '../common/parsing-template';
@@ -869,7 +869,7 @@ const deleteClassRowMulti = (sheet, srange) => {
 
   UpdateSort(conferenceHall);
 
-  Reset(spread);
+  ResetCenter(spread);
 
   store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
     path: ['conferenceHall'],
@@ -893,7 +893,7 @@ const deleteTableRowMulti = (sheet, srange) => {
   const selectedResource = getSelectionsRowData(sheet, srange);
   deleteSelectionsRowData(selectedResource, conferenceHall);
 
-  Reset(spread);
+  ResetCenter(spread);
 
   store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
     path: ['conferenceHall'],

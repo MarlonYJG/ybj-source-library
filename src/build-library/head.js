@@ -30,7 +30,7 @@ import {
 
 import { CheckCostPrice } from '../common/cost-price';
 
-import { Reset } from '../common/public';
+import { ResetCenter } from '../common/public';
 import { MENU_TOTAL } from './config';
 
 // eslint-disable-next-line no-unused-vars
@@ -265,7 +265,7 @@ export const Sort = (spread, resourceViews) => {
     value: conferenceHall
   });
 
-  Reset(spread);
+  ResetCenter(spread);
   SetDataSource(sheet, getInitData());
   Render(spread);
 };
@@ -285,7 +285,7 @@ export const DeleteProduct = (spread, resourceViews) => {
     resourceViewsMap[el1.resourceLibraryId] = el1;
   });
   conferenceHall.resourceViewsMap = resourceViewsMap;
-  Reset(spread);
+  ResetCenter(spread);
 
   store.commit(`quotationModule/${UPDATE_QUOTATION_PATH}`, {
     path: ['conferenceHall'],
@@ -323,7 +323,7 @@ export const HeadDelete = (spread, fieldType) => {
  */
 export const Repaint = (spread) => {
   const sheet = spread.getActiveSheet();
-  Reset(spread);
+  ResetCenter(spread);
   SetDataSource(sheet, getInitData());
   Render(spread);
 };

@@ -11,7 +11,7 @@ import { monitorInstance } from "./common/monitor";
 import { PROJECT_INIT_DATA, QUOTATION_INIT_DATA, QuotationInitData, TemplateWorkBook } from './common/constant';
 import { singleTableSyncStore, resourceSort, LogicalProcessing, LogicalAmount, translateSheet, InitBindValueTop, FieldBindPath } from './common/single-table';
 import { multipleTableSyncStore } from './common/multiple-table';
-import { PubGetRandomNumber, GetAllTableRange, Reset } from './common/public';
+import { PubGetRandomNumber, GetAllTableRange, ResetCenter as Reset } from './common/public';
 import { CombinationTypeBuild, CombinationType } from './common/combination-type';
 import { formatterPrice, getShowCostPrice, initDiscountPercentage, initPriceSetField, isSingleTable } from './common/parsing-quotation';
 import { getTemplateClassType, getProjectNameField, initTemplateData } from './common/parsing-template';
